@@ -259,6 +259,30 @@
                 "DeployBucket"
             ]
         },
+		"StoreDRPassword": {
+            "Type": "AWS::CloudFormation::CustomResource",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "StorePasswordLambda",
+                        "Arn"
+                    ]
+                },
+                "BucketId": {
+                    "Ref": "DeployBucket"
+                },
+                "PlainText": {
+                    "Ref": "VaultDRPassword"
+                }
+            },
+            "Condition": "EULACondition",
+            "DependsOn": [
+                "LambdaDeployRole",
+                "DeployBucketPolicy",
+                "StorePasswordLambda",
+                "DeployBucket"
+            ]
+        },
         "VaultMachine": {
             "Type": "AWS::EC2::Instance",
             "Condition": "",
@@ -383,11 +407,18 @@
                                                 ]
                                             },
                                             "')\n",
-                                            "drp = ''.join(random.choice(string.ascii_lowercase) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.ascii_uppercase) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.digits) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.punctuation) for i in range(2))\n",
-                                            "drp = ''.join(random.sample(drp,len(drp)))\n",
+											"drp = fetchPassword('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreDRPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
                                             "\n",
                                             "licensef = downloadFile('",
                                             {
@@ -436,6 +467,226 @@
                                         ]
                                     ]
                                 }
+                            }
+                        },
+                        "commands": {
+                            "1-deploy": {
+                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
+								"waitAfterCompletion": "0"
+                            }
+                        }
+                    }
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "StoreMasterPassword",
+                "StoreAdminPassword",
+                "StoreDRPassword"
+            ]
+        },
+        "VaultDRMachine": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                " ",
+                                [
+                                    {
+                                        "Ref": "VaultInstanceName"
+                                    },
+                                    "DR"
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "SecurityGroupIds": {
+                    "Ref": "VaultInstanceSecurityGroups"
+                },
+                "SubnetId": {
+                    "Ref": "DRInstanceSubnetId"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "Vault"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "VaultInstanceType"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackId"
+                                },
+                                " -r VaultDRMachine",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "cfn-signal.exe -e %ERRORLEVEL% ",
+                                "  --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "  --resource VaultDRMachine",
+                                "  --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "</script>"
+                            ]
+                        ]
+                    }
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "VaultInstancesProfile"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "C:\\deploy.py": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "import boto3\n",
+                                            "import sys\n",
+                                            "import subprocess\n",
+                                            "\n",
+                                            "def fetchPassword(bucket,filePath):\n",
+                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\tobjectResponse = s3Client.get_object(\n",
+                                            "\t\tBucket = bucket,\n",
+                                            "\t\tKey = filePath\n",
+                                            "\t)\n",
+                                            "\treturn objectResponse['Body'].read()\n",
+                                            "\n",
+                                            "def downloadFile(bucket,filePath,target):\n",
+                                            "\ts3Client = boto3.client('s3')\n",
+                                            "\ts3Client.download_file(\n",
+                                            "\t\tBucket = bucket,\n",
+                                            "\t\tKey = filePath,\n",
+                                            "\t\tFilename = target\n",
+                                            "\t)\n",
+                                            "\treturn target\n",
+                                            "\n",
+                                            "masterp = fetchPassword('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreMasterPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
+                                            "adminp = fetchPassword('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreAdminPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
+                                            "drp = fetchPassword('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreDRPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
+                                            "\n",
+                                            "licensef = downloadFile('",
+                                            {
+                                                "Ref": "VaultFilesBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Ref": "LicenseFile"
+                                            },
+                                            "','C:\\\\vaultLicense.xml')\n",
+                                            "publickeyf = downloadFile('",
+                                            {
+                                                "Ref": "VaultFilesBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Ref": "RecoveryPublicKey"
+                                            },
+                                            "','C:\\\\recoveryPublic.key')\n",
+                                            "\n",
+                                            "vaultIp = '",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "VaultMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+                                            "'\n",
+                                            "sys.exit(subprocess.call([",
+                                            "'C:\\\\Program files (x86)\\\\PrivateArk\\\\Server\\\\CAVaultManager.exe',",
+                                            "'PostInstall',",
+                                            "'/AdminPass',",
+                                            "adminp,",
+                                            "'/MasterPass',",
+                                            "masterp,",
+                                            "'/RecPub',",
+                                            "publickeyf,",
+                                            "'/IsPrimaryOrDR',",
+                                            "'DR',",
+                                            "'/PrimaryVaultIP',",
+                                            "vaultIp,",
+                                            "'/DRPassword',",
+                                            "drp,",
+                                            "'/EnableFailOver',",
+                                            "'/LicensePath',",
+                                            "licensef,",
+                                            "'/AcceptEULA',",
+                                            "'yes',",
+											"'/KMSRegion','",
+											{
+												"Ref": "AWS::Region"
+											},
+                                            "']))\n"
+                                        ]
+                                    ]
+                                }
                             },
                             "C:\\clean.py": {
                                 "content": {
@@ -462,6 +713,18 @@
                                                     "FileId"
                                                 ]
                                             },
+                                            "')\n",
+                                            "print deleteFile('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreDRPassword",
+                                                    "FileId"
+                                                ]
+                                            },
                                             "')\n"
                                         ]
                                     ]
@@ -481,15 +744,14 @@
                     }
                 }
             },
+            "DependsOn": [
+                "VaultMachine"
+            ],
             "CreationPolicy": {
                 "ResourceSignal": {
                     "Timeout": "PT15M"
                 }
-            },
-            "DependsOn": [
-                "StoreMasterPassword",
-                "StoreAdminPassword"
-            ]
+            }
         },
         "VaultInstancesProfile": {
             "Type": "AWS::IAM::InstanceProfile",
@@ -813,6 +1075,13 @@
                                                     "PrivateIp"
                                                 ]
                                             },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
                                             "',",
                                             "'/vaultport',",
                                             "'1858',",
@@ -856,6 +1125,13 @@
                                             {
                                                 "Fn::GetAtt": [
                                                     "VaultMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
                                                     "PrivateIp"
                                                 ]
                                             },
@@ -903,6 +1179,13 @@
                                             {
                                                 "Fn::GetAtt": [
                                                     "VaultMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
                                                     "PrivateIp"
                                                 ]
                                             },
@@ -1026,7 +1309,7 @@
                 }
             },
             "DependsOn": [
-                "VaultMachine"
+                "VaultDRMachine"
             ],
             "Condition": "",
             "CreationPolicy": {
@@ -1094,9 +1377,21 @@
             "NoEcho": true,
 			"MinLength": 8
         },
+		"VaultDRPassword": {
+            "Type": "String",
+            "Description": "Enter a password for the Vault DR user.",
+            "NoEcho": true,
+			"MinLength": 8
+        },
+		"RetypeDRPassword": {
+            "Type": "String",
+            "Description": "Retype the password for the Vault DR user.",
+            "NoEcho": true,
+			"MinLength": 8
+        },
         "VaultInstanceType": {
             "Type": "String",
-            "Description": "Select the instance type of the Vault instance.",
+            "Description": "Select the instance type of the Vault instances.",
             "AllowedValues": [
                 "m4.large",
                 "m4.xlarge",
@@ -1107,11 +1402,15 @@
         },
         "VaultInstanceSecurityGroups": {
             "Type": "List<AWS::EC2::SecurityGroup::Id>",
-            "Description": "Assign Security Groups to the Vault instance."
+            "Description": "Assign Security Groups to the Vault and Vault DR instances."
         },
         "VaultInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the Vault instance will reside."
+        },
+		"DRInstanceSubnetId": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Select the Subnet Id where the Vault DR instance will reside."
         },
         "ComponentsInstanceName": {
             "Type": "String",
@@ -1158,6 +1457,10 @@
 			  {
                 "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
                 "AssertDescription": "The password confirmation does not match."
+              },
+			  {
+                "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
+                "AssertDescription": "The password confirmation does not match."
               }
             ] 
         }
@@ -1179,7 +1482,7 @@
                 },
                 {
                     "Label": {
-                        "default": "Vault Configuration"
+                        "default": "Vault and Vault DR Configuration"
                     },
                     "Parameters": [
                         "VaultInstanceName",
@@ -1187,9 +1490,12 @@
 						"RetypeMasterPassword",
                         "VaultAdminPassword",
 						"RetypeAdminPassword",
+						"VaultDRPassword",
+						"RetypeDRPassword",
                         "VaultInstanceType",
                         "VaultInstanceSecurityGroups",
-                        "VaultInstanceSubnetId"
+                        "VaultInstanceSubnetId",
+						"DRInstanceSubnetId"
                     ]
                 },
                 {
@@ -1235,6 +1541,12 @@
 				"RetypeAdminPassword": {
                     "default": "Retype Admin Password"
                 },
+				"VaultDRPassword": {
+                    "default": "DR Password"
+                },
+				"RetypeDRPassword": {
+                    "default": "Retype DR Password"
+                },
                 "VaultInstanceType": {
                     "default": "Vault Instance Type"
                 },
@@ -1243,6 +1555,9 @@
                 },
                 "VaultInstanceSubnetId": {
                     "default": "Vault Instance Subnet Id"
+                },
+				"DRInstanceSubnetId": {
+                    "default": "Vault DR Instance Subnet Id"
                 },
                 "ComponentsInstanceName": {
                     "default": "Components Instance Name"
