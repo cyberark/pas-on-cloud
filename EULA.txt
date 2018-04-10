@@ -1,0 +1,75 @@
+CyberArk
+
+SOFTWARE LICENSE AGREEMENT
+
+Please read this License Agreement carefully before proceeding with this installation process. This License Agreement covers the client software, the server software or any other software component such as gateways/Vault Connectors or add-on modules of the Inter-Business Vault™ or the Network  Vault® software Product/s installed hereunder (as applicable), together with their associated media and printed materials, whether in electronic or in tangible form ("DOCUMENTATION"), as these may be made available to you during or as a result of this installation process (each of the software components referred to above shall be referred to collectively hereinafter as the "PRODUCT").
+
+By clicking on the YES button below, by signing a hard copy of this License Agreement, or otherwise using or copying the PRODUCT you agree to be bound by the terms of this License Agreement.  If you do not wish to be bound by the terms of this License Agreement click the NO button below to terminate this installation process and you may not use or copy the PRODUCT in any way.
+
+GRANT OF LICENSE
+Cyber-Ark Software Inc., Cyber-Ark Software Ltd. or one of their affiliated entities (referred to collectively herein as "CyberArk", see the Forum And Exclusive Jurisdiction section below) grants you, a non-exclusive, non-transferable right to use the PRODUCT and the DOCUMENTATION, solely for your organization’s own internal use on one personal computer or server owned, leased, or otherwise controlled or used by you internally in your organization, or on such number of personal computers, servers and locations as otherwise agreed in writing between you and CyberArk in a separate document, and subject to the payment of the applicable license fees agreed with CyberArk. In addition to the specified quantity of copies, you may make one (1) additional copy as backup to the original. In case CYBERARK SOFTWARE provides you with a Privileged Session Manager concurrent license for the purpose of administrating the CYBERARK SOFTWARE’s PRODUCTS, you may use it solely for the connection with servers that host CYBERARK SOFTWARE’s PRODUCTS.
+
+EXTENDED USE
+If you licensed the Inter-Business Vault™, you may, at your discretion, install additional copies of the client software part of the PRODUCT or its gateways/Vault Connectors, if such were specifically licensed from CyberArk, on computers of a third party entity that you are in such business or affiliation relationship with, which requires you to share with it digital information, and that such entity shall be bound by this License Agreement. You shall not be permitted to act as intermediary and transfer digital information between different third party organizations.
+
+RESTRICTIONS ON USE
+You may not:
+* Copy or reproduce the PRODUCT and/or the DOCUMENTATION or cause any software part of the PRODUCT to execute or be loaded into the active memory or media of more than the specified number of computers referred to above at any one time.
+* remove or destroy any copyright, trademark or other proprietary marking or legends placed on or contained in the PRODUCT or the DOCUMENTATION. 
+* assign, rent, lease, or otherwise transfer the rights granted to you under this License Agreement to any third party except as set forth in the Extended Use section above. 
+* reverse engineer, decompile, or disassemble the PRODUCT.
+
+
+CONFIDENTIALITY
+You understand and acknowledge that the PRODUCT consists of valuable proprietary and confidential information of CyberArk, the use of which is subject to terms and conditions of this License Agreement. You will take all reasonable steps necessary to ensure that the PRODUCT, the DOCUMENTATION or any confidential information relating to it is not made available or disclosed to any unauthorized person.  You will indemnify and compensate CyberArk for any loss, damage, cost, expense, claim or liability incurred by CyberArk as a result of your breach of this confidentiality obligation.
+
+THE PRODUCT IS PROTECTED BY COPYRIGHTS AND PATENTS
+The PRODUCT is owned by CyberArk and its licensors and is protected by U.S. and other jurisdictions patent laws, copyright laws, trade secret laws and international treaty provisions. All title, and interest in and to the PRODUCT shall remain with CyberArk or its licensors. Therefore, you must treat the PRODUCT like any other copyrighted and protected material except that, as specified above, you may either: a) make one copy of the PRODUCT solely for backup or archival purposes, or b) transfer the PRODUCT to a single hard disk provided that you keep the original solely for backup or archival purposes. You may not copy the DOCUMENTATION, if any, accompanying the PRODUCT. 
+
+THIRD PARTY SOFTWARE
+This PRODUCT may include open source software components, libraries or independent modules developed by and owned by third parties ("OPEN SOURCE COMPONENTS") as described and acknowledged in CyberArk’s web site at www.cyberark.com/acknowledgments Such OPEN SOURCE COMPONENTS are licensed pursuant to their respective license agreements, set forth therein. 
+
+
+TRADEMARKS
+CyberArk®, Network Vault®, PrivateArk®, Inter-Business Vault™ and all trademarks and logos, which appear on or in connection with the PRODUCT, are, unless stated otherwise, trademarks of CyberArk.  No right, license, or interest to such trademarks are generated or granted hereunder other than the limited right to use the PRODUCT pursuant to the provisions of this License Agreement, and you agree that no such right, license, or interest, shall be asserted by you with respect to such trademarks. You will not remove or destroy any copyright, trademark, logos or other proprietary marking or legends placed on or contained in the PRODUCT.
+
+LIMITED WARRANTY
+CyberArk warrants that the original copy of the software will perform substantially as described in the DOCUMENTATION for a period of ninety (90) days from the date of your purchase of the license to use the PRODUCT. Any and all warranties, expressed or implied, are limited to the extent and period mentioned above. CyberArk’s entire liability under this warranty shall be, at CyberArk’s option, either (a) the return of the license fee you paid for the PRODUCT, or (b) repair or replacement of the PRODUCT that does not meet the limited warranty set forth above. This limited warranty is void if the failure of the PRODUCT has resulted from abuse, negligence, accident, or misuse by you, by anyone on your behalf or by any unauthorized third party. Any replacement PRODUCT will be warranted under the terms of this limited warranty for a period of ninety (90) days.
+
+NO OTHER WARRANTIES
+To the maximum extent allowed by applicable law, CyberArk disclaims all other warranties, expressed or implied, including but not limited to warranties of merchantability and fitness for a particular purpose with respect to the PRODUCT and DOCUMENTATION. 
+
+LIMITATION OF LIABILITY
+IN NO EVENT SHALL CyberArk OR ITS AFFILIATES OR SUPPLIERS BE LIABLE FOR ANY INDIRECT DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THE PRODUCT OR DOCUMENTATION, EVEN IF CyberArk HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. CyberArk’s ENTIRE LIABILITY FOR DIRECT DAMAGES, UNDER ANY LEGAL THEORY OR BASIS, SHALL NOT EXCEED THE LICENSE FEE YOU PAID FOR THE USE OF THE PRODUCT.
+
+MAINTENANCE SERVICES
+You may separately purchase from CyberArk such maintenance services as may be generally available by CyberArk to its customers, pursuant to CyberArk’s then applicable terms and conditions. 
+
+TERM AND TERMINATION OF THE LICENSE AGREEMENT
+This License Agreement shall remain in full force and effect without time limitation, unless terminated by CyberArk due to your breach of any of its provisions. In case of such breach CyberArk may terminate this License Agreement immediately after providing you with a thirty (30) day prior written notice notifying you that CyberArk intends to terminate this License Agreement if you fail to remedy the breach within such 30-day period. 
+If this License Agreement is terminated for any reason whatsoever, you shall immediately return the PRODUCT and DOCUMENTATION to CyberArk without retaining any copy thereof.
+TAXES
+The fees and charges covered by this License Agreement are exclusive of any tariffs, duties or taxes (however designated, levied or based and whether foreign or domestic) imposed or levied on the PRODUCT or in connection with this License Agreement.  You will be liable for payment of all such tariffs, duties and taxes, except for taxes imposed on CyberArk’s net income.
+
+SEVERABILITY
+Should any term or provision of this License Agreement be declared void or unenforceable by any court of competent jurisdiction, such declaration shall have no effect on the remainder of this License Agreement. 
+
+NO WAIVER
+The failure of either party to enforce any rights granted to it hereunder or to take action against the other party in the event of any breach hereunder shall not be deemed a waiver by that party as to subsequent enforcement of rights or subsequent actions in the event of future breaches.
+
+EXPORT CONTROL
+If the PRODUCT was purchased in the U.S., its exportation is subject to compliance with the U.S. Export Administration Act, as amended, and the rules and regulations promulgated from time to time there under, and you agree not to knowingly export or re-export the PRODUCT or any part thereof directly or indirectly, without first obtaining required permission to do so from the United States Office of Export Administration and other appropriate governmental agencies. 
+If the PRODUCT was purchased outside the U.S., its exportation may be subject to the laws and regulations of the place of purchase, and you assume the entire liability and obligation to comply with their provisions.
+This section is not intended to grant you any rights in addition to those set forth in this License Agreement.
+
+FORUM AND EXCLUSIVE JURISDICTION
+If the PRODUCT was purchased in the U.S. or Canada, the contracting party to this License Agreement is Cyber-Ark Software Inc., and it shall be governed by and construed in accordance with the laws of the Commonwealth of Massachusetts, not including its law of conflicts of laws. You irrevocably consent to the exclusive jurisdiction of the United States District Court for the District of Massachusetts and any court of the Commonwealth of Massachusetts which sits in the City of Boston, over any action, suit or proceeding arising hereunder. 
+
+If the PRODUCT was purchased outside U.S. or Canada, the contracting party to this License Agreement is Cyber-Ark Software Ltd., and it shall be governed by and construed in accordance with the laws of the state of Israel, not including its law of conflicts of laws, and you irrevocably consent to the exclusive jurisdiction of the competent court which sits in Tel Aviv, Israel, over any action, suit or proceeding arising hereunder. 
+
+ENTIRE AGREEMENT
+This License Agreement represents the complete and exclusive terms and conditions under which this PRODUCT is Licensed to you by CyberArk, and it supersedes all prior agreements and representations between the parties, unless specifically stated otherwise. This License Agreement may only be amended by a written instrument specifically intended for this sole purpose and signed by the authorized representatives of both parties. 
+
+***
+
+Should you have any questions concerning this License Agreement, or if you desire to contact CyberArk for any reason, please e-mail us at: info@cyberark.com
