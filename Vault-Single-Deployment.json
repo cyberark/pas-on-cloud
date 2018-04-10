@@ -5,7 +5,12 @@
             "Properties": {
                 "AccessControl": "Private"
             },
-            "Condition": "EULACondition"
+            "Condition": "EULACondition",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "fc7df917-b0b9-4452-9aaf-e71861744c7d"
+                }
+            }
         },
         "DeployBucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
@@ -93,7 +98,12 @@
                     ]
                 }
             },
-            "Condition": "EULACondition"
+            "Condition": "EULACondition",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "e0f67985-8361-4891-b23a-860e90e37412"
+                }
+            }
         },
         "LambdaDeployRole": {
             "Type": "AWS::IAM::Role",
@@ -138,7 +148,12 @@
                     }
                 ]
             },
-            "Condition": "EULACondition"
+            "Condition": "EULACondition",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "23d3a636-2b70-4f0c-8849-9e7861edb7b6"
+                }
+            }
         },
         "StorePasswordLambda": {
             "Type": "AWS::Lambda::Function",
@@ -208,7 +223,12 @@
                     ]
                 }
             },
-            "Condition": "EULACondition"
+            "Condition": "EULACondition",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "192fe816-1984-4ba5-a3f7-29055aad8c80"
+                }
+            }
         },
         "StoreMasterPassword": {
             "Type": "AWS::CloudFormation::CustomResource",
@@ -237,6 +257,7 @@
         },
         "StoreAdminPassword": {
             "Type": "AWS::CloudFormation::CustomResource",
+            "Version": "1.0",
             "Properties": {
                 "ServiceToken": {
                     "Fn::GetAtt": [
@@ -259,9 +280,44 @@
                 "DeployBucket"
             ]
         },
+        "VaultInstancesProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "VaultInstancesRole"
+                    }
+                ]
+            },
+            "Condition": "EULACondition",
+            "DeletionPolicy": "Retain"
+        },
+        "VaultInstancesRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/"
+            },
+            "Condition": "EULACondition",
+            "DeletionPolicy": "Retain"
+        },
         "VaultMachine": {
             "Type": "AWS::EC2::Instance",
-            "Condition": "",
             "Properties": {
                 "Tags": [
                     {
@@ -340,7 +396,6 @@
                                             "import boto3\n",
                                             "import sys\n",
                                             "import subprocess\n",
-                                            "import random, string\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
                                             "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
@@ -383,11 +438,18 @@
                                                 ]
                                             },
                                             "')\n",
-                                            "drp = ''.join(random.choice(string.ascii_lowercase) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.ascii_uppercase) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.digits) for i in range(4))\n",
-                                            "drp = drp + ''.join(random.choice(string.punctuation) for i in range(2))\n",
-                                            "drp = ''.join(random.sample(drp,len(drp)))\n",
+                                            "drp = fetchPassword('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreDRPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
                                             "\n",
                                             "licensef = downloadFile('",
                                             {
@@ -428,10 +490,10 @@
                                             "licensef,",
                                             "'/AcceptEULA',",
                                             "'yes',",
-											"'/KMSRegion','",
-											{
-												"Ref": "AWS::Region"
-											},
+                                            "'/KMSRegion','",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
                                             "']))\n"
                                         ]
                                     ]
@@ -462,6 +524,30 @@
                                                     "FileId"
                                                 ]
                                             },
+                                            "')\n",
+                                            "print deleteFile('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreDRPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "')\n",
+											"print deleteFile('",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            "','",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreAdminPassword",
+                                                    "FileId"
+                                                ]
+                                            },
                                             "')\n"
                                         ]
                                     ]
@@ -471,12 +557,25 @@
                         "commands": {
                             "1-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0"
                             },
                             "2-clean": {
                                 "command": "C:\\Python27\\python.exe C:\\clean.py",
 								"waitAfterCompletion": "0"
-                            }
+                            },
+							"3-ChangeHostName" : {
+								"command" : {
+									"Fn::Join": [
+										"",
+										[
+											"powershell.exe -Command Rename-Computer -NewName ",
+											{ "Ref": "VaultHostName" },
+											" -Force -Restart"
+										]
+									]
+								},
+								"waitAfterCompletion" : "forever"
+							}
                         }
                     }
                 }
@@ -489,117 +588,33 @@
             "DependsOn": [
                 "StoreMasterPassword",
                 "StoreAdminPassword"
+            ],
+            "Condition": "",
+            "DeletionPolicy": "Retain"
+        },
+        "StoreDRPassword": {
+            "Type": "AWS::CloudFormation::CustomResource",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "StorePasswordLambda",
+                        "Arn"
+                    ]
+                },
+                "BucketId": {
+                    "Ref": "DeployBucket"
+                },
+                "PlainText": {
+                    "Ref": "VaultAdminPassword"
+                }
+            },
+            "Condition": "",
+            "DependsOn": [
+                "LambdaDeployRole",
+                "DeployBucketPolicy",
+                "StorePasswordLambda",
+                "DeployBucket"
             ]
-        },
-        "VaultInstancesProfile": {
-            "Type": "AWS::IAM::InstanceProfile",
-            "Properties": {
-                "Path": "/",
-                "Roles": [
-                    {
-                        "Ref": "VaultInstancesRole"
-                    }
-                ]
-            },
-            "Condition": "EULACondition"
-        },
-        "ComponentInstanceProfile": {
-            "Type": "AWS::IAM::InstanceProfile",
-            "Properties": {
-                "Roles": [
-                    {
-                        "Ref": "ComponentInstanceRole"
-                    }
-                ]
-            },
-            "Condition": "EULACondition"
-        },
-        "ComponentInstanceRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "ec2.amazonaws.com"
-                                ]
-                            },
-                            "Action": [
-                                "sts:AssumeRole"
-                            ]
-                        }
-                    ]
-                },
-                "Path": "/"
-            },
-            "Condition": "EULACondition"
-        },
-        "VaultInstancesRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "ec2.amazonaws.com"
-                                ]
-                            },
-                            "Action": [
-                                "sts:AssumeRole"
-                            ]
-                        }
-                    ]
-                },
-                "Path": "/"
-            },
-            "Condition": "EULACondition"
-        },
-        "ComponentS3DeployBucketPolicy": {
-            "Type": "AWS::IAM::Policy",
-            "Properties": {
-                "PolicyName": "ComponentInstancesDeployBucketAccess",
-                "PolicyDocument": {
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Action": [
-                                "s3:GetObject",
-                                "s3:GetObjectVersion",
-                                "s3:DeleteObject",
-                                "s3:DeleteObjectVersion"
-                            ],
-                            "Resource": {
-                                "Fn::Join": [
-                                    "",
-                                    [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
-                                        "/",
-                                        {
-                                            "Fn::GetAtt": [
-                                                "StoreAdminPassword",
-                                                "FileId"
-                                            ]
-                                        }
-                                    ]
-                                ]
-                            }
-                        }
-                    ]
-                },
-                "Roles": [
-                    {
-                        "Ref": "ComponentInstanceRole"
-                    }
-                ]
-            },
-            "Condition": "EULACondition"
         },
         "VaultInstancesKMSPolicy": {
             "Type": "AWS::IAM::Policy",
@@ -623,7 +638,8 @@
                     }
                 ]
             },
-            "Condition": "EULACondition"
+            "Condition": "EULACondition",
+            "DeletionPolicy": "Retain"
         },
         "VaultInstancesS3VaultFilesBucketPolicy": {
             "Type": "AWS::IAM::Policy",
@@ -719,321 +735,6 @@
                     }
                 ]
             }
-        },
-        "ComponentsMachine": {
-            "Type": "AWS::EC2::Instance",
-            "Properties": {
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Ref": "ComponentsInstanceName"
-                        }
-                    }
-                ],
-                "SecurityGroupIds": {
-                    "Ref": "ComponentsInstanceSecurityGroups"
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsInstanceSubnetId"
-                },
-                "ImageId": {
-                    "Fn::FindInMap": [
-                        "RegionMap",
-                        {
-                            "Ref": "AWS::Region"
-                        },
-                        "Components"
-                    ]
-                },
-                "InstanceType": {
-                    "Ref": "ComponentsInstanceType"
-                },
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                "<script>\n",
-                                "cfn-init.exe -v -s ",
-                                {
-                                    "Ref": "AWS::StackId"
-                                },
-                                " -r ComponentsMachine",
-                                " --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
-                                "cfn-signal.exe -e %ERRORLEVEL% ",
-                                "  --stack ",
-                                {
-                                    "Ref": "AWS::StackName"
-                                },
-                                "  --resource ComponentsMachine",
-                                "  --region ",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                "\n",
-                                "</script>"
-                            ]
-                        ]
-                    }
-                },
-                "KeyName": {
-                    "Ref": "KeyName"
-                },
-                "IamInstanceProfile": {
-                    "Ref": "ComponentInstanceProfile"
-                }
-            },
-            "Metadata": {
-                "AWS::CloudFormation::Init": {
-                    "config": {
-                        "files": {
-                            "C:\\deployCPM.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import sys\n",
-                                            "import subprocess\n",
-                                            "\n",
-                                            "callArray = [",
-                                            "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                            "'CPM',",
-                                            "'/accepteula',",
-                                            "'Yes',",
-                                            "'/vaultip',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "VaultMachine",
-                                                    "PrivateIp"
-                                                ]
-                                            },
-                                            "',",
-                                            "'/vaultport',",
-                                            "'1858',",
-                                            "'/vaultuser',",
-                                            "'Administrator',",
-                                            "'/bucketname',",
-                                            "'",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "',",
-                                            "'/objectkey',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "']\n",
-                                            "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "C:\\deployPVWA.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import sys\n",
-                                            "import subprocess\n",
-                                            "\n",
-                                            "callArray = [",
-                                            "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                            "'PVWA',",
-                                            "'/accepteula',",
-                                            "'Yes',",
-                                            "'/vaultip',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "VaultMachine",
-                                                    "PrivateIp"
-                                                ]
-                                            },
-                                            "',",
-                                            "'/vaultport',",
-                                            "'1858',",
-                                            "'/vaultuser',",
-                                            "'Administrator',",
-                                            "'/bucketname',",
-                                            "'",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "',",
-                                            "'/objectkey',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "']\n",
-                                            "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "C:\\deployPSM.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import sys\n",
-                                            "import subprocess\n",
-                                            "import urllib2\n",
-                                            "\n",
-                                            "callArray = [",
-                                            "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                            "'PSM',",
-                                            "'/accepteula',",
-                                            "'Yes',",
-                                            "'/vaultip',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "VaultMachine",
-                                                    "PrivateIp"
-                                                ]
-                                            },
-                                            "',",
-                                            "'/vaultport',",
-                                            "'1858',",
-                                            "'/vaultuser',",
-                                            "'Administrator',",
-                                            "'/bucketname',",
-                                            "'",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "',",
-                                            "'/objectkey',",
-                                            "'",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "']\n",
-                                            "properties = urllib2.urlopen('http://169.254.169.254/latest/meta-data').read()\n",
-                                            "if 'public-ipv4' in properties:\n",
-                                            "\tipv4 = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4').read()\n",
-                                            "\tif ipv4 and ipv4 <> 'none':\n",
-                                            "\t\tcallArray.append('/psmpublicip')\n",
-                                            "\t\tcallArray.append(ipv4)\n",
-                                            "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "C:\\clean.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import boto3\n",
-                                            "\n",
-                                            "def deleteFile(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                            "\treturn s3Client.delete_object(\n",
-                                            "\t\tBucket = bucket,\n",
-                                            "\t\tKey = filePath\n",
-                                            "\t)",
-                                            "\n",
-                                            "print deleteFile('",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "','",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "')\n"
-                                        ]
-                                    ]
-                                }
-                            }
-                        },
-                        "commands": {
-                            "01-CPMdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployCPM.py",
-								"waitAfterCompletion": "0"
-                            },
-                            "02-CPMServiceConfig": {
-                                "command": "sc config \"CyberArk Password Manager\" start=auto",
-								"waitAfterCompletion": "0"
-                            },
-                            "03-CPMScannerServiceConfig": {
-                                "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-								"waitAfterCompletion": "0"
-                            },
-                            "04-CPMServiceStart": {
-                                "command": "sc start \"CyberArk Password Manager\"",
-								"waitAfterCompletion": "0"
-                            },
-                            "05-CPMScannerServiceStart": {
-                                "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
-								"waitAfterCompletion": "0"
-                            },
-                            "06-PVWAdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployPVWA.py",
-								"waitAfterCompletion": "0"
-                            },
-                            "07-StartAppPool": {
-                                "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-								"waitAfterCompletion": "0"
-                            },
-                            "08-ScheduledTasksServiceConfig": {
-                                "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-								"waitAfterCompletion": "0"
-                            },
-                            "09-ScheduledTasksServiceStart": {
-                                "command": "sc start \"CyberArk Scheduled Tasks\"",
-								"waitAfterCompletion": "0"
-                            },
-                            "10-PSMdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployPSM.py",
-								"waitAfterCompletion": "0"
-                            },
-                            "11-Clean": {
-                                "command": "C:\\Python27\\python.exe C:\\clean.py",
-								"waitAfterCompletion": "0"
-                            },
-                            "12-PSMServiceConfig": {
-                                "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-								"waitAfterCompletion": "0"
-                            },
-                            "13-PSMserviceStart": {
-                                "command": "sc start \"Cyber-Ark Privileged Session Manager\"",
-								"waitAfterCompletion": "0"
-                            }
-                        }
-                    }
-                }
-            },
-            "DependsOn": [
-                "VaultMachine"
-            ],
-            "Condition": "",
-            "CreationPolicy": {
-                "ResourceSignal": {
-                    "Timeout": "PT20M"
-                }
-            }
         }
     },
     "Parameters": {
@@ -1065,11 +766,6 @@
             "Description": "Enter the path of the recovery public key file within the bucket.",
             "Default": "recpub.key"
         },
-        "VaultInstanceName": {
-            "Type": "String",
-            "Description": "Enter a name for the Vault instance.",
-            "Default": "CyberArk Vault"
-        },
         "VaultMasterPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Master user.",
@@ -1086,13 +782,23 @@
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
             "NoEcho": true,
-			"MinLength": 8
+            "MinLength": 8
         },
-		"RetypeAdminPassword": {
+        "RetypeAdminPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Administrator user.",
             "NoEcho": true,
-			"MinLength": 8
+            "MinLength": 8
+        },
+        "VaultInstanceName": {
+            "Type": "String",
+            "Description": "Enter a name for the Vault instance.",
+            "Default": "CyberArk Vault"
+        },
+		"VaultHostName": {
+            "Type": "String",
+            "Description": "Enter the host name for the Vault instance.",
+			"MinLength": 4
         },
         "VaultInstanceType": {
             "Type": "String",
@@ -1112,30 +818,6 @@
         "VaultInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the Vault instance will reside."
-        },
-        "ComponentsInstanceName": {
-            "Type": "String",
-            "Description": "Enter a name for the PAS Components instance.",
-            "Default": "CyberArk Components"
-        },
-        "ComponentsInstanceType": {
-            "Type": "String",
-            "Description": "Select the instance type of the PAS Components instance.",
-            "AllowedValues": [
-                "m4.large",
-                "m4.xlarge",
-                "m4.2xlarge",
-                "m4.4xlarge"
-            ],
-            "Default": "m4.large"
-        },
-        "ComponentsInstanceSecurityGroups": {
-            "Type": "List<AWS::EC2::SecurityGroup::Id>",
-            "Description": "Assign Security Groups to the PAS Components instance."
-        },
-        "ComponentsInstanceSubnetId": {
-            "Type": "AWS::EC2::Subnet::Id",
-            "Description": "Select the Subnet Id where the PAS Components instance will reside."
         }
     },
     "Conditions": {
@@ -1151,15 +833,15 @@
     "Rules": {
         "PasswordConfirmation": {
             "Assertions": [
-              {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              },
-			  {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              }
-            ] 
+                {
+                    "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
+                    "AssertDescription": "The password confirmation does not match."
+                },
+                {
+                    "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
+                    "AssertDescription": "The password confirmation does not match."
+                }
+            ]
         }
     },
     "Metadata": {
@@ -1167,7 +849,7 @@
             "ParameterGroups": [
                 {
                     "Label": {
-                        "default": "General Parameters"
+                        "default": "General parameters"
                     },
                     "Parameters": [
                         "EULA",
@@ -1179,30 +861,21 @@
                 },
                 {
                     "Label": {
-                        "default": "Vault Configuration"
+                        "default": "Vault information"
                     },
                     "Parameters": [
-                        "VaultInstanceName",
-                        "VaultMasterPassword",
-						"RetypeMasterPassword",
                         "VaultAdminPassword",
-						"RetypeAdminPassword",
+                        "RetypeAdminPassword",
+                        "VaultMasterPassword",
+                        "RetypeMasterPassword",
+                        "VaultInstanceName",
+						"VaultHostName",
                         "VaultInstanceType",
                         "VaultInstanceSecurityGroups",
                         "VaultInstanceSubnetId"
                     ]
-                },
-                {
-                    "Label": {
-                        "default": "Components Configuration"
-                    },
-                    "Parameters": [
-                        "ComponentsInstanceName",
-                        "ComponentsInstanceType",
-                        "ComponentsInstanceSecurityGroups",
-                        "ComponentsInstanceSubnetId"
-                    ]
                 }
+                
             ],
             "ParameterLabels": {
                 "EULA": {
@@ -1220,9 +893,6 @@
                 "RecoveryPublicKey": {
                     "default": "Recovery Public Key"
                 },
-                "VaultInstanceName": {
-                    "default": "Vault Instance Name"
-                },
                 "VaultMasterPassword": {
                     "default": "Vault Master Password"
                 },
@@ -1232,8 +902,14 @@
                 "VaultAdminPassword": {
                     "default": "Vault Admin Password"
                 },
-				"RetypeAdminPassword": {
+                "RetypeAdminPassword": {
                     "default": "Retype Admin Password"
+                },
+                "VaultInstanceName": {
+                    "default": "Vault Instance Name"
+                },
+				"VaultHostName": {
+                    "default": "Vault Host Name"
                 },
                 "VaultInstanceType": {
                     "default": "Vault Instance Type"
@@ -1243,18 +919,6 @@
                 },
                 "VaultInstanceSubnetId": {
                     "default": "Vault Instance Subnet Id"
-                },
-                "ComponentsInstanceName": {
-                    "default": "Components Instance Name"
-                },
-                "ComponentsInstanceType": {
-                    "default": "Components Instance Type"
-                },
-                "ComponentsInstanceSecurityGroups": {
-                    "default": "Components Instance Security Groups"
-                },
-                "ComponentsInstanceSubnetId": {
-                    "default": "Components Instance Subnet Id"
                 }
             }
         }
@@ -1263,60 +927,75 @@
         "RegionMap": {
             "us-east-1": {
                 "Vault": "ami-ae701ad4",
-                "Components": "ami-5bc5ad21"
+                "Components": "ami-5bc5ad21",
+                "PSMP": "ami-6394ad75"
             },
             "us-east-2": {
-                "Vault": "ami-506d4535",
-                "Components": "ami-556c4430"
+                "Vault": "ami-1192b874",
+                "Components": "ami-1092b875",
+                "PSMP": "ami-600b2a05"
             },
             "us-west-1": {
                 "Vault": "ami-fa62669a",
-                "Components": "ami-276f6b47"
+                "Components": "ami-276f6b47",
+                "PSMP": "ami-d0416eb0"
             },
             "us-west-2": {
                 "Vault": "ami-1f60c667",
-                "Components": "ami-4665c33e"
+                "Components": "ami-4665c33e",
+                "PSMP": "ami-0508187c"
             },
             "ca-central-1": {
                 "Vault": "ami-63bb0107",
-                "Components": "ami-aec77dca"
+                "Components": "ami-aec77dca",
+                "PSMP": "ami-97853af3"
             },
-			"eu-west-1": {
+            "eu-west-1": {
                 "Vault": "ami-bd1792c4",
-                "Components": "ami-4f1d9836"
+                "Components": "ami-4f1d9836",
+                "PSMP": "ami-058f697c"
             },
-			"eu-central-1": {
+            "eu-central-1": {
                 "Vault": "ami-98bc34f7",
-                "Components": "ami-2aba3245"
+                "Components": "ami-2aba3245",
+                "PSMP": "ami-b014b5df"
             },
             "eu-west-2": {
                 "Vault": "ami-d95148bd",
-                "Components": "ami-18534a7c"
+                "Components": "ami-18534a7c",
+                "PSMP": "ami-ecd2c488"
             },
-			"ap-southeast-1": {
+            "ap-southeast-1": {
                 "Vault": "ami-8b2c4cf7",
-                "Components": "ami-2023435c"
+                "Components": "ami-2023435c",
+                "PSMP": "ami-22810a41"
             },
-			"ap-southeast-2": {
+            "ap-southeast-2": {
                 "Vault": "ami-99a452fb",
-                "Components": "ami-0db84e6f"
+                "Components": "ami-0db84e6f",
+                "PSMP": "ami-63796b00"
             },
-			"ap-northeast-2": {
+            "ap-northeast-2": {
                 "Vault": "ami-fd52f493",
-                "Components": "ami-e555f38b"
+                "Components": "ami-e555f38b",
+                "PSMP": "ami-1865ba76"
             },
-			"ap-northeast-1": {
+            "ap-northeast-1": {
                 "Vault": "ami-d59517b3",
-                "Components": "ami-dd9311bb"
+                "Components": "ami-dd9311bb",
+                "PSMP": "ami-fed5c899"
             },
             "ap-south-1": {
                 "Vault": "ami-23bcf44c",
-                "Components": "ami-b9bdf5d6"
+                "Components": "ami-b9bdf5d6",
+                "PSMP": "ami-60fb850f"
             },
             "sa-east-1": {
                 "Vault": "ami-cc6d2ba0",
-                "Components": "ami-3b612757"
+                "Components": "ami-3b612757",
+                "PSMP": "ami-a5ddb7c9"
             }
         }
     }
 }
+

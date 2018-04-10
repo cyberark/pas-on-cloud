@@ -397,20 +397,20 @@
                                             "\n",
                                             "licensef = downloadFile('",
                                             {
-                                                "Ref": "VaultParametersBucket"
+                                                "Ref": "VaultFilesBucket"
                                             },
                                             "','",
                                             {
-                                                "Ref": "LicenseFileKey"
+                                                "Ref": "LicenseFile"
                                             },
                                             "','C:\\\\vaultLicense.xml')\n",
                                             "publickeyf = downloadFile('",
                                             {
-                                                "Ref": "VaultParametersBucket"
+                                                "Ref": "VaultFilesBucket"
                                             },
                                             "','",
                                             {
-                                                "Ref": "PublicKeyFileKey"
+                                                "Ref": "RecoveryPublicKey"
                                             },
                                             "','C:\\\\recoveryPublic.key')\n",
                                             "\n",
@@ -485,7 +485,7 @@
                     }
                 ],
                 "SecurityGroupIds": {
-                    "Ref": "DRInstanceSecurityGroups"
+                    "Ref": "VaultInstanceSecurityGroups"
                 },
                 "SubnetId": {
                     "Ref": "DRInstanceSubnetId"
@@ -610,20 +610,20 @@
                                             "\n",
                                             "licensef = downloadFile('",
                                             {
-                                                "Ref": "VaultParametersBucket"
+                                                "Ref": "VaultFilesBucket"
                                             },
                                             "','",
                                             {
-                                                "Ref": "LicenseFileKey"
+                                                "Ref": "LicenseFile"
                                             },
                                             "','C:\\\\vaultLicense.xml')\n",
                                             "publickeyf = downloadFile('",
                                             {
-                                                "Ref": "VaultParametersBucket"
+                                                "Ref": "VaultFilesBucket"
                                             },
                                             "','",
                                             {
-                                                "Ref": "PublicKeyFileKey"
+                                                "Ref": "RecoveryPublicKey"
                                             },
                                             "','C:\\\\recoveryPublic.key')\n",
                                             "\n",
@@ -896,6 +896,13 @@
                                                     "PrivateIp"
                                                 ]
                                             },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
                                             "',",
                                             "'/vaultport',",
                                             "'1858',",
@@ -1051,6 +1058,13 @@
                                                     "PrivateIp"
                                                 ]
                                             },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
                                             "',",
                                             "'/vaultport',",
                                             "'1858',",
@@ -1083,7 +1097,7 @@
 								"waitAfterCompletion": "0"
                             },
                             "2-startAppPool": {
-                                "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"",
+                                "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
 								"waitAfterCompletion": "0"
                             },
                             "3-CSTserviceConfig": {
@@ -1199,6 +1213,13 @@
                                             {
                                                 "Fn::GetAtt": [
                                                     "VaultMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+											",",
+											{
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
                                                     "PrivateIp"
                                                 ]
                                             },
@@ -1386,10 +1407,10 @@
             "Condition": "EULACondition",
             "DeletionPolicy": "Retain"
         },
-        "VaultInstancesS3VaultParametersBucketPolicy": {
+        "VaultInstancesS3VaultFilesBucketPolicy": {
             "Type": "AWS::IAM::Policy",
             "Properties": {
-                "PolicyName": "VaultParametersBucketAccess",
+                "PolicyName": "VaultFilesBucketAccess",
                 "PolicyDocument": {
                     "Statement": [
                         {
@@ -1404,7 +1425,7 @@
                                     [
                                         "arn:aws:s3:::",
                                         {
-                                            "Ref": "VaultParametersBucket"
+                                            "Ref": "VaultFilesBucket"
                                         },
                                         "/*"
                                     ]
@@ -1497,18 +1518,18 @@
             "Description": "Select an existing Key Pair from your AWS account.",
             "ConstraintDescription": "Can contain only ASCII characters."
         },
-        "VaultParametersBucket": {
+        "VaultFilesBucket": {
             "Type": "String",
-            "Description": "Enter the name of the bucket containing the license and public key."
+            "Description": "Enter the name of the bucket containing the license and recovery public key."
         },
-        "LicenseFileKey": {
+        "LicenseFile": {
             "Type": "String",
             "Description": "Enter the path of the license file within the bucket.",
             "Default": "license.xml"
         },
-        "PublicKeyFileKey": {
+        "RecoveryPublicKey": {
             "Type": "String",
-            "Description": "Enter the path of the public key file within the bucket.",
+            "Description": "Enter the path of the recovery public key file within the bucket.",
             "Default": "recpub.key"
         },
         "VaultInstanceName": {
@@ -1519,12 +1540,38 @@
         "VaultMasterPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Master user.",
-            "NoEcho": true
+            "NoEcho": true,
+			"MinLength": 8
+        },
+		"RetypeMasterPassword": {
+            "Type": "String",
+            "Description": "Retype the password for the Vault Master user.",
+            "NoEcho": true,
+			"MinLength": 8
         },
         "VaultAdminPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
-            "NoEcho": true
+            "NoEcho": true,
+			"MinLength": 8
+        },
+		"RetypeAdminPassword": {
+            "Type": "String",
+            "Description": "Retype the password for the Vault Administrator user.",
+            "NoEcho": true,
+			"MinLength": 8
+        },
+		"VaultDRPassword": {
+            "Type": "String",
+            "Description": "Enter a password for the Vault DR user.",
+            "NoEcho": true,
+			"MinLength": 8
+        },
+		"RetypeDRPassword": {
+            "Type": "String",
+            "Description": "Retype the password for the Vault DR user.",
+            "NoEcho": true,
+			"MinLength": 8
         },
         "VaultInstanceType": {
             "Type": "String",
@@ -1539,24 +1586,15 @@
         },
         "VaultInstanceSecurityGroups": {
             "Type": "List<AWS::EC2::SecurityGroup::Id>",
-            "Description": "Assign Security Groups to the Vault instance."
+            "Description": "Assign Security Groups to the Vault and Vault DR instances."
         },
         "VaultInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the Vault instance will reside."
         },
-        "DRInstanceSecurityGroups": {
-            "Type": "List<AWS::EC2::SecurityGroup::Id>",
-            "Description": "Assign Security Groups to the Vault DR instance."
-        },
         "DRInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the Vault DR instance will reside."
-        },
-        "VaultDRPassword": {
-            "Type": "String",
-            "Description": "Enter a password for the Vault DR user.",
-            "NoEcho": true
         },
         "CPMInstanceName": {
             "Type": "String",
@@ -1640,6 +1678,24 @@
             ]
         }
     },
+    "Rules": {
+        "PasswordConfirmation": {
+            "Assertions": [
+              {
+                "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
+                "AssertDescription": "The password confirmation does not match."
+              },
+			  {
+                "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
+                "AssertDescription": "The password confirmation does not match."
+              },
+			  {
+                "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
+                "AssertDescription": "The password confirmation does not match."
+              }
+            ] 
+        }
+    },
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -1650,9 +1706,9 @@
                     "Parameters": [
                         "EULA",
                         "KeyName",
-                        "VaultParametersBucket",
-                        "LicenseFileKey",
-                        "PublicKeyFileKey"
+                        "VaultFilesBucket",
+                        "LicenseFile",
+                        "RecoveryPublicKey"
                     ]
                 },
                 {
@@ -1662,13 +1718,15 @@
                     "Parameters": [
                         "VaultInstanceName",
                         "VaultMasterPassword",
+                        "RetypeMasterPassword",
                         "VaultAdminPassword",
+						"RetypeAdminPassword",
+						"VaultDRPassword",
+						"RetypeDRPassword",
                         "VaultInstanceType",
                         "VaultInstanceSecurityGroups",
                         "VaultInstanceSubnetId",
-                        "DRInstanceSecurityGroups",
-                        "DRInstanceSubnetId",
-                        "VaultDRPassword"
+                        "DRInstanceSubnetId"
                     ]
                 },
                 {
@@ -1712,17 +1770,14 @@
                 "KeyName": {
                     "default": "Key Pair"
                 },
-                "VaultParametersBucket": {
-                    "default": "Vault Parameters Bucket Name"
+                "VaultFilesBucket": {
+                    "default": "Vault Files Bucket"
                 },
-                "LicenseFileKey": {
-                    "default": "License - Full Path in Bucket"
+                "LicenseFile": {
+                    "default": "License File"
                 },
-                "PublicKeyFileKey": {
-                    "default": "Public key - Full Path in Bucket"
-                },
-                "SubnetId": {
-                    "default": "Subnet Id"
+                "RecoveryPublicKey": {
+                    "default": "Recovery Public Key"
                 },
                 "VaultInstanceName": {
                     "default": "Vault Instance Name"
@@ -1730,26 +1785,32 @@
                 "VaultMasterPassword": {
                     "default": "Vault Master Password"
                 },
+				"RetypeMasterPassword": {
+                    "default": "Retype Master Password"
+                },
                 "VaultAdminPassword": {
-                    "default": "Vault Administrator Password"
+                    "default": "Vault Admin Password"
+                },
+				"RetypeAdminPassword": {
+                    "default": "Retype Admin Password"
+                },
+				"VaultDRPassword": {
+                    "default": "DR Password"
+                },
+				"RetypeDRPassword": {
+                    "default": "Retype DR Password"
                 },
                 "VaultInstanceType": {
                     "default": "Vault and Vault DR Instance Type"
                 },
                 "VaultInstanceSecurityGroups": {
-                    "default": "Vault Instance Security Groups"
+                    "default": "Vault Security Groups"
                 },
                 "VaultInstanceSubnetId": {
                     "default": "Vault Instance Subnet Id"
                 },
-                "DRInstanceSecurityGroups": {
-                    "default": "Vault DR Instance Security Groups"
-                },
                 "DRInstanceSubnetId": {
                     "default": "Vault DR Instance Subnet Id"
-                },
-                "VaultDRPassword": {
-                    "default": "DR Password"
                 },
                 "CPMInstanceName": {
                     "default": "CPM Instance Name"
@@ -1793,60 +1854,60 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-a592abb3",
-                "Components": "ami-b792aba1"
+                "Vault": "ami-ae701ad4",
+                "Components": "ami-5bc5ad21"
             },
             "us-east-2": {
-                "Vault": "ami-da0829bf",
-                "Components": "ami-940a2bf1"
+                "Vault": "ami-506d4535",
+                "Components": "ami-556c4430"
             },
             "us-west-1": {
-                "Vault": "ami-de416ebe",
-                "Components": "ami-5e416e3e"
+                "Vault": "ami-fa62669a",
+                "Components": "ami-276f6b47"
             },
             "us-west-2": {
-                "Vault": "ami-7f041406",
-                "Components": "ami-bb0919c2"
+                "Vault": "ami-1f60c667",
+                "Components": "ami-4665c33e"
             },
             "ca-central-1": {
-                "Vault": "ami-56873832",
-                "Components": "ami-e0853a84"
+                "Vault": "ami-63bb0107",
+                "Components": "ami-aec77dca"
             },
 			"eu-west-1": {
-                "Vault": "ami-f285638b",
-                "Components": "ami-c78f69be"
+                "Vault": "ami-bd1792c4",
+                "Components": "ami-4f1d9836"
             },
 			"eu-central-1": {
-                "Vault": "ami-0de64662",
-                "Components": "ami-bf17b6d0"
+                "Vault": "ami-98bc34f7",
+                "Components": "ami-2aba3245"
             },
             "eu-west-2": {
-                "Vault": "ami-f0d0c694",
-                "Components": "ami-57dec833"
+                "Vault": "ami-d95148bd",
+                "Components": "ami-18534a7c"
             },
 			"ap-southeast-1": {
-                "Vault": "ami-c9f57eaa",
-                "Components": "ami-0c82096f"
+                "Vault": "ami-8b2c4cf7",
+                "Components": "ami-2023435c"
             },
 			"ap-southeast-2": {
-                "Vault": "ami-80786ae3",
-                "Components": "ami-8e7e6ced"
+                "Vault": "ami-99a452fb",
+                "Components": "ami-0db84e6f"
             },
 			"ap-northeast-2": {
-                "Vault": "ami-7366b91d",
-                "Components": "ami-1765ba79"
+                "Vault": "ami-fd52f493",
+                "Components": "ami-e555f38b"
             },
 			"ap-northeast-1": {
-                "Vault": "ami-c03528a7",
-                "Components": "ami-6c223f0b"
+                "Vault": "ami-d59517b3",
+                "Components": "ami-dd9311bb"
             },
             "ap-south-1": {
-                "Vault": "ami-aaf886c5",
-                "Components": "ami-c2f987ad"
+                "Vault": "ami-23bcf44c",
+                "Components": "ami-b9bdf5d6"
             },
             "sa-east-1": {
-                "Vault": "ami-addcb6c1",
-                "Components": "ami-dcddb7b0"
+                "Vault": "ami-cc6d2ba0",
+                "Components": "ami-3b612757"
             }
         }
     }
