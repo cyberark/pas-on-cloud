@@ -654,7 +654,7 @@
                                             "'/LicensePath',",
                                             "licensef,",
                                             "'/AcceptEULA',",
-                                            "'yes',",
+                                            "'yes'",
 											"'/KMSRegion','",
 											{
 												"Ref": "AWS::Region"
@@ -1232,36 +1232,6 @@
                                         ]
                                     ]
                                 }
-                            },
-                            "C:\\clean.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import boto3\n",
-                                            "\n",
-                                            "def deleteFile(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                            "\treturn s3Client.delete_object(\n",
-                                            "\t\tBucket = bucket,\n",
-                                            "\t\tKey = filePath\n",
-                                            "\t)",
-                                            "\n",
-                                            "print deleteFile('",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "','",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "')\n"
-                                        ]
-                                    ]
-                                }
                             }
                         },
                         "commands": {
@@ -1269,15 +1239,11 @@
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
 								"waitAfterCompletion": "0"
                             },
-                            "2-clean": {
-                                "command": "C:\\Python27\\python.exe C:\\clean.py",
-								"waitAfterCompletion": "0"
-                            },
-                            "3-PSMserviceConfig": {
+                            "2-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
 								"waitAfterCompletion": "0"
                             },
-                            "4-PSMserviceStart": {
+                            "3-PSMserviceStart": {
                                 "command": "sc start \"Cyber-Ark Privileged Session Manager\"",
 								"waitAfterCompletion": "0"
                             }
@@ -1294,6 +1260,155 @@
                 }
             },
             "DeletionPolicy": "Retain"
+        },
+		"PSMPMachine": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "PSMPInstanceName"
+                        }
+                    }
+                ],
+                "SecurityGroupIds": {
+                    "Ref": "PSMPInstanceSecurityGroups"
+                },
+                "SubnetId": {
+                    "Ref": "PSMPInstanceSubnetId"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "PSMP"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "PSMPInstanceType"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -e\n",
+								"yum update -y aws-cfn-bootstrap\n",
+
+								"/opt/aws/bin/cfn-init -v ",
+								"         --stack ", { "Ref" : "AWS::StackName" },
+								"         --resource PSMPMachine ",
+								"         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+								"/opt/aws/bin/cfn-signal -e $? ",
+								"         --stack ", { "Ref" : "AWS::StackName" },
+								"         --resource PSMPMachine ",
+								"         --region ", { "Ref" : "AWS::Region" }, "\n"
+                            ]
+                        ]
+                    }
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "ComponentInstanceProfile"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "/tmp/PSMPInstall/activatePSMP": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+											"#!/bin/bash -e\n",
+											"chmod 700 /tmp/PSMPInstall/register_and_activation.sh\n",
+											"aws configure set default.s3.signature_version s3v4\n",
+											"aws s3api get-object --bucket ",
+												{
+													"Ref": "DeployBucket"
+												},
+												" --key ", 
+												{
+													"Fn::GetAtt": [
+														"StoreAdminPassword",
+														"FileId"
+													]
+												},
+												" /tmp/PSMPInstall/temppassword\n",
+											"echo Object successfully retrieved from S3 bucket.\n",
+											
+											"/opt/CARKpsmp/bin/createcredfile /tmp/PSMPInstall/user.cred Password -Username Administrator -Password $(cat /tmp/PSMPInstall/temppassword) -Hostname\n",
+											"echo Credentials file successfully created.\n",
+											
+											"shred -u /tmp/PSMPInstall/temppassword\n",
+											"aws s3api delete-object --bucket ",
+												{
+													"Ref": "DeployBucket"
+												},
+												" --key ",
+												{
+													"Fn::GetAtt": [
+														"StoreAdminPassword",
+														"FileId"
+													]
+												},
+												"\n",
+											"echo Object successfully deleted from S3 bucket.\n",
+											
+											"/tmp/PSMPInstall/register_and_activation.sh /tmp/PSMPInstall/user.cred ",
+												{
+													"Fn::GetAtt": [
+														"VaultMachine",
+														"PrivateIp"
+													]
+												},
+												",",
+												{
+													"Fn::GetAtt": [
+														"VaultDRMachine",
+														"PrivateIp"
+													]
+												},
+												" $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+							"01-Chmod": {
+                                "command": "sudo chmod 700 /tmp/PSMPInstall/activatePSMP"
+                            },
+                            "02-PSMPdeploy": {
+                                "command": "sudo /tmp/PSMPInstall/activatePSMP"
+                            },
+							"03-ClearData": {
+                                "command": "sudo shred -u /tmp/PSMPInstall/activatePSMP"
+                            },
+							"04-RemoveInstallationFolder": {
+                                "command": "sudo rm -rf /tmp/PSMPInstall/"
+                            }
+                        }
+                    }
+                }
+            },
+            "DependsOn": [
+                "PSMMachine"
+            ],
+            "Condition": "",
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Timeout": "PT10M"
+                }
+            },
+			"DeletionPolicy": "Retain"
         },
         "VaultInstancesRole": {
             "Type": "AWS::IAM::Role",
@@ -1628,6 +1743,30 @@
 		"PSMInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the PSM instance will reside."
+        },
+		"PSMPInstanceName": {
+            "Type": "String",
+            "Description": "Enter a name for the PSM SSH Proxy instance.",
+            "Default": "CyberArk PSM SSH Proxy"
+        },
+		"PSMPInstanceType": {
+            "Type": "String",
+            "Description": "Select the instance type of the PSM SSH Proxy instance.",
+            "AllowedValues": [
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ],
+            "Default": "m4.large"
+        },
+		"PSMPInstanceSecurityGroups": {
+            "Type": "List<AWS::EC2::SecurityGroup::Id>",
+            "Description": "Assign Security Groups to the PSM SSH Proxy instance."
+        },
+		"PSMPInstanceSubnetId": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Select the Subnet Id where the PSM SSH Proxy instance will reside."
         }
     },
     "Conditions": {
@@ -1702,6 +1841,17 @@
                         "PSMInstanceType",
                         "PSMInstanceSecurityGroups",
 						"PSMInstanceSubnetId"
+                    ]
+                },
+				{
+                    "Label": {
+                        "default": "PSM SSH Proxy configuration"
+                    },
+                    "Parameters": [
+                        "PSMPInstanceName",
+                        "PSMPInstanceType",
+                        "PSMPInstanceSecurityGroups",
+						"PSMPInstanceSubnetId"
                     ]
                 }
             ],
@@ -1786,6 +1936,18 @@
                 },
 				"PSMInstanceSubnetId": {
                     "default": "PSM Instance Subnet Id"
+                },
+				"PSMPInstanceName": {
+                    "default": "PSM SSH Proxy Instance Name"
+                },
+				"PSMPInstanceType": {
+                    "default": "PSM SSH Proxy Instance Type"
+                },
+				"PSMPInstanceSecurityGroups": {
+                    "default": "PSM SSH Proxy Instance Security Groups"
+                },
+				"PSMPInstanceSubnetId": {
+                    "default": "PSM SSH Proxy Instance Subnet Id"
                 }
             }
         }
@@ -1794,59 +1956,73 @@
         "RegionMap": {
             "us-east-1": {
                 "Vault": "ami-a592abb3",
-                "Components": "ami-b792aba1"
+                "Components": "ami-b792aba1",
+		"PSMP": "ami-6394ad75"
             },
             "us-east-2": {
                 "Vault": "ami-da0829bf",
-                "Components": "ami-940a2bf1"
+                "Components": "ami-940a2bf1",
+		"PSMP": "ami-600b2a05"
             },
             "us-west-1": {
                 "Vault": "ami-de416ebe",
-                "Components": "ami-5e416e3e"
+                "Components": "ami-5e416e3e",
+		"PSMP": "ami-d0416eb0"
             },
             "us-west-2": {
                 "Vault": "ami-7f041406",
-                "Components": "ami-bb0919c2"
+                "Components": "ami-bb0919c2",
+                "PSMP": "ami-0508187c"
             },
             "ca-central-1": {
                 "Vault": "ami-56873832",
-                "Components": "ami-e0853a84"
+                "Components": "ami-e0853a84",
+		"PSMP": "ami-97853af3"
             },
 			"eu-west-1": {
                 "Vault": "ami-f285638b",
-                "Components": "ami-c78f69be"
+                "Components": "ami-c78f69be",
+		"PSMP": "ami-058f697c"
             },
 			"eu-central-1": {
                 "Vault": "ami-0de64662",
-                "Components": "ami-bf17b6d0"
+                "Components": "ami-bf17b6d0",
+		"PSMP": "ami-b014b5df"
             },
             "eu-west-2": {
                 "Vault": "ami-f0d0c694",
-                "Components": "ami-57dec833"
+                "Components": "ami-57dec833",
+		"PSMP": "ami-ecd2c488"
             },
 			"ap-southeast-1": {
                 "Vault": "ami-c9f57eaa",
-                "Components": "ami-0c82096f"
+                "Components": "ami-0c82096f",
+		"PSMP": "ami-22810a41"
             },
 			"ap-southeast-2": {
                 "Vault": "ami-80786ae3",
-                "Components": "ami-8e7e6ced"
+                "Components": "ami-8e7e6ced",
+		"PSMP": "ami-63796b00"
             },
 			"ap-northeast-2": {
                 "Vault": "ami-7366b91d",
-                "Components": "ami-1765ba79"
+                "Components": "ami-1765ba79",
+		"PSMP": "ami-1865ba76"
             },
 			"ap-northeast-1": {
                 "Vault": "ami-c03528a7",
-                "Components": "ami-6c223f0b"
+                "Components": "ami-6c223f0b",
+		"PSMP": "ami-fed5c899"
             },
             "ap-south-1": {
                 "Vault": "ami-aaf886c5",
-                "Components": "ami-c2f987ad"
+                "Components": "ami-c2f987ad",
+		"PSMP": "ami-60fb850f"
             },
             "sa-east-1": {
                 "Vault": "ami-addcb6c1",
-                "Components": "ami-dcddb7b0"
+                "Components": "ami-dcddb7b0",
+		"PSMP": "ami-a5ddb7c9"
             }
         }
     }
