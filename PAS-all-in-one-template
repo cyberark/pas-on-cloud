@@ -427,8 +427,12 @@
                                             "'/LicensePath',",
                                             "licensef,",
                                             "'/AcceptEULA',",
-                                            "'yes'",
-                                            "]))\n"
+                                            "'yes',",
+											"'/KMSRegion','",
+											{
+												"Ref": "AWS::Region"
+											},
+                                            "']))\n"
                                         ]
                                     ]
                                 }
@@ -1049,8 +1053,7 @@
         },
         "VaultParametersBucket": {
             "Type": "String",
-            "Description": "Enter the name of the bucket containing the license and public key.",
-            "Default": "VaultParameters"
+            "Description": "Enter the name of the bucket containing the license and public key."
         },
         "LicenseFileKey": {
             "Type": "String",
@@ -1200,7 +1203,7 @@
                     "default": "Vault Admin Password"
                 },
                 "VaultInstanceType": {
-                    "default": "Vault and Vault DR instance type"
+                    "default": "Vault Instance type"
                 },
                 "VaultInstanceSecurityGroups": {
                     "default": "Vault Instance Security Groups"
@@ -1226,60 +1229,60 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-c79cdcd1",
-                "Components": "ami-179bdb01"
+                "Vault": "ami-a592abb3",
+                "Components": "ami-b792aba1"
             },
             "us-east-2": {
-                "Vault": "ami-4b6b4d2e",
-                "Components": "ami-4a6b4d2f"
+                "Vault": "ami-da0829bf",
+                "Components": "ami-940a2bf1"
             },
             "us-west-1": {
-                "Vault": "ami-603d1d00",
-                "Components": "ami-6d3e1e0d"
+                "Vault": "ami-de416ebe",
+                "Components": "ami-5e416e3e"
             },
             "us-west-2": {
-                "Vault": "ami-238cec43",
-                "Components": "ami-e28eee82"
+                "Vault": "ami-7f041406",
+                "Components": "ami-bb0919c2"
             },
             "ca-central-1": {
-                "Vault": "ami-9159e5f5",
-                "Components": "ami-435be727"
+                "Vault": "ami-56873832",
+                "Components": "ami-e0853a84"
             },
 			"eu-west-1": {
-                "Vault": "ami-bf0317d9",
-                "Components": "ami-a70014c1"
+                "Vault": "ami-f285638b",
+                "Components": "ami-c78f69be"
             },
 			"eu-central-1": {
-                "Vault": "ami-4488532b",
-                "Components": "ami-97944ff8"
+                "Vault": "ami-0de64662",
+                "Components": "ami-bf17b6d0"
             },
             "eu-west-2": {
-                "Vault": "ami-03352267",
-                "Components": "ami-8f3522eb"
+                "Vault": "ami-f0d0c694",
+                "Components": "ami-57dec833"
             },
 			"ap-southeast-1": {
-                "Vault": "ami-2eaf294d",
-                "Components": "ami-8aa127e9"
+                "Vault": "ami-c9f57eaa",
+                "Components": "ami-0c82096f"
             },
 			"ap-southeast-2": {
-                "Vault": "ami-e911058a",
-                "Components": "ami-5a100439"
+                "Vault": "ami-80786ae3",
+                "Components": "ami-8e7e6ced"
             },
 			"ap-northeast-2": {
-                "Vault": "ami-48914d26",
-                "Components": "ami-49914d27"
+                "Vault": "ami-7366b91d",
+                "Components": "ami-1765ba79"
             },
 			"ap-northeast-1": {
-                "Vault": "ami-02ccf665",
-                "Components": "ami-8ec2f8e9"
+                "Vault": "ami-c03528a7",
+                "Components": "ami-6c223f0b"
             },
             "ap-south-1": {
-                "Vault": "ami-7f3b4710",
-                "Components": "ami-0538446a"
+                "Vault": "ami-aaf886c5",
+                "Components": "ami-c2f987ad"
             },
             "sa-east-1": {
-                "Vault": "ami-a1e886cd",
-                "Components": "ami-ceeb85a2"
+                "Vault": "ami-addcb6c1",
+                "Components": "ami-dcddb7b0"
             }
         }
     }

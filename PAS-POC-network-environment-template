@@ -24,6 +24,7 @@
                 "CidrBlock": {
                     "Ref": "VaultMainSubnetCIDR"
                 },
+				"MapPublicIpOnLaunch": "true",
                 "AvailabilityZone": {
                     "Fn::Select": [
                         "0",
@@ -45,60 +46,6 @@
                 ]
             }
         },
-        "VaultDRSubnet": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "CidrBlock": {
-                    "Ref": "VaultDRSubnetCIDR"
-                },
-                "AvailabilityZone": {
-                    "Fn::Select": [
-                        "1",
-                        {
-                            "Fn::GetAZs": {
-                                "Ref": "AWS::Region"
-                            }
-                        }
-                    ]
-                },
-                "VpcId": {
-                    "Ref": "VaultVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Vault DR"
-                    }
-                ]
-            }
-        },
-        "VaultNATSubnet": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "CidrBlock": {
-                    "Ref": "VaultNATGWSubnetCIDR"
-                },
-                "AvailabilityZone": {
-                    "Fn::Select": [
-                        "1",
-                        {
-                            "Fn::GetAZs": {
-                                "Ref": "AWS::Region"
-                            }
-                        }
-                    ]
-                },
-                "VpcId": {
-                    "Ref": "VaultVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Vault NAT"
-                    }
-                ]
-            }
-        },
         "ComponentsVPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
@@ -107,7 +54,7 @@
                 },
                 "InstanceTenancy": "default",
                 "EnableDnsSupport": "true",
-                "EnableDnsHostnames": "false",
+                "EnableDnsHostnames": "true",
                 "Tags": [
                     {
                         "Key": "Name",
@@ -122,6 +69,7 @@
                 "CidrBlock": {
                     "Ref": "ComponentsMainSubnetCIDR"
                 },
+				"MapPublicIpOnLaunch": "true",
                 "AvailabilityZone": {
                     "Fn::Select": [
                         "0",
@@ -139,60 +87,6 @@
                     {
                         "Key": "Name",
                         "Value": "Components Main"
-                    }
-                ]
-            }
-        },
-        "ComponentsSecondarySubnet": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "CidrBlock": {
-                    "Ref": "ComponentsSecondarySubnetCIDR"
-                },
-                "AvailabilityZone": {
-                    "Fn::Select": [
-                        "1",
-                        {
-                            "Fn::GetAZs": {
-                                "Ref": "AWS::Region"
-                            }
-                        }
-                    ]
-                },
-                "VpcId": {
-                    "Ref": "ComponentsVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Components Secondary"
-                    }
-                ]
-            }
-        },
-        "ComponentsNATSubnet": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "CidrBlock": {
-                    "Ref": "ComponentsNATGWSubnetCIDR"
-                },
-                "AvailabilityZone": {
-                    "Fn::Select": [
-                        "1",
-                        {
-                            "Fn::GetAZs": {
-                                "Ref": "AWS::Region"
-                            }
-                        }
-                    ]
-                },
-                "VpcId": {
-                    "Ref": "ComponentsVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Components NAT"
                     }
                 ]
             }
@@ -252,20 +146,6 @@
                 }
             }
         },
-        "VaultPublicRT": {
-            "Type": "AWS::EC2::RouteTable",
-            "Properties": {
-                "VpcId": {
-                    "Ref": "VaultVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Vault Public RT"
-                    }
-                ]
-            }
-        },
         "VaultPrivateRT": {
             "Type": "AWS::EC2::RouteTable",
             "Properties": {
@@ -290,20 +170,6 @@
                     {
                         "Key": "Name",
                         "Value": "Components Private RT"
-                    }
-                ]
-            }
-        },
-        "ComponentsPublicRT": {
-            "Type": "AWS::EC2::RouteTable",
-            "Properties": {
-                "VpcId": {
-                    "Ref": "ComponentsVPC"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": "Components Public RT"
                     }
                 ]
             }
@@ -444,28 +310,6 @@
                 }
             }
         },
-        "CompSecondaryNACLAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "NetworkAclId": {
-                    "Ref": "ComponentsNACL"
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsSecondarySubnet"
-                }
-            }
-        },
-        "CompNatNACLAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "NetworkAclId": {
-                    "Ref": "ComponentsNACL"
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsNATSubnet"
-                }
-            }
-        },
         "VaultMainNACLAssociation": {
             "Type": "AWS::EC2::SubnetNetworkAclAssociation",
             "Properties": {
@@ -474,28 +318,6 @@
                 },
                 "SubnetId": {
                     "Ref": "VaultMainSubnet"
-                }
-            }
-        },
-        "VaultDRNACLAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "NetworkAclId": {
-                    "Ref": "VaultNACL"
-                },
-                "SubnetId": {
-                    "Ref": "VaultDRSubnet"
-                }
-            }
-        },
-        "VaultNatNACLAssociation": {
-            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
-            "Properties": {
-                "NetworkAclId": {
-                    "Ref": "VaultNACL"
-                },
-                "SubnetId": {
-                    "Ref": "VaultNATSubnet"
                 }
             }
         },
@@ -521,48 +343,6 @@
                 }
             }
         },
-        "VaultNATEIP": {
-            "Type": "AWS::EC2::EIP",
-            "Properties": {
-                "Domain": "vpc"
-            }
-        },
-        "ComponentsNATEIP": {
-            "Type": "AWS::EC2::EIP",
-            "Properties": {
-                "Domain": "vpc"
-            }
-        },
-        "VaultNATGW": {
-            "Type": "AWS::EC2::NatGateway",
-            "DependsOn": "VaultGWAttachment",
-            "Properties": {
-                "AllocationId": {
-                    "Fn::GetAtt": [
-                        "VaultNATEIP",
-                        "AllocationId"
-                    ]
-                },
-                "SubnetId": {
-                    "Ref": "VaultNATSubnet"
-                }
-            }
-        },
-        "ComponentsNATGW": {
-            "Type": "AWS::EC2::NatGateway",
-            "DependsOn": "ComponentsGWAttachment",
-            "Properties": {
-                "AllocationId": {
-                    "Fn::GetAtt": [
-                        "ComponentsNATEIP",
-                        "AllocationId"
-                    ]
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsNATSubnet"
-                }
-            }
-        },
         "CompMainRTAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
@@ -574,28 +354,6 @@
                 }
             }
         },
-        "CompSecondaryRTAssociation": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "ComponentsPrivateRT"
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsSecondarySubnet"
-                }
-            }
-        },
-        "CompNatRTAssociation": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "ComponentsPublicRT"
-                },
-                "SubnetId": {
-                    "Ref": "ComponentsNATSubnet"
-                }
-            }
-        },
         "VaultMainRTAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
@@ -604,28 +362,6 @@
                 },
                 "SubnetId": {
                     "Ref": "VaultMainSubnet"
-                }
-            }
-        },
-        "VaultDRRTAssociation": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "VaultPrivateRT"
-                },
-                "SubnetId": {
-                    "Ref": "VaultDRSubnet"
-                }
-            }
-        },
-        "VaultNatRTAssociation": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "VaultPublicRT"
-                },
-                "SubnetId": {
-                    "Ref": "VaultNATSubnet"
                 }
             }
         },
@@ -643,30 +379,18 @@
                 }
             }
         },
-        "VaultPrivateNATRoute": {
+        "VaultPrivateIGWRoute": {
             "Type": "AWS::EC2::Route",
             "Properties": {
                 "DestinationCidrBlock": "0.0.0.0/0",
-                "NatGatewayId": {
-                    "Ref": "VaultNATGW"
+                "GatewayId": {
+                    "Ref": "VaultIGW"
                 },
                 "RouteTableId": {
                     "Ref": "VaultPrivateRT"
                 }
-            }
-        },
-        "VaultPublicNATRoute": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "DestinationCidrBlock": "0.0.0.0/0",
-                "RouteTableId": {
-                    "Ref": "VaultPublicRT"
-                },
-                "GatewayId": {
-                    "Ref": "VaultIGW"
-                }
             },
-            "DependsOn": "VaultGWAttachment"
+			"DependsOn": "VaultGWAttachment"
         },
         "CompPeerRoute": {
             "Type": "AWS::EC2::Route",
@@ -682,30 +406,18 @@
                 }
             }
         },
-        "CompPrivateNATRoute": {
+        "CompPrivateIGWRoute": {
             "Type": "AWS::EC2::Route",
             "Properties": {
                 "DestinationCidrBlock": "0.0.0.0/0",
-                "NatGatewayId": {
-                    "Ref": "ComponentsNATGW"
+                "GatewayId": {
+                    "Ref": "ComponentsIGW"
                 },
                 "RouteTableId": {
                     "Ref": "ComponentsPrivateRT"
                 }
-            }
-        },
-        "CompPublicNATRoute": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "DestinationCidrBlock": "0.0.0.0/0",
-                "RouteTableId": {
-                    "Ref": "ComponentsPublicRT"
-                },
-                "GatewayId": {
-                    "Ref": "ComponentsIGW"
-                }
             },
-            "DependsOn": "ComponentsGWAttachment"
+			"DependsOn": "ComponentsGWAttachment"
         },
         "VaultSGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1038,13 +750,9 @@
                     },
                     "Parameters": [
                         "VaultVPCCIDR",
-                        "VaultNATGWSubnetCIDR",
                         "VaultMainSubnetCIDR",
-                        "VaultDRSubnetCIDR",
                         "ComponentsVPCCIDR",
-                        "ComponentsNATGWSubnetCIDR",
-                        "ComponentsMainSubnetCIDR",
-                        "ComponentsSecondarySubnetCIDR"
+                        "ComponentsMainSubnetCIDR"
                     ]
                 },
                 {
@@ -1061,26 +769,14 @@
                 "VaultVPCCIDR": {
                     "default": "Vault VPC CIDR"
                 },
-                "VaultNATGWSubnetCIDR": {
-                    "default": "Vault NAT Gateway Subnet CIDR"
-                },
                 "VaultMainSubnetCIDR": {
                     "default": "Vault Main Subnet CIDR"
-                },
-                "VaultDRSubnetCIDR": {
-                    "default": "Vault DR Subnet CIDR"
                 },
                 "ComponentsVPCCIDR": {
                     "default": "Components VPC CIDR"
                 },
-                "ComponentsNATGWSubnetCIDR": {
-                    "default": "Components NAT Gateway Subnet CIDR"
-                },
                 "ComponentsMainSubnetCIDR": {
                     "default": "Components Main Subnet CIDR"
-                },
-                "ComponentsSecondarySubnetCIDR": {
-                    "default": "Components Secondary Subnet CIDR"
                 },
                 "UsersAccessCIDR": {
                     "default": "Users Access CIDR"
@@ -1101,30 +797,12 @@
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
-        "VaultNATGWSubnetCIDR": {
-            "Description": "IPv4 address range for the Vault NAT Gateway subnet",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "10.0.0.0/28",
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
-            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
-        },
         "VaultMainSubnetCIDR": {
             "Description": "IPv4 address range for the main Vault subnet",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
             "Default": "10.0.1.0/28",
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
-            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
-        },
-        "VaultDRSubnetCIDR": {
-            "Description": "IPv4 address range for the Vault DR subnet",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "10.0.2.0/28",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1137,30 +815,12 @@
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
-        "ComponentsNATGWSubnetCIDR": {
-            "Description": "IPv4 address range for the Components NAT Gateway subnet",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "10.10.0.0/28",
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
-            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
-        },
         "ComponentsMainSubnetCIDR": {
             "Description": "IPv4 address range for the first private Components subnet",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
             "Default": "10.10.1.0/26",
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
-            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
-        },
-        "ComponentsSecondarySubnetCIDR": {
-            "Description": "IPv4 address range for the second private Components subnet",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "Default": "10.10.2.0/26",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
