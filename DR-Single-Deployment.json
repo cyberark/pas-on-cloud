@@ -792,7 +792,9 @@
             "Type": "String",
             "Description": "Enter a password for the Vault DR Master user.",
             "NoEcho": true,
-			"MinLength": 8
+			"MinLength": 8,
+			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+			"ConstraintDescription": "Vault Master password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
         },
 		"RetypeMasterPassword": {
             "Type": "String",
@@ -804,7 +806,9 @@
             "Type": "String",
             "Description": "Enter a password for the Vault DR user.",
             "NoEcho": true,
-            "MinLength": 8
+            "MinLength": 8,
+			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+			"ConstraintDescription": "Vault DR password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
         },
         "RetypeDRPassword": {
             "Type": "String",
