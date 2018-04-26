@@ -782,33 +782,33 @@
             "Type": "String",
             "Description": "Enter the Vault Private IP."
         },
-		"VaultAdminPassword": {
+	"VaultAdminPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
         "VaultMasterPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault DR Master user.",
             "NoEcho": true,
-			"MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault DR Master password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "MinLength": 8,
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault DR Master password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-		"RetypeMasterPassword": {
+	"RetypeMasterPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault DR Master user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
         "VaultDRPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault DR user.",
             "NoEcho": true,
             "MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault DR password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+            "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault DR password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
         "RetypeDRPassword": {
             "Type": "String",
@@ -821,10 +821,10 @@
             "Description": "Enter a name for the Vault DR instance.",
             "Default": "CyberArk Vault"
         },
-		"VaultHostName": {
+	"VaultHostName": {
             "Type": "String",
             "Description": "Enter the host name for the Vault DR instance.",
-			"MinLength": 4
+	    "MinLength": 4
         },
         "VaultInstanceType": {
             "Type": "String",
@@ -891,13 +891,13 @@
                     },
                     "Parameters": [
                         "VaultPrivateIP",
-						"VaultAdminPassword",
+			"VaultAdminPassword",
                         "VaultDRPassword",
                         "RetypeDRPassword",
                         "VaultMasterPassword",
                         "RetypeMasterPassword",
                         "VaultInstanceName",
-						"VaultHostName",
+			"VaultHostName",
                         "VaultInstanceType",
                         "VaultInstanceSecurityGroups",
                         "DRInstanceSubnetId"
@@ -924,13 +924,13 @@
                 "VaultPrivateIP": {
                     "default": "Vault Private IP"
                 },
-				"VaultAdminPassword": {
+		"VaultAdminPassword": {
                     "default": "Vault Admin Password"
                 },
                 "VaultMasterPassword": {
                     "default": "Vault DR Master Password"
                 },
-				"RetypeMasterPassword": {
+		"RetypeMasterPassword": {
                     "default": "Retype Vault DR Master Password"
                 },
                 "VaultDRPassword": {
@@ -942,7 +942,7 @@
                 "VaultInstanceName": {
                     "default": "Vault DR Instance Name"
                 },
-				"VaultHostName": {
+		"VaultHostName": {
                     "default": "Vault DR Host Name"
                 },
                 "VaultInstanceType": {
