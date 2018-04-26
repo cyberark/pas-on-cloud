@@ -1357,43 +1357,43 @@
             "Type": "String",
             "Description": "Enter a password for the Vault Master user.",
             "NoEcho": true,
-			"MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault Master password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "MinLength": 8,
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault Master password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-		"RetypeMasterPassword": {
+	"RetypeMasterPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Master user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
         "VaultAdminPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
             "NoEcho": true,
-			"MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault Administrator password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "MinLength": 8,
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault Administrator password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-		"RetypeAdminPassword": {
+	"RetypeAdminPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Administrator user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
-		"VaultDRPassword": {
+	    "VaultDRPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault DR user.",
             "NoEcho": true,
-			"MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault DR password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "MinLength": 8,
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault DR password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-		"RetypeDRPassword": {
+	"RetypeDRPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault DR user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
         "VaultInstanceType": {
             "Type": "String",
