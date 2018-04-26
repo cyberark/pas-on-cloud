@@ -770,23 +770,23 @@
             "Type": "String",
             "Description": "Enter a password for the Vault Master user.",
             "NoEcho": true,
-			"MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault Master password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "MinLength": 8,
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault Master password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-		"RetypeMasterPassword": {
+	    "RetypeMasterPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Master user.",
             "NoEcho": true,
-			"MinLength": 8
+	    "MinLength": 8
         },
         "VaultAdminPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
             "NoEcho": true,
             "MinLength": 8,
-			"AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-			"ConstraintDescription": "Vault Administrator password should contain at least 1 lowercase, 1 uppercase, 1 digit and 1 special character"
+	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+	    "ConstraintDescription": "Vault Administrator password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
         "RetypeAdminPassword": {
             "Type": "String",
@@ -799,10 +799,10 @@
             "Description": "Enter a name for the Vault instance.",
             "Default": "CyberArk Vault"
         },
-		"VaultHostName": {
+	"VaultHostName": {
             "Type": "String",
             "Description": "Enter the host name for the Vault instance.",
-			"MinLength": 4
+	    "MinLength": 4
         },
         "VaultInstanceType": {
             "Type": "String",
