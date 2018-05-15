@@ -1263,10 +1263,6 @@
                             "2-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
 								"waitAfterCompletion": "0"
-                            },
-                            "3-PSMserviceStart": {
-                                "command": "sc start \"Cyber-Ark Privileged Session Manager\"",
-								"waitAfterCompletion": "0"
                             }
                         }
                     }
@@ -1343,13 +1339,13 @@
                 "AWS::CloudFormation::Init": {
                     "config": {
                         "files": {
-                            "/tmp/PSMPInstall/activatePSMP": {
+                            "/root/CD-Image/activatePSMP": {
                                 "content": {
                                     "Fn::Join": [
                                         "",
                                         [
 											"#!/bin/bash -e\n",
-											"chmod 700 /tmp/PSMPInstall/register_and_activation.sh\n",
+											"chmod 700 /root/CD-Image/register_and_activation.sh\n",
 											"aws configure set default.s3.signature_version s3v4\n",
 											"aws s3api get-object --bucket ",
 												{
@@ -1362,13 +1358,13 @@
 														"FileId"
 													]
 												},
-												" /tmp/PSMPInstall/temppassword\n",
+												" /root/CD-Image/temppassword\n",
 											"echo Object successfully retrieved from S3 bucket.\n",
 											
-											"/opt/CARKpsmp/bin/createcredfile /tmp/PSMPInstall/user.cred Password -Username Administrator -Password $(cat /tmp/PSMPInstall/temppassword) -Hostname\n",
+											"/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
 											"echo Credentials file successfully created.\n",
 											
-											"shred -u /tmp/PSMPInstall/temppassword\n",
+											"shred -u /root/CD-Image/temppassword\n",
 											"aws s3api delete-object --bucket ",
 												{
 													"Ref": "DeployBucket"
@@ -1383,7 +1379,7 @@
 												"\n",
 											"echo Object successfully deleted from S3 bucket.\n",
 											
-											"/tmp/PSMPInstall/register_and_activation.sh /tmp/PSMPInstall/user.cred ",
+											"/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
 												{
 													"Fn::GetAtt": [
 														"VaultMachine",
@@ -1405,16 +1401,16 @@
                         },
                         "commands": {
 							"01-Chmod": {
-                                "command": "sudo chmod 700 /tmp/PSMPInstall/activatePSMP"
+                                "command": "sudo chmod 700 /root/CD-Image/activatePSMP"
                             },
                             "02-PSMPdeploy": {
-                                "command": "sudo /tmp/PSMPInstall/activatePSMP"
+                                "command": "sudo /root/CD-Image/activatePSMP"
                             },
 							"03-ClearData": {
-                                "command": "sudo shred -u /tmp/PSMPInstall/activatePSMP"
+                                "command": "sudo shred -u /root/CD-Image/activatePSMP"
                             },
 							"04-RemoveInstallationFolder": {
-                                "command": "sudo rm -rf /tmp/PSMPInstall/"
+                                "command": "sudo rm -rf /root/CD-Image"
                             }
                         }
                     }

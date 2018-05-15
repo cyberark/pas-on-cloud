@@ -1299,10 +1299,6 @@
                             "12-PSMServiceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
 								"waitAfterCompletion": "0"
-                            },
-                            "13-PSMserviceStart": {
-                                "command": "sc start \"Cyber-Ark Privileged Session Manager\"",
-								"waitAfterCompletion": "0"
                             }
                         }
                     }
