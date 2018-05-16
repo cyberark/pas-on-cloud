@@ -1579,61 +1579,62 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-ae701ad4",
-                "Components": "ami-5bc5ad21"
+                "Vault": "ami-45f2643a",
+                "Components": "ami-0c0e9973"
             },
             "us-east-2": {
-                "Vault": "ami-506d4535",
-                "Components": "ami-556c4430"
+                "Vault": "ami-239fa246",
+                "Components": "ami-57a29f32"
             },
             "us-west-1": {
-                "Vault": "ami-fa62669a",
-                "Components": "ami-276f6b47"
+                "Vault": "ami-60213800",
+                "Components": "ami-4a342d2a"
             },
             "us-west-2": {
-                "Vault": "ami-1f60c667",
-                "Components": "ami-4665c33e"
+                "Vault": "ami-a291e3da",
+                "Components": "ami-46b9cb3e"
             },
             "ca-central-1": {
-                "Vault": "ami-63bb0107",
-                "Components": "ami-aec77dca"
+                "Vault": "ami-9550d0f1",
+                "Components": "ami-6f4bcb0b"
             },
 			"eu-west-1": {
-                "Vault": "ami-bd1792c4",
-                "Components": "ami-4f1d9836"
+                "Vault": "ami-e0af9f99",
+                "Components": "ami-95b383ec"
             },
 			"eu-central-1": {
-                "Vault": "ami-98bc34f7",
-                "Components": "ami-2aba3245"
+                "Vault": "ami-f9cae512",
+                "Components": "ami-7cf8d797"
             },
             "eu-west-2": {
-                "Vault": "ami-d95148bd",
-                "Components": "ami-18534a7c"
+                "Vault": "ami-f66a8891",
+                "Components": "ami-0ce70a6b"
             },
 			"ap-southeast-1": {
-                "Vault": "ami-8b2c4cf7",
-                "Components": "ami-2023435c"
+                "Vault": "ami-556d5c29",
+                "Components": "ami-de7849a2"
             },
 			"ap-southeast-2": {
-                "Vault": "ami-99a452fb",
-                "Components": "ami-0db84e6f"
+                "Vault": "ami-d18253b3",
+                "Components": "ami-f896479a"
             },
 			"ap-northeast-2": {
-                "Vault": "ami-fd52f493",
-                "Components": "ami-e555f38b"
+                "Vault": "ami-23b51d4d",
+                "Components": "ami-91bf17ff"
             },
 			"ap-northeast-1": {
-                "Vault": "ami-d59517b3",
-                "Components": "ami-dd9311bb"
+                "Vault": "ami-ac17e0d3",
+                "Components": "ami-a327d0dc"
             },
             "ap-south-1": {
-                "Vault": "ami-23bcf44c",
-                "Components": "ami-b9bdf5d6"
+                "Vault": "ami-676d4008",
+                "Components": "ami-7795b718"
             },
             "sa-east-1": {
-                "Vault": "ami-cc6d2ba0",
-                "Components": "ami-3b612757"
+                "Vault": "ami-96b7ebfa",
+                "Components": "ami-0e87db62"
             }
         }
     }
 }
+

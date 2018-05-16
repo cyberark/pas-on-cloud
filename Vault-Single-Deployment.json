@@ -930,76 +930,77 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-ae701ad4",
-                "Components": "ami-5bc5ad21",
-                "PSMP": "ami-6394ad75"
+                "Vault": "ami-45f2643a",
+                "Components": "ami-0c0e9973",
+                "PSMP": "ami-a6f167d9"
             },
             "us-east-2": {
-                "Vault": "ami-1192b874",
-                "Components": "ami-1092b875",
-                "PSMP": "ami-600b2a05"
+                "Vault": "ami-239fa246",
+                "Components": "ami-57a29f32",
+                "PSMP": "ami-6e9ea30b"
             },
             "us-west-1": {
-                "Vault": "ami-fa62669a",
-                "Components": "ami-276f6b47",
-                "PSMP": "ami-d0416eb0"
+                "Vault": "ami-60213800",
+                "Components": "ami-4a342d2a",
+                "PSMP": "ami-c22f36a2"
             },
             "us-west-2": {
-                "Vault": "ami-1f60c667",
-                "Components": "ami-4665c33e",
-                "PSMP": "ami-0508187c"
+                "Vault": "ami-a291e3da",
+                "Components": "ami-46b9cb3e",
+                "PSMP": "ami-e796e49f"
             },
             "ca-central-1": {
-                "Vault": "ami-63bb0107",
-                "Components": "ami-aec77dca",
-                "PSMP": "ami-97853af3"
+                "Vault": "ami-9550d0f1",
+                "Components": "ami-6f4bcb0b",
+                "PSMP": "ami-9250d0f6"
             },
             "eu-west-1": {
-                "Vault": "ami-bd1792c4",
-                "Components": "ami-4f1d9836",
-                "PSMP": "ami-058f697c"
+                "Vault": "ami-e0af9f99",
+                "Components": "ami-95b383ec",
+                "PSMP": "ami-3faf9f46"
             },
             "eu-central-1": {
-                "Vault": "ami-98bc34f7",
-                "Components": "ami-2aba3245",
-                "PSMP": "ami-b014b5df"
+                "Vault": "ami-f9cae512",
+                "Components": "ami-7cf8d797",
+                "PSMP": "ami-acc8e747"
             },
             "eu-west-2": {
-                "Vault": "ami-d95148bd",
-                "Components": "ami-18534a7c",
-                "PSMP": "ami-ecd2c488"
+                "Vault": "ami-f66a8891",
+                "Components": "ami-0ce70a6b",
+                "PSMP": "ami-a99674ce"
             },
             "ap-southeast-1": {
-                "Vault": "ami-8b2c4cf7",
-                "Components": "ami-2023435c",
-                "PSMP": "ami-22810a41"
+                "Vault": "ami-556d5c29",
+                "Components": "ami-de7849a2",
+                "PSMP": "ami-506d5c2c"
             },
             "ap-southeast-2": {
-                "Vault": "ami-99a452fb",
-                "Components": "ami-0db84e6f",
-                "PSMP": "ami-63796b00"
+                "Vault": "ami-d18253b3",
+                "Components": "ami-f896479a",
+                "PSMP": "ami-b18150d3"
             },
             "ap-northeast-2": {
-                "Vault": "ami-fd52f493",
-                "Components": "ami-e555f38b",
-                "PSMP": "ami-1865ba76"
+                "Vault": "ami-23b51d4d",
+                "Components": "ami-91bf17ff",
+                "PSMP": "ami-d9b119b7"
             },
             "ap-northeast-1": {
-                "Vault": "ami-d59517b3",
-                "Components": "ami-dd9311bb",
-                "PSMP": "ami-fed5c899"
+                "Vault": "ami-ac17e0d3",
+                "Components": "ami-a327d0dc",
+                "PSMP": "ami-982adde7"
             },
             "ap-south-1": {
-                "Vault": "ami-23bcf44c",
-                "Components": "ami-b9bdf5d6",
-                "PSMP": "ami-60fb850f"
+                "Vault": "ami-676d4008",
+                "Components": "ami-7795b718",
+                "PSMP": "ami-776c4118"
             },
             "sa-east-1": {
-                "Vault": "ami-cc6d2ba0",
-                "Components": "ami-3b612757",
-                "PSMP": "ami-a5ddb7c9"
+                "Vault": "ami-96b7ebfa",
+                "Components": "ami-0e87db62",
+                "PSMP": "ami-fdb4e891"
             }
         }
     }
 }
+
 
