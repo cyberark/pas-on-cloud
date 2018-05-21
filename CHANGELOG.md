@@ -5,9 +5,9 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
 ## [10.3] (Release date: 2018/05/21)
 
 ### Added
-- CloudFOrmation templates to deploy a single component PVWA, CPM, PSM and PSMP
-- CloudFOrmation templates to deploy the Primary Vault
-- CloudFOrmation templates to deploy a DR Vault
+- CloudFormation templates to deploy a single component PVWA, CPM, PSM and PSMP
+- CloudFormation templates to deploy the Primary Vault
+- CloudFormation templates to deploy a DR Vault
 
 ### Changed
 - Fix Vault application pool size 
