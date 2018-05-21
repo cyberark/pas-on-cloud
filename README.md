@@ -1,4 +1,4 @@
-# CyberArk CloudFormation Templates
+# Overview
 
 CyberArk PAS CloudFormation templates were created to automate the deployment process of CyberArk Privileged Access Security AMIs. There are multiple templates to support a various deployment options, from a template that deploys a full environment to templates that provide you with the building blocks to deploy any type of architecture.
 
