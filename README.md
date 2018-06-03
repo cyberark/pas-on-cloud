@@ -12,3 +12,9 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 | PAS-AIO-network-environment-template | Creation of the network environment to support the PAS-AIO-Deployment template deployment |
 | PAS-AIO-dr-template | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM, Vault instance and DR Vault instance |
 | PAS-AIO-template | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM and Vault instance |
+
+# Licensing
+Copyright 1999-2018 CyberArk Software Ltd.
+
+CyberArk’s Privileged Access Security is licensed under the following license terms - "PAS Eula.txt".
+CyberArk’s PAS deployment CloudFormation templates are licensed under Apache License, Version 2.0 - "LICENSE.md".
