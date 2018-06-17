@@ -21,14 +21,14 @@
                 "description": "IPv4 address range for the Components VNET"
             }
         },
-        "Components Main Subnet CIDR": {
+        "Web Subnet CIDR": {
             "type": "string",
             "defaultValue": "10.10.1.0/26",
             "metadata": {
                 "description": "IPv4 address range for the first private Components subnet"
             }
         },
-		"Components Secondary Subnet CIDR": {
+		"Components Subnet CIDR": {
             "type": "string",
             "defaultValue": "10.10.2.0/26",
             "metadata": {
@@ -59,7 +59,7 @@
     },
     "resources": [
 	    {
-            "comments": "Main Components Security Group - User facing",
+            "comments": "Web Components Security Group - User facing",
 			"type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('networkSecurityGroups_NSG_Web_name')]",
             "apiVersion": "2018-02-01",
@@ -73,7 +73,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "443",
                             "sourceAddressPrefix": "[parameters('User Access CIDR')]",
-                            "destinationAddressPrefix": "[parameters('Components Main Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Web Subnet CIDR')]",
                             "access": "Allow",
                             "priority": 100,
                             "direction": "Inbound",
@@ -90,7 +90,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
                             "sourceAddressPrefix": "[parameters('User Access CIDR')]",
-                            "destinationAddressPrefix": "[parameters('Components Main Subnet CIDR')]",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 120,
                             "direction": "Inbound",
@@ -107,7 +107,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
                             "sourceAddressPrefix": "[parameters('User Access CIDR')]",
-                            "destinationAddressPrefix": "[parameters('Components Main Subnet CIDR')]",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 130,
                             "direction": "Inbound",
@@ -124,7 +124,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
                             "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
-                            "destinationAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 140,
                             "direction": "Inbound",
@@ -193,7 +193,7 @@
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "1858",
-                            "sourceAddressPrefix": "[parameters('Components Main Subnet CIDR')]",
+                            "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
                             "destinationAddressPrefix": "",
                             "access": "Allow",
                             "priority": 130,
@@ -270,7 +270,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Network Security group for secondary components subnet",
+            "comments": "Network Security group for components subnet",
 			"type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('networkSecurityGroups_NSG_Components_name')]",
             "apiVersion": "2018-02-01",
@@ -284,7 +284,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
                             "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
-                            "destinationAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 100,
                             "direction": "Inbound",
@@ -319,7 +319,7 @@
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "1858",
-                            "sourceAddressPrefix": "[parameters('Components Secondary Subnet CIDR')]",
+                            "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
                             "destinationAddressPrefix": "",
                             "access": "Allow",
                             "priority": 100,
@@ -404,33 +404,43 @@
                         "[parameters('Components VNET CIDR')]"
                     ]
                 },
-                "subnets": [
-                    {
-                        "name": "Web-Subnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('Components Main Subnet CIDR')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
-                            },
-                            "serviceEndpoints": []
-                        }
-                    },
-                    {
-                        "name": "Components-Subnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('Components Secondary Subnet CIDR')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
-                            },
-                            "serviceEndpoints": []
-                        }
-                    }
-                ],
                 "enableDdosProtection": false,
                 "enableVmProtection": false
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('subnets_Web_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Web Subnet CIDR')]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
+                },
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('subnets_Components_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Components Subnet CIDR')]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+                },
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
             ]
         }
