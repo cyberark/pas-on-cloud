@@ -53,7 +53,7 @@
             }
         },
         "Component VM Size": {
-            "defaultValue": "Standard_DS1_v2",
+            "defaultValue": "Standard_D2s_v3",
             "type": "String",
             "metadata": {
                 "description": "Enter the desired VM Size"
