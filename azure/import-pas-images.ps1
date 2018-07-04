@@ -1,14 +1,14 @@
 PARAM(
     # location to import Cyberark images to
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [String]
     $location,
     # Supplied by CyberArk components AccessSAS
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [String]
     $ComponentsAccessSAS,
     # Supplied by CyberArk PSMP AccessSAS
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [String]
     $PsmpAccessSAS
 )
@@ -17,24 +17,24 @@ PARAM(
 $storageName = "cyberarkimages"
 $containerName = "cyberarkimages"
 $componentsDestBlob = "pas-components.vhd"
-$psmpDestBlob="pas-psmp.vhd"
+$psmpDestBlob = "pas-psmp.vhd"
 $resourceGroupName = "Cyberark-Images"
  
 #Create Resource Group
-$resourceGroup = New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
+New-AzureRmResourceGroup -Name $resourceGroupName -Location $location
  
 #Create Storage Account
 $storageAccount = New-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageName -Location $location -SkuName Standard_LRS
 $destContext = $storageAccount.Context
  
 #Create Blob Storage Container
-$container = New-AzureStorageContainer -Name $containerName -Permission Off -Context $destContext
+New-AzureStorageContainer -Name $containerName -Permission Off -Context $destContext
  
 #Start copy components
-$componentsblobcopy=Start-AzureStorageBlobCopy -AbsoluteUri $ComponentsAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $componentsDestBlob
+Start-AzureStorageBlobCopy -AbsoluteUri $ComponentsAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $componentsDestBlob
  
 #Start copy psmp
-$psmpblobcopy=Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob
+Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob
  
  
 #Wait for vhd to be fully copied (~40 minutes)

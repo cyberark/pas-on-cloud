@@ -95,13 +95,25 @@
     },
     "resources": [
         {
+            "apiVersion": "2015-01-01",
+            "name": "GuidGenerator",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "https://armtemplates-azurewebsites-net.o365.apps.cyberark.com/api/NewGuid",
+                    "contentVersion": "1.0.0.0"
+                }
+            }
+        },
+        {
             "type": "Microsoft.Resources/deployments",
             "name": "linkedTemplate",
             "apiVersion": "2017-05-10",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://diamondsdiagstr-blob-core-windows-net.o365.apps.cyberark.com/temp/psmp-nested-template.json",
+                    "uri": "https://diamondsdiagstr-blob-core-windows-net.o365.apps.cyberark.com/nested/psmp-nested-template.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -137,6 +149,9 @@
                     },
                     "VaultPrivateIP": {
                         "value": "[parameters('Vault Private IP')]"
+                    },
+                    "Guid": {
+                        "value": "[reference('GuidGenerator').outputs.guid0.value]"
                     }
                 }
             },
