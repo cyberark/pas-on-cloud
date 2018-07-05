@@ -1,0 +1,277 @@
+{
+    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "License Agreement": {
+            "defaultValue": "Decline",
+            "allowedValues": [
+                "Accept",
+                "Decline"
+            ],
+            "maxLength": 6,
+            "type": "String",
+            "metadata": {
+                "description": "I have read and agree to the Terms and Conditions."
+            }
+        },
+        "Vault Private IP": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a coma (e.g 1.1.1.1,2.2.2.2)."
+            }
+        },
+        "Vault Admin User": {
+            "defaultValue": "Administrator",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Administrator Vault user."
+            }
+        },
+        "Vault Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter a password for the Vault Administrator user."
+            }
+        },
+        "Component To Install": {
+            "defaultValue": "CPM",
+            "allowedValues": [
+                "CPM",
+                "PVWA",
+                "PSM",
+                "PSMP"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "Choose the Component to install."
+            }
+        },
+        "Component VM Host Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the host name for the PAS Component VM."
+            }
+        },
+        "Component VM Size": {
+            "defaultValue": "Standard_DS1_v2",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the desired VM Size"
+            }
+        },
+        "Component VM Admin User": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Component VM Administrator user."
+            }
+        },
+        "Component VM Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter Component VM Administrator password."
+            }
+        },
+        "ImageID": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Components Image ID."
+            }
+        },
+        "Component AvailablitySet Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Availability Set for the Component VM , If doesn’t exist it will be created"
+            }
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', 'Components-Vnet')]",
+        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/','Components-Subnet')]",
+        "subnetRefWeb": "[concat(variables('vnetId'), '/subnets/', 'Web-Subnet')]",
+        "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "availabilitySetPlatformFaultDomainCount": 3,
+        "availabilitySetPlatformUpdateDomainCount": 5,
+        "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "linkedTemplate",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://diamondsdiagstr-blob-core-windows-net.o365.apps.cyberark.com/temp/psmp-nested-template.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VMname": {
+                        "value": "[parameters('Component VM Host Name')]"
+                    },
+                    "computerName": {
+                        "value": "[parameters('Component VM Host Name')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('Component VM Admin User')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('Component VM Admin Password')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('Component VM Size')]"
+                    },
+                    "Imageid": {
+                        "value": "[parameters('ImageID')]"
+                    },
+                    "AvailablitySetName": {
+                        "value": "[parameters('Component AvailablitySet Name')]"
+                    },
+                    "NetworkInterfaceName": {
+                        "value": "[variables('networkInterfaceName')]"
+                    },
+                    "VaultAdminUser": {
+                        "value": "[parameters('Vault Admin User')]"
+                    },
+                    "VaultAdminPassword": {
+                        "value": "[parameters('Vault Admin Password')]"
+                    },
+                    "VaultPrivateIP": {
+                        "value": "[parameters('Vault Private IP')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
+            "condition": "[equals(parameters('Component To Install'),'PSMP')]"
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('Component VM Host Name')]",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('Component VM Host Name')]",
+                    "adminUsername": "[parameters('Component VM Admin User')]",
+                    "adminPassword": "[parameters('Component VM Admin Password')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('Component VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('ImageID')]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Component AvailablitySet Name'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]"
+            ],
+            "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-component"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": []
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\cyberark\\componentregistration.ps1', ' ', parameters('Component To Install'), ' ', parameters('Vault Private IP'), ' ',  parameters('Vault Admin User'),' ',parameters('Vault Admin Password'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]"
+            ],
+            "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[parameters('Component AvailablitySet Name')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
+                "managed": true
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[if(equals(parameters('Component To Install'),'CPM'), variables('subnetRefComponent'), variables('subnetRefWeb'))]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "sku": {
+                "name": "Basic"
+            },
+            "name": "[variables('publicIpAddressName')]",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "String",
+            "value": "[parameters('Component VM Admin User')]"
+        }
+    }
+}
