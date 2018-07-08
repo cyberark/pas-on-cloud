@@ -1,7 +1,7 @@
 {
     "Resources": {
         "LogGroup": {
-            "Type": "AWS::Logs::LogGroup",
+            "Type": "AWS::Logs::LogGroup"
             "Properties": {
                 "RetentionInDays": 30
             },
