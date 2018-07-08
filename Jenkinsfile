@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Upload template to S3') {
       steps {
-        s3Upload(bucket: 'jenkins-temp-poc', file: 'Vault-Single-Deployment.json', path: '/')
+        s3Upload(bucket: 'jenkins-temp-poc', file: 'aws/Vault-Single-Deployment.json', path: 'Vault-Single-Deployment.json')
       }
     }
     stage('Validation') {
