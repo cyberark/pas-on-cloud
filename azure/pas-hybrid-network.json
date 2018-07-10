@@ -188,7 +188,7 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "1858",
                             "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
-                            "destinationAddressPrefix":  "parameters('Vault CIDR')]" ,
+                            "destinationAddressPrefix":  "[parameters('Vault CIDR')]" ,
                             "access": "Allow",
                             "priority": 130,
                             "direction": "Outbound",
