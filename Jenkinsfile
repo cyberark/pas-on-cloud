@@ -1,0 +1,16 @@
+pipeline {
+  agent {
+    node {
+      label 'ec2'
+    }
+
+  }
+  stages {
+    stage('Syntax Validation') {
+      steps {
+        s3Upload(bucket: 'jenkins-temp-poc', file: 'Vault-Single-Deployment.json')
+        cfnValidate(url: 'https://s3.eu-west-2.amazonaws.com/jenkins-temp-poc/Vault-Single-Deployment.json')
+      }
+    }
+  }
+}
