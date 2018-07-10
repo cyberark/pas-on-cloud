@@ -113,7 +113,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://diamondsdiagstr-blob-core-windows-net.o365.apps.cyberark.com/nested/psmp-nested-template.json",
+                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
