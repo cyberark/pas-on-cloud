@@ -188,14 +188,14 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "1858",
                             "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
-                            "destinationAddressPrefix": "",
+                            "destinationAddressPrefix":  "[parameters('Vault CIDR')]" ,
                             "access": "Allow",
                             "priority": 130,
                             "direction": "Outbound",
                             "sourcePortRanges": [],
                             "destinationPortRanges": [],
                             "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": [ "[parameters('Vault CIDR')]" ]
+                            "destinationAddressPrefixes": []
                         }
                     },
                     {
@@ -325,14 +325,14 @@
                             "sourcePortRange": "*",
                             "destinationPortRange": "1858",
                             "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
-                            "destinationAddressPrefix": "",
+                            "destinationAddressPrefix":  "[parameters('Vault CIDR')]",
                             "access": "Allow",
                             "priority": 100,
                             "direction": "Outbound",
                             "sourcePortRanges": [],
                             "destinationPortRanges": [],
                             "sourceAddressPrefixes": [],
-                            "destinationAddressPrefixes": [ "[parameters('Vault CIDR')]" ]
+                            "destinationAddressPrefixes": []
                         }
                     },
                     {
