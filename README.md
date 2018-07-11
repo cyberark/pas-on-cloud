@@ -1,6 +1,6 @@
 # Overview
 
-We provide you with the necessary tools and scripts to deploy CyberArk's Privileged Access Security (PAS) solution on Amazon Web Services (AWS) & Microsoft Azure with one click.
+We provide you with the necessary tools and scripts to deploy CyberArk's Privileged Access Security (PAS) solution on Amazon Web Services (AWS) and Microsoft Azure with one click.
 
 The different templates provide you with the flexibility of deploying CyberArk PAS to support your architecture (hybrid, multi-cloud, all in the cloud and etc.).
 
