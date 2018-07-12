@@ -1205,15 +1205,7 @@
                             "Effect": "Allow",
                             "Principal": {
                                 "Service": [
-                                    {
-                                        "Fn::FindInMap": [
-                                            "Region2Principal",
-                                            {
-                                                "Ref": "AWS::Region"
-                                            },
-                                            "EC2Principal"
-                                        ]
-                                    }
+                                    "ec2.amazonaws.com"
                                 ]
                             },
                             "Action": [
@@ -1245,15 +1237,7 @@
                                             "Fn::Join": [
                                                 "",
                                                 [
-                                                    {
-                                                        "Fn::FindInMap": [
-                                                            "Region2ARNPrefix",
-                                                            {
-                                                                "Ref": "AWS::Region"
-                                                            },
-                                                            "ARNPrefix"
-                                                        ]
-                                                    },
+                                                    "arn:aws:",
                                                     "logs:*:*:*"
                                                 ]
                                             ]
@@ -1276,15 +1260,7 @@
                             "Effect": "Allow",
                             "Principal": {
                                 "Service": [
-                                    {
-                                        "Fn::FindInMap": [
-                                            "Region2Principal",
-                                            {
-                                                "Ref": "AWS::Region"
-                                            },
-                                            "EC2Principal"
-                                        ]
-                                    }
+                                    "ec2.amazonaws.com"
                                 ]
                             },
                             "Action": [
@@ -1316,15 +1292,7 @@
                                             "Fn::Join": [
                                                 "",
                                                 [
-                                                    {
-                                                        "Fn::FindInMap": [
-                                                            "Region2ARNPrefix",
-                                                            {
-                                                                "Ref": "AWS::Region"
-                                                            },
-                                                            "ARNPrefix"
-                                                        ]
-                                                    },
+                                                    "arn:aws:",
                                                     "logs:*:*:*"
                                                 ]
                                             ]
@@ -2258,71 +2226,7 @@
                 "Vault": "ami-96b7ebfa",
                 "Components": "ami-0e87db62"
             }
-        },
-        "Region2ARNPrefix": {
-            "us-east-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "us-west-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "us-west-2": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "eu-west-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "ap-northeast-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "ap-southeast-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "ap-southeast-2": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "sa-east-1": {
-                "ARNPrefix": "arn:aws:"
-            },
-            "cn-north-1": {
-                "ARNPrefix": "arn:aws-cn:"
-            },
-            "eu-central-1": {
-                "ARNPrefix": "arn:aws:"
-            }
-        },
-        "Region2Principal": {
-            "us-east-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "us-west-2": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "us-west-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "eu-west-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "ap-southeast-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "ap-northeast-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "ap-southeast-2": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "sa-east-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            },
-            "cn-north-1": {
-                "EC2Principal": "ec2.amazonaws.com.cn"
-            },
-            "eu-central-1": {
-                "EC2Principal": "ec2.amazonaws.com"
-            }
-        }        
+        }  
     },
     "Outputs": {
         "CloudWatchLogGroupName": {
