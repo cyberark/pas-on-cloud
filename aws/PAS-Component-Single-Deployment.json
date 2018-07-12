@@ -1564,13 +1564,13 @@
                                         [
                                             "[cfn-auto-reloader-hook]\n",
                                             "triggers=post.update\n",
-                                            "path=Resources.WebServerInstance.Metadata.AWS::CloudFormation::Init\n",
+                                            "path=Resources.PSMPMachine.Metadata.AWS::CloudFormation::Init\n",
                                             "action=/opt/aws/bin/cfn-init -v ",
                                             "         --stack ",
                                             {
                                                 "Ref": "AWS::StackName"
                                             },
-                                            "         --resource WebServerInstance ",
+                                            "         --resource PSMPMachine ",
                                             "         --configsets install_all ",
                                             "         --region ",
                                             {
