@@ -1,6 +1,6 @@
 # Overview
 
-CyberArk PAS AzureRM templates were created to automate the deployment process of CyberArk Privileged Access Security Images. There are multiple templates to support a various deployment options, from a template that deploys a full environment to templates that provide you with the building blocks to deploy any type of architecture.
+CyberArk PAS AzureRM templates were created to automate the deployment process of CyberArk Privileged Access Security Images. There is individual component deployment template that provides you with the building blocks to deploy any type of architecture.
 
 | AzureRM Template Name | Description | Deploy |
 |-----------------------|-------------|--------|
