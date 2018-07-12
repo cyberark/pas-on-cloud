@@ -2206,6 +2206,7 @@
                                         [
                                             "[cfn-auto-reloader-hook]\n",
                                             "triggers=post.update\n",
+
                                             "path=Resources.PSMPMachine.Metadata.AWS::CloudFormation::Init\n",
                                             "action=/opt/aws/bin/cfn-init -v ",
                                             "         --stack ",
