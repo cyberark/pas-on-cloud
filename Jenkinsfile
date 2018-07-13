@@ -1,7 +1,7 @@
 pipeline {
   agent {
     node {
-      label 'ec2'
+      label 'ansible'
     }
 
   }
