@@ -10,7 +10,7 @@ Describe "DRVault-Single-Deployment.json" {
             $validationError = @{}
             $script:templateSummary = Get-CFNTemplateSummary -TemplateURL "$templateBaseURL/DRVault-Single-Deployment.json" -ErrorVariable validationError
             $validationError.Count | Should -Be 0
-            $script:templateSummary.Parameters.Count | Should -Be 14
+            $script:templateSummary.Parameters.Count | Should -Be 16
         }
         It "Validate EULA parameter" {
             $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "EULA"}
@@ -44,12 +44,11 @@ Describe "DRVault-Single-Deployment.json" {
             $currentParam.DefaultValue | Should -BeExactly "recpub.key"
             $currentParam.Description | Should -BeExactly "Enter the path of the recovery public key file within the bucket."
         }
-        It "Validate VaultMasterPassword parameter" {
-            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultMasterPassword"}
+        It "Validate VaultPrivateIP parameter" {
+            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultPrivateIP"}
             $currentParam | Should -Not -BeNullOrEmpty
             $currentParam.DefaultValue | Should -BeNullOrEmpty
-            $currentParam.NoEcho | Should -Be "True"
-            $currentParam.Description | Should -BeExactly "Enter a password for the Vault DR Master user."
+            $currentParam.Description | Should -BeExactly "Enter the Vault Private IP."
         }
         It "Validate VaultAdminPassword parameter" {
             $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultAdminPassword"}
@@ -57,6 +56,34 @@ Describe "DRVault-Single-Deployment.json" {
             $currentParam.DefaultValue | Should -BeNullOrEmpty
             $currentParam.NoEcho | Should -Be "True"
             $currentParam.Description | Should -BeExactly "Enter a password for the Vault Administrator user."
+        }
+        It "Validate VaultMasterPassword parameter" {
+            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultMasterPassword"}
+            $currentParam | Should -Not -BeNullOrEmpty
+            $currentParam.DefaultValue | Should -BeNullOrEmpty
+            $currentParam.NoEcho | Should -Be "True"
+            $currentParam.Description | Should -BeExactly "Enter a password for the Vault DR Master user."
+        }
+        It "Validate RetypeMasterPassword parameter" {
+            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "RetypeMasterPassword"}
+            $currentParam | Should -Not -BeNullOrEmpty
+            $currentParam.DefaultValue | Should -BeNullOrEmpty
+            $currentParam.NoEcho | Should -Be "True"
+            $currentParam.Description | Should -BeExactly "Retype the password for the Vault DR Master user."
+        }
+        It "Validate VaultDRPassword parameter" {
+            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultDRPassword"}
+            $currentParam | Should -Not -BeNullOrEmpty
+            $currentParam.DefaultValue | Should -BeNullOrEmpty
+            $currentParam.NoEcho | Should -Be "True"
+            $currentParam.Description | Should -BeExactly "Enter a password for the Vault DR user."
+        }
+        It "Validate RetypeDRPassword parameter" {
+            $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "RetypeDRPassword"}
+            $currentParam | Should -Not -BeNullOrEmpty
+            $currentParam.DefaultValue | Should -BeNullOrEmpty
+            $currentParam.NoEcho | Should -Be "True"
+            $currentParam.Description | Should -BeExactly "Retype the password for the Vault DR user."
         }
         It "Validate VaultHostName parameter" {
             $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "VaultHostName"}
@@ -84,7 +111,7 @@ Describe "DRVault-Single-Deployment.json" {
             $currentParam = $script:templateSummary.Parameters | Where-Object {$_.ParameterKey -eq "DRInstanceSubnetId"}
             $currentParam | Should -Not -BeNullOrEmpty
             $currentParam.DefaultValue | Should -BeNullOrEmpty
-            $currentParam.Description | Should -BeExactly "Select the Subnet Id where the Vault instance will reside."
+            $currentParam.Description | Should -BeExactly "Select the Subnet Id where the Vault DR instance will reside."
             $currentParam.ParameterType | Should -Be "AWS::EC2::Subnet::Id"
         }
         It "Validate VaultInstanceName parameter" {
