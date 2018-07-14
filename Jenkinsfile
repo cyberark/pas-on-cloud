@@ -11,7 +11,7 @@ pipeline {
         script {
           withAWS(region:'eu-west-2') {
             s3Upload(bucket: 'jenkins-temp-poc', file: 'aws/Vault-Single-Deployment.json')
-            def response = cfnValidate(url: 'https://s3.eu-west-2.amazonaws.com/jenkins-temp-poc/Vault-Single-Deployment.json')
+            def response = cfnValidate(file: 'aws/Vault-Single-Deployment.json')
             echo "Template description: ${response.description}"
           }
         }
