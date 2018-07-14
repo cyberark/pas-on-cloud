@@ -107,10 +107,5 @@ Describe "Vault-Single-Deployment.json" {
             $currentParam.DefaultValue | Should -BeExactly "CyberArk Vault"
             $currentParam.Description | Should -BeExactly "Enter a name for the Vault instance."
         }
-        
-        
-        
-
-       
     }
 }
