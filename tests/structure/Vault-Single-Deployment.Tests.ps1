@@ -18,7 +18,7 @@ Describe "Vault-Single-Deployment.json" {
             $currentParam | Should -Not -BeNullOrEmpty
             $currentParam.DefaultValue | Should -BeExactly "Decline"
             $currentParam.Description | Should -BeExactly "I have read and agree to the Terms and Conditions."
-            $currentParam.ParameterConstraints | Should -Be "Amazon.CloudFormation.Model.ParameterConstraints"
+            $currentParam.ParameterConstraints.AllowedValues | Should -Be @('Accept', 'Decline')
             $script:parametersCounter++
         }
         It "Validate KeyName parameter" {
@@ -96,7 +96,7 @@ Describe "Vault-Single-Deployment.json" {
             $currentParam.DefaultValue | Should -BeExactly "m4.large"
             $currentParam.Description | Should -BeExactly "Select the instance type of the Vault instance."
             $currentParam.NoEcho | Should -Be "False"
-            $currentParam.ParameterConstraints | Should -Be "Amazon.CloudFormation.Model.ParameterConstraints"
+            $currentParam.ParameterConstraints.AllowedValues | Should -Be @('m4.large', 'm4.xlarge', 'm4.2xlarge', 'm4.4xlarge')
             $script:parametersCounter++
         }
         It "Validate VaultInstanceSecurityGroups parameter" {
