@@ -21,9 +21,9 @@
     [Parameter(Mandatory=$false)]
     [String] $licenseFile =           "license.xml",
     [Parameter(Mandatory=$false)]
-    [String] $vaultMasterPassword =   "123Password",
+    [String] $vaultMasterPassword =   "123Password$",
     [Parameter(Mandatory=$false)]
-    [String] $vaultAdminPassword =    "123Password"
+    [String] $vaultAdminPassword =    "123Password$"
 )
 
 
