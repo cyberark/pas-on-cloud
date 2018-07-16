@@ -10,7 +10,7 @@ pipeline {
         powershell "Install-Module -Name Pester -Force -SkipPublisherCheck"
         s3Upload(bucket: 'jenkins-temp-poc', workingDir : 'aws')
         script {
-            response = powershell(script: 'Invoke-Pester -Script @{ Path = 'tests/structure'; Parameters = @{ randomNumber = '1' }; }', returnStdout: true)
+            response = powershell(script: 'Invoke-Pester -Script @{ Path = "tests/structure"; Parameters = @{ randomNumber = "1" }; }', returnStdout: true)
             echo "Response: ${response}"
         }
       }
