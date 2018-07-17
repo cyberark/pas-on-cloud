@@ -7,9 +7,10 @@ pipeline {
   stages {
     stage('Run AWS template structure validation tests [Pester]') {
       steps {
-        powershell "Install-Module -Name Pester -Force -SkipPublisherCheck"
+        
         s3Upload(bucket: 'pester-tests', includePathPattern: '**/*', workingDir : 'aws')
         script {
+            powershell(script: 'Install-Module -Name Pester -Force -SkipPublisherCheck', returnStdout: true)
             response = powershell(script: 'Invoke-Pester "tests/structure"', returnStdout: true)
             echo "Response: ${response}"
         }
