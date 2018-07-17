@@ -4,7 +4,6 @@ pipeline {
       label 'windows-2016'
     }
   }
-
   stages {
     stage('Run AWS template structure validation tests [Pester]') {
       steps {
