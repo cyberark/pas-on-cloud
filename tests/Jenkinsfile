@@ -5,6 +5,15 @@ pipeline {
     }
   }
   stages {
+    stage('Assume role'){
+      steps {
+        script {
+          powershell(script: '$iam = (Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials).Content
+                              $iamProfileInfo= ConvertFrom-Json (Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials/$iam).Content
+                              Set-AWSCredentials -AccessKey $iamProfileInfo.AccessKeyId -SecretKey $iamProfileInfo.SecretAccessKey -SessionToken $iamProfileInfo.Token')
+        }
+      }
+    }
     stage('Run AWS template structure validation tests [Pester]') {
       steps {
         s3Upload(bucket: "jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}", includePathPattern: "**/*", workingDir : "aws")
