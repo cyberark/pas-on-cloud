@@ -7,13 +7,14 @@ pipeline {
   stages {
     stage('Run AWS template structure validation tests [Pester]') {
       steps {
-        s3Upload(bucket: 'pester-tests', includePathPattern: '**/*', workingDir : 'aws')
+        s3Upload(bucket: "jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}", includePathPattern: "**/*", workingDir : "aws")
         script {
             powershell(script: 'Start-Process powershell -Verb runAs -ArgumentList "& Install-Module -Name Pester -Force -SkipPublisherCheck"', returnStdout: true)
             powershell(script: 'Get-CFNTemplateSummary -TemplateURL "https://s3.eu-west-2.amazonaws.com/pester-tests/DRVault-Single-Deployment.json"', returnStdout: true)
             response = powershell(script: 'Invoke-Pester "tests/structure"', returnStdout: true)
             echo "Response: ${response}"
         }
+        s3Delete(bucket:"jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}")
       }
     }
   }
