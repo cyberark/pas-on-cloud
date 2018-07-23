@@ -9,13 +9,13 @@ pipeline {
       steps {
         script {
           def s3_path = "https://s3.eu-west-2.amazonaws.com/pester-tests"
-          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${s3_path}/DRVault-Single-Deployment.json"', returnStdout: true)
+          res = powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/DRVault-Single-Deployment.json\"", returnStdout: true)
           echo "DRVault-Single-Deployment.json: ${res}"
-          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${s3_path}/Full-PAS-Deployment.json"', returnStdout: true)
+          res = powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Full-PAS-Deployment.json\"", returnStdout: true)
           echo "Full-PAS-Deployment.json: ${res}"
-          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${s3_path}/PAS-Component-Single-Deployment.json"', returnStdout: true)
+          res = powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/PAS-Component-Single-Deployment.json\"", returnStdout: true)
           echo "PAS-Component-Single-Deployment.json: ${res}"
-          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${s3_path}/Vault-Single-Deployment.json"', returnStdout: true)
+          res = powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
           echo "Vault-Single-Deployment.json: ${res}"
         }
       }
