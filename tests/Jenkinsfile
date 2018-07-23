@@ -10,13 +10,13 @@ pipeline {
         script {
           //powershell(script: 'C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1')
           res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data).Content', returnStdout: true)
-          echo ${res}
+          echo "${res}"
           res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam).Content', returnStdout: true)
-          echo ${res}
+          echo "${res}"
           iam = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials).Content', returnStdout: true)	
-          echo ${iam}
+          echo "${iam}"
           iamProfileInfo = powershell(script: 'ConvertFrom-Json (Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials/${iam}).Content', returnStdout: true) 	
-          echo ${iamProfileInfo}
+          echo "${iamProfileInfo}"
           powershell(script: 'Set-AWSCredentials -AccessKey ${iamProfileInfo}.AccessKeyId -SecretKey ${iamProfileInfo}.SecretAccessKey -SessionToken ${iamProfileInfo}.Token')
         }
       }
