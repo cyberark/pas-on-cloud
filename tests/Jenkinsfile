@@ -17,7 +17,8 @@ pipeline {
           powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/PAS-Component-Single-Deployment.json\"", returnStdout: true)
           echo "Vault-Single-Deployment.json"
           powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
-          powershell(script: "Get-CFNTemplateSummary -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
+          res = powershell(script: "Get-CFNTemplateSummary -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
+          echo "${res}"
         }
       }
     }
