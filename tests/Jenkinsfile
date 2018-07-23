@@ -5,22 +5,6 @@ pipeline {
     }
   }
   stages {
-    stage('Assume role'){
-      steps {
-        script {
-          //powershell(script: 'C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1')
-          res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data).Content', returnStdout: true)
-          echo "${res}"
-          res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam).Content', returnStdout: true)
-          echo "${res}"
-          iam = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials).Content', returnStdout: true)	
-          echo "${iam}"
-          iamProfileInfo = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials/${iam}).Content', returnStdout: true) 	
-          echo "${iamProfileInfo}"
-          powershell(script: 'Set-AWSCredentials -AccessKey ${iamProfileInfo}.AccessKeyId -SecretKey ${iamProfileInfo}.SecretAccessKey -SessionToken ${iamProfileInfo}.Token')
-        }
-      }
-    }
     stage('Run AWS template structure validation tests [Pester]') {
       steps {
         s3Upload(bucket: "jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}", includePathPattern: "**/*", workingDir : "aws")
