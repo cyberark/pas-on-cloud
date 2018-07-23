@@ -17,6 +17,7 @@ pipeline {
           powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/PAS-Component-Single-Deployment.json\"", returnStdout: true)
           echo "Vault-Single-Deployment.json"
           powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
+          powershell(script: "Get-CFNTemplateSummary -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
         }
       }
     }
@@ -26,6 +27,7 @@ pipeline {
         script {
           res = powershell(script: 'Start-Process powershell -Verb runAs -ArgumentList "& Install-Module -Name Pester -Force -SkipPublisherCheck"', returnStdout: true)
           echo "Install Pester: ${res}"
+          
           response = powershell(script: 'Invoke-Pester "tests/structure"', returnStdout: true)
           echo "Response: ${response}"
         }
