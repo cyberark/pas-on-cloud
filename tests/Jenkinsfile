@@ -5,12 +5,27 @@ pipeline {
     }
   }
   stages {
-    stage('Run AWS template structure validation tests [Pester]') {
+    stage('Test-CFNTemplate') {
+      steps {
+        script {
+          path = "https://s3.eu-west-2.amazonaws.com/pester-tests"
+          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${path}/DRVault-Single-Deployment.json"', returnStdout: true)
+          echo "DRVault-Single-Deployment.json: ${res}"
+          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${path}/Full-PAS-Deployment.json"', returnStdout: true)
+          echo "Full-PAS-Deployment.json: ${res}"
+          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${path}/PAS-Component-Single-Deployment.json"', returnStdout: true)
+          echo "PAS-Component-Single-Deployment.json: ${res}"
+          res = powershell(script: 'Test-CFNTemplate -TemplateURL "${path}/Vault-Single-Deployment.json"', returnStdout: true)
+          echo "Vault-Single-Deployment.json: ${res}"
+        }
+      }
+    }
+    stage('Run Pester tests') {
       steps {
         //s3Upload(bucket: "jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}", includePathPattern: "**/*", workingDir : "aws")
         script {
-          powershell(script: 'Start-Process powershell -Verb runAs -ArgumentList "& Install-Module -Name Pester -Force -SkipPublisherCheck"', returnStdout: true)
-          powershell(script: 'Get-CFNTemplateSummary -TemplateURL "https://s3.eu-west-2.amazonaws.com/pester-tests/DRVault-Single-Deployment.json"', returnStdout: true)
+          res = powershell(script: 'Start-Process powershell -Verb runAs -ArgumentList "& Install-Module -Name Pester -Force -SkipPublisherCheck"', returnStdout: true)
+          echo "Install Pester: ${res}"
           response = powershell(script: 'Invoke-Pester "tests/structure"', returnStdout: true)
           echo "Response: ${response}"
         }
