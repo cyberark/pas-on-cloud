@@ -9,11 +9,15 @@ pipeline {
       steps {
         script {
           //powershell(script: 'C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1')
-          //powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data).Content', returnStdout: true)
-          //powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam).Content', returnStdout: true)
-          //iam = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials).Content', returnStdout: true)	
-          //iamProfileInfo = powershell(script: 'ConvertFrom-Json (Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials/${iam}).Content', returnStdout: true) 	
-          //powershell(script: 'Set-AWSCredentials -AccessKey ${iamProfileInfo}.AccessKeyId -SecretKey ${iamProfileInfo}.SecretAccessKey -SessionToken ${iamProfileInfo}.Token')
+          res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data).Content', returnStdout: true)
+          echo ${res}
+          res = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam).Content', returnStdout: true)
+          echo ${res}
+          iam = powershell(script: '(Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials).Content', returnStdout: true)	
+          echo ${iam}
+          iamProfileInfo = powershell(script: 'ConvertFrom-Json (Invoke-WebRequest http://169.254.169.254/latest/meta-data/iam/security-credentials/${iam}).Content', returnStdout: true) 	
+          echo ${iamProfileInfo}
+          powershell(script: 'Set-AWSCredentials -AccessKey ${iamProfileInfo}.AccessKeyId -SecretKey ${iamProfileInfo}.SecretAccessKey -SessionToken ${iamProfileInfo}.Token')
         }
       }
     }
