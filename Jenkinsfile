@@ -9,7 +9,7 @@ pipeline {
       steps {
         script {
           sh(script: 'pip install virtualenv --user')
-          sh(script: 'virtualenv testenv')
+          sh(script: '~/.local/bin/virtualenv testenv')
           sh(script: 'source ./testenv/bin/activate')
         }
       }
