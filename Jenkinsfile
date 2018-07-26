@@ -5,12 +5,11 @@ pipeline {
     }
   }
   stages {
-    stage('Install virtual environment') {
+    stage('Set virtual environment') {
       steps {
         script {
-          sh(script: 'pip install virtualenv')
           sh(script: 'virtualenv testenv')
-          sh(script: 'source testenv/bin/activate')
+          sh(script: 'source ./testenv/bin/activate')
         }
       }
     }
