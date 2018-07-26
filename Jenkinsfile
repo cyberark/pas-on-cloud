@@ -10,7 +10,7 @@ pipeline {
         script {
           sh(script: 'pip install virtualenv --user')
           sh(script: 'export PATH=$PATH:~/.local/bin')
-          sh(script: './virtualenv testenv')
+          sh(script: '~/.local/bin/virtualenv testenv')
           sh(script: 'source ./testenv/bin/activate')
           sh(script: 'pip install -r tests/requirements.txt --user')
         }
