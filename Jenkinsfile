@@ -5,7 +5,7 @@ pipeline {
     }
   }
   stages {
-    stage('Install virtual environment' {
+    stage('Install virtual environment') {
       steps {
         script {
           sh(script: 'pip install virtualenv')
