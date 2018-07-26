@@ -17,7 +17,7 @@ pipeline {
           sh(script: 'export PATH=$PATH:~/.local/bin')
           sh(script: '~/.local/bin/virtualenv testenv')
           sh(script: 'source ./testenv/bin/activate')
-          sh(script: 'pip install -r tests/requirements.txt --user')
+          sh(script: 'testenv/bin/pip install -r tests/requirements.txt --user --no-cache-dir')
         }
       }
     }
@@ -50,6 +50,11 @@ pipeline {
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
         }
+      }
+    }
+    stage('pytest') {
+      steps {
+        sh(script: "testenv/bin/pytest tests")
       }
     }
     
