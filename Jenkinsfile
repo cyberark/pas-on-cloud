@@ -57,7 +57,7 @@ pipeline {
     
     stage('Cleanup bucket') {
       steps {
-        s3Delete(bucket: "$BUCKET", file: 'aws', path: "$BUCKET_PATH/") 
+        s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/") 
       }
     }
   }
