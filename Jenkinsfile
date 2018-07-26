@@ -13,11 +13,9 @@ pipeline {
     stage('Install virtual environment') {
       steps {
         script {
-          sh(script: 'pip install virtualenv --user')
-          sh(script: 'export PATH=$PATH:~/.local/bin')
-          sh(script: '~/.local/bin/virtualenv testenv')
+          sh(script: 'python -m virtualenv --no-site-packages testenv')
           sh(script: 'source ./testenv/bin/activate')
-          sh(script: 'testenv/bin/pip install -r tests/requirements.txt --user --no-cache-dir')
+          sh(script: 'testenv/bin/pip install -r tests/requirements.txt --no-cache-dir')
         }
       }
     }
