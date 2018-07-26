@@ -11,6 +11,7 @@ pipeline {
           sh(script: 'pip install virtualenv --user')
           sh(script: '~/.local/bin/virtualenv testenv')
           sh(script: 'source ./testenv/bin/activate')
+          sh(script: 'pip install -r tests/requirements.txt')
         }
       }
     }
