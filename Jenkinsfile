@@ -5,6 +5,15 @@ pipeline {
     }
   }
   stages {
+    stage('Install virtual environment' {
+      steps {
+        script {
+          sh(script: 'pip install virtualenv')
+          sh(script: 'virtualenv testenv')
+          sh(script: 'source testenv/bin/activate')
+        }
+      }
+    }
     stage('Syntax Validation') {
       steps {
         s3Upload(bucket: 'jenkins-temp-poc', file: 'aws/Vault-Single-Deployment.json')
