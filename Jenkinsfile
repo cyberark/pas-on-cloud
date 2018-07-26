@@ -55,11 +55,11 @@ pipeline {
         sh(script: "testenv/bin/pytest tests")
       }
     }
-    
-    post {
-      always {
-        s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/")
-      }
+  } 
+  // Perform cleanup always
+  post {
+    always {
+      s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/")
     }
   }
 }
