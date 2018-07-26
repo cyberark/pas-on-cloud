@@ -33,21 +33,21 @@ pipeline {
       }
       steps {
         script {
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/DRVault-Single-Deployment.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/Full-PAS-Deployment.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Full-PAS-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/PAS-AIO-network-environment-template.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-network-environment-template.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/PAS-network-environment-template.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-template.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION--template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
         }
       }
