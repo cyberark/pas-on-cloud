@@ -56,11 +56,9 @@ pipeline {
       }
     }
     
-    
-    
-    stage('Cleanup bucket') {
-      steps {
-        s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/") 
+    post {
+      always {
+        s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/")
       }
     }
   }
