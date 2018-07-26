@@ -18,9 +18,9 @@ pipeline {
     }
     stage('Syntax Validation') {
       steps {
-        s3Upload(bucket: 'jenkins-pas-on-cloud', file: 'aws')
+        s3Upload(bucket: 'jenkins-pas-on-cloud', file: 'aws', path: "${env.BRANCH_NAME}/${env.GIT_COMMIT}/")
         script {
-          response = sh(script: 'aws cloudformation validate-template --region eu-west-2 --template-url https://s3.eu-west-2.amazonaws.com/jenkins-pas-on-cloud/Vault-Single-Deployment.json', returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region eu-west-2 --template-url https://s3.eu-west-2.amazonaws.com/jenkins-pas-on-cloud/${env.BRANCH_NAME}/${env.GIT_COMMIT}/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
         }
       }
