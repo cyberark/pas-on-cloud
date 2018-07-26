@@ -3,7 +3,6 @@ pipeline {
     node {
       label 'ansible'
     }
-
   }
   stages {
     stage('Syntax Validation') {
