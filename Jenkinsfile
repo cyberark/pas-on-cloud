@@ -21,7 +21,7 @@ pipeline {
         }
       }
     }
-    stage('Upload templates to S3 bucket' {
+    stage('Upload templates to S3 bucket') {
       steps {
         s3Upload(bucket: "$BUCKET", file: 'aws', path: "$BUCKET_PATH/")
       }
@@ -52,6 +52,9 @@ pipeline {
         }
       }
     }
+    
+    
+    
     stage('Cleanup bucket') {
       steps {
         s3Delete(bucket: "$BUCKET", file: 'aws', path: "$BUCKET_PATH/") 
