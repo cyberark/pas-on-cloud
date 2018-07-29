@@ -29,5 +29,6 @@ class TestDrVaultSingleDeployment():
         ChangeSetName = 'test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         Description = 'test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         ChangeSetType = 'CREATE'
-    )
+      )
+      print(response)
   
