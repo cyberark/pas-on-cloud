@@ -30,5 +30,5 @@ class TestDrVaultSingleDeployment():
         Description = 'test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         ChangeSetType = 'CREATE'
       )
-      print(response)
+      assert(response=={})
   
