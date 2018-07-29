@@ -5,9 +5,9 @@ cf_client = boto3.client('cloudformation', region_name='eu-west-2')
 templatename = 'DRVault-Single-Deployment.json'
 
 class TestDrVaultSingleDeployment():
-    def test_validate(branch, commitid, templateurl):
+    def test_validate(self, branch, commitid, templateurl):
       response = cf_client.create_change_set(
-        StackName='test_DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
+        StackName='test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         TemplateURL='{}/{}'.format(templateurl, templatename),
         UsePreviousTemplate=False,
         Parameters=[
@@ -25,8 +25,8 @@ class TestDrVaultSingleDeployment():
                 'Value': 'string'
             },
         ],
-        ChangeSetName='test_DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
-        Description='test_DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
+        ChangeSetName='test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
+        Description='test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         ChangeSetType='CREATE'
     )
   
