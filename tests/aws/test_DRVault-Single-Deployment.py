@@ -19,7 +19,7 @@ class TestDrVaultSingleDeployment():
                   {'ParameterKey': 'RetypeMasterPassword', 'ParameterValue': 'Cyber123456$', 'UsePreviousValue': False},
                   {'ParameterKey': 'VaultDRPassword', 'ParameterValue': 'Cyber123456$', 'UsePreviousValue': False},
                   {'ParameterKey': 'VaultFilesBucket', 'ParameterValue': 'Cyber123456$', 'UsePreviousValue': False},
-                  {'ParameterKey': 'EULA', 'ParameterValue': 'true', 'UsePreviousValue': False}]
+                  {'ParameterKey': 'EULA', 'ParameterValue': 'Accept', 'UsePreviousValue': False}]
       response = cf_client.create_change_set(
         StackName = 'test-DRVault-Single-Deployment-{}-{}'.format(branch,commitid),
         TemplateURL = '{}/{}'.format(templateurl, templatename),
