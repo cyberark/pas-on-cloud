@@ -5,6 +5,12 @@ pipeline {
     }
 
   }
+  environment {
+    BUCKET = 'jenkins-pas-on-cloud'
+    BUCKET_PATH = "${env.BRANCH_NAME}/${env.GIT_COMMIT}"
+    TEMPLATE_URL = "https://s3.eu-west-2.amazonaws.com/$BUCKET/$BUCKET_PATH"
+    AWS_REGION = 'eu-west-2'
+  }
   stages {
     stage('Install virtual environment') {
       steps {
@@ -23,10 +29,6 @@ pipeline {
       }
     }
     stage('Syntax Validation') {
-      environment {
-        TEMPLATE_URL = "https://s3.eu-west-2.amazonaws.com/$BUCKET/$BUCKET_PATH"
-        AWS_REGION = 'eu-west-2'
-      }
       steps {
         script {
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.json", returnStdout: true)
@@ -51,13 +53,9 @@ pipeline {
     }
     stage('pytest') {
       steps {
-        sh 'testenv/bin/pytest tests'
+        sh "testenv/bin/pytest tests --branch ${env.BRANCH_NAME} --commitid ${env.GIT_COMMIT} --region $AWS_REGION --templateurl $TEMPLATE_URL" 
       }
     }
-  }
-  environment {
-    BUCKET = 'jenkins-pas-on-cloud'
-    BUCKET_PATH = "${env.BRANCH_NAME}/${env.GIT_COMMIT}"
   }
   post {
     always {
