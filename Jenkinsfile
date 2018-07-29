@@ -53,7 +53,7 @@ pipeline {
     }
     stage('pytest') {
       steps {
-        sh "testenv/bin/pytest tests --branch ${env.BRANCH_NAME} --commitid ${env.GIT_COMMIT} --region $AWS_REGION --templateurl $TEMPLATE_URL" 
+        sh "testenv/bin/pytest -v tests --branch ${env.BRANCH_NAME} --commitid ${env.GIT_COMMIT} --region $AWS_REGION --templateurl $TEMPLATE_URL" 
       }
     }
   }
