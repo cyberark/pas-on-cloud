@@ -98,7 +98,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/var/tmp/register_and_activation.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/etc/opt/register_and_activation.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
                     "fileUris": []
                 }
             },
