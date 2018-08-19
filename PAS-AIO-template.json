@@ -1,5 +1,12 @@
 {
     "Resources": {
+        "LogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "RetentionInDays": 30
+            },
+            "DeletionPolicy": "Retain"
+        },
         "DeployBucket": {
             "Type": "AWS::S3::Bucket",
             "Properties": {
@@ -210,6 +217,56 @@
             },
             "Condition": "EULACondition"
         },
+		"DeletePasswordLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Description": "Delete file from s3 bucket",
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "\n",
+                            [
+                                "import uuid",
+								"import boto3",
+								"import cfnresponse",
+								"",
+								"def DeleteFile(bucket, filePath):",
+								"    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
+								"    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
+								"    print response",
+								"",    
+								"def lambda_handler(event, context):",
+								"",
+								"    physicalResourceId = str(uuid.uuid4())",
+								"    if 'PhysicalResourceId' in event:",
+								"        physicalResourceId = event['PhysicalResourceId']",
+								"    ",
+								"    try:",
+								"        if event['RequestType'] == 'Create':",
+								"            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
+								"            print 'File Deleted'",
+								"            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+								"        if event['RequestType'] == 'Delete':",
+								"           return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+								"",
+								"    except Exception as E:",
+								"        print E",
+								"        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                            ]
+                        ]
+                    }
+                },
+                "Runtime": "python2.7",
+                "Handler": "index.lambda_handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaDeployRole",
+                        "Arn"
+                    ]
+                }
+            },
+            "Condition": "EULACondition"
+        },
         "StoreMasterPassword": {
             "Type": "AWS::CloudFormation::CustomResource",
             "Version": "1.0",
@@ -257,6 +314,64 @@
                 "DeployBucketPolicy",
                 "StorePasswordLambda",
                 "DeployBucket"
+            ]
+        },
+		"CleanMasterPassword": {
+            "Type": "AWS::CloudFormation::CustomResource",
+            "Version": "1.0",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "DeletePasswordLambda",
+                        "Arn"
+                    ]
+                },
+                "bucket": {
+                    "Ref": "DeployBucket"
+                },
+                "key": {
+                    "Fn::GetAtt": [
+						"StoreMasterPassword",
+						"FileId"
+					]
+                }
+            },
+            "Condition": "EULACondition",
+            "DependsOn": [
+                "LambdaDeployRole",
+                "DeployBucketPolicy",
+                "StorePasswordLambda",
+                "DeployBucket",
+				"VaultMachine"
+            ]
+        },
+		"CleanAdminPassword": {
+            "Type": "AWS::CloudFormation::CustomResource",
+            "Version": "1.0",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "DeletePasswordLambda",
+                        "Arn"
+                    ]
+                },
+                "bucket": {
+                    "Ref": "DeployBucket"
+                },
+                "key": {
+                    "Fn::GetAtt": [
+						"StoreAdminPassword",
+						"FileId"
+					]
+                }
+            },
+            "Condition": "EULACondition",
+            "DependsOn": [
+                "LambdaDeployRole",
+                "DeployBucketPolicy",
+                "StorePasswordLambda",
+                "DeployBucket",
+				"ComponentsMachine"
             ]
         },
         "VaultMachine": {
@@ -332,6 +447,138 @@
                 "AWS::CloudFormation::Init": {
                     "config": {
                         "files": {
+                            "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "{",
+                                            "  \"IsEnabled\" : true,",
+                                            "  \"EngineConfiguration\" : {",
+                                            "    \"PollInterval\" : \"00:00:05\",",
+                                            "    \"Components\" : [",
+                                            "    {",
+                                            "      \"Id\" : \"EC2ConfigLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\Program Files\\\\Amazon\\\\Ec2ConfigService\\\\Logs\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-ddTHH:mm:ss.fffZ:\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"EC2ConfigLog.txt\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"UTC\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnInitLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-init.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnInitCmdLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-init-cmd.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnWireLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-wire.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchEC2ConfigLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/EC2ConfigLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnInitLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnInitLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnInitCmdLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnInitCmdLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnWireLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnWireLog\"",
+                                            "      }",
+                                            "    }],",
+                                            "    \"Flows\": {",
+                                            "      \"Flows\": [",
+                                            "        \"EC2ConfigLog,CloudWatchEC2ConfigLog\",",
+                                            "        \"CfnInitLog,CloudWatchCfnInitLog\",",
+                                            "        \"CfnInitCmdLog,CloudWatchCfnInitCmdLog\",",
+                                            "        \"CfnWireLog,CloudWatchCfnWireLog\"",
+                                            "      ]",
+                                            "    }",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    ]
+                                }
+                            },                            
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -436,45 +683,19 @@
                                         ]
                                     ]
                                 }
-                            },
-                            "C:\\clean.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import boto3\n",
-                                            "\n",
-                                            "def deleteFile(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                            "\treturn s3Client.delete_object(\n",
-                                            "\t\tBucket = bucket,\n",
-                                            "\t\tKey = filePath\n",
-                                            "\t)",
-                                            "\n",
-                                            "print deleteFile('",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "','",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreMasterPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "')\n"
-                                        ]
-                                    ]
-                                }
                             }
                         },
                         "commands": {
-                            "1-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                            "0-enableSSM": {
+                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
+                                "waitAfterCompletion": "0"
                             },
-                            "2-clean": {
-                                "command": "C:\\Python27\\python.exe C:\\clean.py",
+                            "1-restartSSM": {
+                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
+                                "waitAfterCompletion": "30"
+                            },
+                            "2-deploy": {
+                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
 								"waitAfterCompletion": "0"
                             }
                         }
@@ -532,7 +753,40 @@
                         }
                     ]
                 },
-                "Path": "/"
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                ],
+                "Policies": [
+                    {
+                        "PolicyName": "LogRolePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:",
+                                                    "logs:*:*:*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
             },
             "Condition": "EULACondition"
         },
@@ -554,7 +808,40 @@
                         }
                     ]
                 },
-                "Path": "/"
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                ],
+                "Policies": [
+                    {
+                        "PolicyName": "LogRolePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:",
+                                                    "logs:*:*:*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
             },
             "Condition": "EULACondition"
         },
@@ -792,6 +1079,138 @@
                 "AWS::CloudFormation::Init": {
                     "config": {
                         "files": {
+                            "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "{",
+                                            "  \"IsEnabled\" : true,",
+                                            "  \"EngineConfiguration\" : {",
+                                            "    \"PollInterval\" : \"00:00:05\",",
+                                            "    \"Components\" : [",
+                                            "    {",
+                                            "      \"Id\" : \"EC2ConfigLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\Program Files\\\\Amazon\\\\Ec2ConfigService\\\\Logs\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-ddTHH:mm:ss.fffZ:\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"EC2ConfigLog.txt\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"UTC\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnInitLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-init.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnInitCmdLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-init-cmd.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CfnWireLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                            "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                            "        \"Encoding\": \"ASCII\",",
+                                            "        \"Filter\": \"cfn-wire.log\",",
+                                            "        \"CultureName\": \"en-US\",",
+                                            "        \"TimeZoneKind\": \"Local\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchEC2ConfigLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/EC2ConfigLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnInitLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnInitLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnInitCmdLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnInitCmdLog\"",
+                                            "      }",
+                                            "    },",
+                                            "    {",
+                                            "      \"Id\": \"CloudWatchCfnWireLog\",",
+                                            "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                            "      \"Parameters\": {",
+                                            "        \"AccessKey\": \"\",",
+                                            "        \"SecretKey\": \"\",",
+                                            {
+                                                "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                            },
+                                            {
+                                                "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                            },
+                                            "        \"LogStream\": \"{instance_id}/CfnWireLog\"",
+                                            "      }",
+                                            "    }],",
+                                            "    \"Flows\": {",
+                                            "      \"Flows\": [",
+                                            "        \"EC2ConfigLog,CloudWatchEC2ConfigLog\",",
+                                            "        \"CfnInitLog,CloudWatchCfnInitLog\",",
+                                            "        \"CfnInitCmdLog,CloudWatchCfnInitCmdLog\",",
+                                            "        \"CfnWireLog,CloudWatchCfnWireLog\"",
+                                            "      ]",
+                                            "    }",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    ]
+                                }
+                            },                            
                             "C:\\deployCPM.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -936,81 +1355,79 @@
                                         ]
                                     ]
                                 }
-                            },
-                            "C:\\clean.py": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "import boto3\n",
-                                            "\n",
-                                            "def deleteFile(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                            "\treturn s3Client.delete_object(\n",
-                                            "\t\tBucket = bucket,\n",
-                                            "\t\tKey = filePath\n",
-                                            "\t)",
-                                            "\n",
-                                            "print deleteFile('",
-                                            {
-                                                "Ref": "DeployBucket"
-                                            },
-                                            "','",
-                                            {
-                                                "Fn::GetAtt": [
-                                                    "StoreAdminPassword",
-                                                    "FileId"
-                                                ]
-                                            },
-                                            "')\n"
-                                        ]
-                                    ]
-                                }
                             }
                         },
                         "commands": {
-                            "01-CPMdeploy": {
+                            "00-enableSSM": {
+                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
+                                "waitAfterCompletion": "0"
+                            },
+                            "01-restartSSM": {
+                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
+                                "waitAfterCompletion": "30"
+                            },                            
+                            "02-CPMdeploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deployCPM.py",
 								"waitAfterCompletion": "0"
                             },
-                            "02-CPMServiceConfig": {
+                            "02a-ResetUserPassword": {
+                                "command": "powershell.exe -Command Set-LocalUser -Name 'PasswordManagerUser' -PasswordNeverExpires $true -UserMayChangePassword $false",
+                                "waitAfterCompletion": "0"
+                            },
+                            "02b-ResetUserPassword": {
+                                "command": "powershell.exe -Command Set-LocalUser -Name 'PVWAReportsUser' -PasswordNeverExpires $true -UserMayChangePassword $false",
+                                "waitAfterCompletion": "0"
+                            },
+                            "03-CPMServiceConfig": {
                                 "command": "sc config \"CyberArk Password Manager\" start=auto",
 								"waitAfterCompletion": "0"
                             },
-                            "03-CPMScannerServiceConfig": {
+                            "04-CPMScannerServiceConfig": {
                                 "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
 								"waitAfterCompletion": "0"
                             },
-                            "04-CPMServiceStart": {
+                            "05-CPMServiceStart": {
                                 "command": "sc start \"CyberArk Password Manager\"",
 								"waitAfterCompletion": "0"
                             },
-                            "05-CPMScannerServiceStart": {
+                            "06-CPMScannerServiceStart": {
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
 								"waitAfterCompletion": "0"
                             },
-                            "06-PVWAdeploy": {
+                            "07-PVWAdeploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deployPVWA.py",
 								"waitAfterCompletion": "0"
                             },
-                            "07-StartAppPool": {
+                            "08-StartAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
 								"waitAfterCompletion": "0"
                             },
-                            "08-ScheduledTasksServiceConfig": {
+                            "09-ScheduledTasksServiceConfig": {
                                 "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
 								"waitAfterCompletion": "0"
                             },
-                            "09-ScheduledTasksServiceStart": {
+                            "10-ScheduledTasksServiceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
 								"waitAfterCompletion": "0"
                             },
-                            "10-PSMdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployPSM.py",
-								"waitAfterCompletion": "0"
+                            "10a-SetUserPassword": {
+                                "command": "powershell.exe -Command Set-LocalUser -Name 'PasswordManagerUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
+                                "waitAfterCompletion": "5"
                             },
-                            "11-Clean": {
-                                "command": "C:\\Python27\\python.exe C:\\clean.py",
+                            "10aa-SetUserPassword": {
+                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
+                                "waitAfterCompletion": "0"
+                            },
+                            "10b-SetUserPassword": {
+                                "command": "powershell.exe -Command Set-LocalUser -Name 'PVWAReportsUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
+                                "waitAfterCompletion": "5"
+                            },
+                            "10ba-SetUserPassword": {
+                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
+                                "waitAfterCompletion": "0"
+                            },
+                            "11-PSMdeploy": {
+                                "command": "C:\\Python27\\python.exe C:\\deployPSM.py",
 								"waitAfterCompletion": "0"
                             },
                             "12-PSMServiceConfig": {
@@ -1316,6 +1733,14 @@
             "sa-east-1": {
                 "Vault": "ami-96b7ebfa",
                 "Components": "ami-0e87db62"
+            }
+        } 
+    },
+    "Outputs": {
+        "CloudWatchLogGroupName": {
+            "Description": "The name of the CloudWatch log group",
+            "Value": {
+                "Ref": "LogGroup"
             }
         }
     }
