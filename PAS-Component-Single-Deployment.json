@@ -1497,8 +1497,6 @@
                             "",
                             [
                                 "#!/bin/bash -e\n",
-								"yum update -y aws-cfn-bootstrap\n",
-
 								"/opt/aws/bin/cfn-init -v ",
 								"         --stack ", { "Ref" : "AWS::StackName" },
 								"         --resource PSMPMachine ",
