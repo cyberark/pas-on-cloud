@@ -7,9 +7,9 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
 ### Added
 - Fix local user expiring in cpm & pvwa
 - CloudWatch for windows instances
-- Labda function to cleanup resources
+- Lambda function to cleanup resources
 
-### Changed
+
 
 ## [10.3] (Release date: 2018/05/21)
 
