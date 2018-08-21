@@ -2,6 +2,15 @@
 
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
+## [10.3.1] (Release date: 2018/08/21)
+
+### Added
+- Fix local user expiring in cpm & pvwa
+- CloudWatch for windows instances
+- Labda function to cleanup resources
+
+### Changed
+
 ## [10.3] (Release date: 2018/05/21)
 
 ### Added
