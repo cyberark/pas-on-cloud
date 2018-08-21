@@ -1892,22 +1892,6 @@
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
 								"waitAfterCompletion": "0"
                             },
-                            "10a-SetUserPassword": {
-                                "command": "powershell.exe -Command Set-LocalUser -Name 'PasswordManagerUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
-                                "waitAfterCompletion": "5"
-                            },
-                            "10aa-SetUserPassword": {
-                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
-                                "waitAfterCompletion": "0"
-                            },
-                            "10b-SetUserPassword": {
-                                "command": "powershell.exe -Command Set-LocalUser -Name 'PVWAReportsUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
-                                "waitAfterCompletion": "5"
-                            },
-                            "10ba-SetUserPassword": {
-                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
-                                "waitAfterCompletion": "0"
-                            },
                             "11-PSMdeploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deployPSM.py",
 								"waitAfterCompletion": "0"

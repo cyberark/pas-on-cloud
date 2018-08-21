@@ -752,14 +752,6 @@
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
                                 "waitAfterCompletion": "0"
                             },
-                            "7-SetUserPassword": {
-                                "command": "powershell.exe -Command Set-LocalUser -Name 'PasswordManagerUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
-                                "waitAfterCompletion": "5"
-                            },
-                            "7a-SetUserPassword": {
-                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PasswordManagerUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
-                                "waitAfterCompletion": "0"
-                            },
                             "8-ChangeHostName": {
                                 "command": {
                                     "Fn::Join": [
@@ -1091,14 +1083,6 @@
                             },
                             "5-CSTserviceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "6-SetUserPassword": {
-                                "command": "powershell.exe -Command Set-LocalUser -Name 'PVWAReportsUser' -PasswordNeverExpires $false -UserMayChangePassword $true -AccountExpires (Get-Date).AddDays(42) ; $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo() ",
-                                "waitAfterCompletion": "5"
-                            },
-                            "6a-SetUserPassword": {
-                                "command": "powershell.exe -Command $usr=[ADSI]'WinNT://localhost/PVWAReportsUser';$usr.passwordExpired = 0;$usr.psbase.commitchanges();$usr.setinfo()",
                                 "waitAfterCompletion": "0"
                             },
                             "7-ChangeHostName": {
