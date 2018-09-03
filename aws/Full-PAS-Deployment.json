@@ -1240,7 +1240,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "Components"
+                        "CPM"
                     ]
                 },
                 "InstanceType": {
@@ -1566,7 +1566,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "Components"
+                        "PVWA"
                     ]
                 },
                 "InstanceType": {
@@ -1886,7 +1886,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "Components"
+                        "PSM"
                     ]
                 },
                 "InstanceType": {
