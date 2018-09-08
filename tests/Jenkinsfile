@@ -1,0 +1,39 @@
+pipeline {
+  agent {
+    node {
+      label 'windows-2016'
+    }
+  }
+  stages {
+    stage('Test-CFNTemplate') {
+      steps {
+        script {
+          echo "DRVault-Single-Deployment.json"
+          def s3_path = "https://s3.eu-west-2.amazonaws.com/pester-tests"
+          powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/DRVault-Single-Deployment.json\"", returnStdout: true)
+          echo "Full-PAS-Deployment.json"
+          powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Full-PAS-Deployment.json\"", returnStdout: true)
+          echo "PAS-Component-Single-Deployment.json"
+          powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/PAS-Component-Single-Deployment.json\"", returnStdout: true)
+          echo "Vault-Single-Deployment.json"
+          powershell(script: "Test-CFNTemplate -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
+          res = powershell(script: "Get-CFNTemplateSummary -TemplateURL \"${s3_path}/Vault-Single-Deployment.json\"", returnStdout: true)
+          echo "${res}"
+        }
+      }
+    }
+    stage('Run Pester tests') {
+      steps {
+        //s3Upload(bucket: "jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}", includePathPattern: "**/*", workingDir : "aws")
+        script {
+          res = powershell(script: 'Start-Process powershell -Verb runAs -ArgumentList "& Install-Module -Name Pester -Force -SkipPublisherCheck"', returnStdout: true)
+          echo "Install Pester: ${res}"
+          
+          response = powershell(script: 'Invoke-Pester "tests/structure"', returnStdout: true)
+          echo "Response: ${response}"
+        }
+        s3Delete(bucket:"jenkins-pas-on-cloud", path: "${JOB_NAME}-${BUILD_NUMBER}")
+      }
+    }
+  }
+}
