@@ -1754,8 +1754,7 @@
             },
             "us-gov-west-1": {
                 "Vault": "ami-815ac4e0",
-                "Components": "ami-875ac4e6",
-                "PSMP": "ami-ba5ac4db"
+                "Components": "ami-875ac4e6"
             }
         } 
     },
