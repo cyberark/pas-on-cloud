@@ -2147,7 +2147,8 @@
                             },
                             "3-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
 							"99-SignalCompletion": {
 							    "command": {"Fn::Join": [
