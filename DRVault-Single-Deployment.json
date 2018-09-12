@@ -40,10 +40,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -58,10 +58,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -81,10 +81,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -334,7 +334,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultDRMachine",
                                 "  --region ",
@@ -368,7 +368,7 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -482,7 +482,7 @@
                                             "import boto3\n",
                                             "\n",
                                             "def deleteFile(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
                                             "\treturn s3Client.delete_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -532,11 +532,13 @@
                         "commands": {
                             "1-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "2-clean": {
                                 "command": "C:\\Python27\\python.exe C:\\clean.py",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
 							"3-ChangeHostName" : {
 								"command" : {
@@ -549,7 +551,20 @@
 										]
 									]
 								},
-								"waitAfterCompletion" : "forever"
+								"waitAfterCompletion" : "forever",
+								"ignoreErrors": "false"
+							},
+                            "99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource VaultDRMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
 							}
                         }
                     }
@@ -608,10 +623,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "VaultFilesBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -645,10 +660,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -1028,6 +1043,11 @@
                 "Vault": "ami-96b7ebfa",
                 "Components": "ami-0e87db62",
                 "PSMP": "ami-fdb4e891"
+            },
+            "us-gov-west-1": {
+                "Vault": "ami-815ac4e0",
+                "Components": "ami-875ac4e6",
+                "PSMP": "ami-ba5ac4db"
             }
         }
     }
