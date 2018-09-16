@@ -47,10 +47,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -65,10 +65,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -88,10 +88,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -541,7 +541,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultMachine",
                                 "  --region ",
@@ -707,7 +707,7 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -715,7 +715,7 @@
                                             "\treturn objectResponse['Body'].read()\n",
                                             "\n",
                                             "def downloadFile(bucket,filePath,target):\n",
-                                            "\ts3Client = boto3.client('s3')\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" },"')\n",
                                             "\ts3Client.download_file(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath,\n",
@@ -811,10 +811,6 @@
                             
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30"
@@ -823,21 +819,32 @@
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0"
                             },
-                            "3-ChangeHostName": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "powershell.exe -Command Rename-Computer -NewName ",
-                                            {
-                                                "Ref": "VaultHostName"
-                                            },
-                                            " -Force -Restart"
-                                        ]
-                                    ]
-                                },
-                                "waitAfterCompletion": "forever"
-                            }
+ 							"3-ChangeHostName" : {
+								"command" : {
+									"Fn::Join": [
+										"",
+										[
+											"powershell.exe -Command Rename-Computer -NewName ",
+											{ "Ref": "VaultHostName" },
+											" -Force -Restart"
+										]
+									]
+								},
+								"waitAfterCompletion" : "forever",
+                                "ignoreErrors": "false"
+							},
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource VaultMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
                         }
                     }
                 }
@@ -919,10 +926,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "VaultFilesBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -956,10 +963,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -1320,6 +1327,14 @@
                 "PVWA": "ami-0e87db62",
                 "PSM": "ami-0e87db62",
                 "PSMP": "ami-fdb4e891"
+            },
+            "us-gov-west-1": {
+                "Vault": "ami-815ac4e0",
+                "Components": "ami-875ac4e6",
+                "CPM": "ami-875ac4e6",
+                "PVWA": "ami-875ac4e6",
+                "PSM": "ami-875ac4e6",
+                "PSMP": "ami-ba5ac4db"
             }
         }
     },

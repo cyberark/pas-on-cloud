@@ -42,10 +42,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -60,10 +60,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -83,10 +83,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -234,7 +234,7 @@
 								"    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
 								"    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
 								"    print response",
-								"",    
+								"",
 								"def lambda_handler(event, context):",
 								"",
 								"    physicalResourceId = str(uuid.uuid4())",
@@ -423,7 +423,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultMachine",
                                 "  --region ",
@@ -578,7 +578,7 @@
                                         ]
                                     ]
                                 }
-                            },                                
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -589,7 +589,7 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -597,7 +597,7 @@
                                             "\treturn objectResponse['Body'].read()\n",
                                             "\n",
                                             "def downloadFile(bucket,filePath,target):\n",
-                                            "\ts3Client = boto3.client('s3')\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "')\n",
                                             "\ts3Client.download_file(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath,\n",
@@ -692,19 +692,38 @@
                             }
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
                             "2-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
-                            }
-                        }
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource VaultMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+                        },
+						"services": {
+						    "windows": {
+						        "AmazonSSMAgent": {
+							        "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+							    }
+						    }
+						}
                     }
                 }
             },
@@ -776,7 +795,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultDRMachine",
                                 "  --region ",
@@ -931,7 +950,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -942,7 +961,7 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
-                                            "\ts3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -950,7 +969,7 @@
                                             "\treturn objectResponse['Body'].read()\n",
                                             "\n",
                                             "def downloadFile(bucket,filePath,target):\n",
-                                            "\ts3Client = boto3.client('s3')\n",
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "')\n",
                                             "\ts3Client.download_file(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath,\n",
@@ -1053,19 +1072,38 @@
                             }
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
                             "2-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
-                            }
-                        }
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource VaultDRMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+                        },
+						"services": {
+						    "windows": {
+						        "AmazonSSMAgent": {
+							        "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+							    }
+						    }
+						}
                     }
                 }
             },
@@ -1149,7 +1187,7 @@
                 },
                 "Path": "/",
                 "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                    { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM" }
                 ],
                 "Policies": [
                     {
@@ -1166,15 +1204,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:",
-                                                    "logs:*:*:*"
-                                                ]
-                                            ]
-                                        }
+                                        { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
                                     ]
                                 }
                             ]
@@ -1233,7 +1263,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource CPMMachine",
                                 "  --region ",
@@ -1388,7 +1418,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -1444,35 +1474,58 @@
                             }
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
                             "2-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "3-CPMserviceConfig": {
                                 "command": "sc config \"CyberArk Password Manager\" start=auto",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "4-CPMSserviceConfig": {
                                 "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "5-CPMserviceStart": {
                                 "command": "sc start \"CyberArk Password Manager\"",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "6-CPMSserviceStart": {
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
-								"waitAfterCompletion": "0"
-                            }
-                        }
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource CPMMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+                        },
+						"services": {
+						    "windows": {
+						        "AmazonSSMAgent": {
+							        "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+							    }
+						    }
+						}
                     }
                 }
             },
@@ -1535,7 +1588,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource PVWAMachine",
                                 "  --region ",
@@ -1746,31 +1799,53 @@
                             }
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
                             "2-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "3-startAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "4-CSTserviceConfig": {
                                 "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "5-CSTserviceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
-								"waitAfterCompletion": "0"
-                            }
-                        }
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource PVWAMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+                        },
+						"services": {
+						    "windows": {
+						        "AmazonSSMAgent": {
+							        "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+							    }
+						    }
+						}
                     }
                 }
             },
@@ -1832,7 +1907,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource PSMMachine",
                                 "  --region ",
@@ -1987,7 +2062,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -2050,23 +2125,43 @@
                             }
                         },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
                             "1-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
                             "2-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
                             "3-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-								"waitAfterCompletion": "0"
-                            }
-                        }
+								"waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource PSMMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+                        },
+						"services": {
+						    "windows": {
+						        "AmazonSSMAgent": {
+							        "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+							    }
+						    }
+						}
                     }
                 }
             },
@@ -2118,7 +2213,7 @@
                                 "/opt/aws/bin/cfn-init -v ",
                                 "         --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "         --resource PSMPMachine ",
                                 "         --configsets install_all ",
@@ -2130,7 +2225,7 @@
                                 "/opt/aws/bin/cfn-signal -e $? ",
                                 "         --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "         --resource PSMPMachine ",
                                 "         --region ",
@@ -2336,19 +2431,20 @@
 												{
 													"Ref": "DeployBucket"
 												},
-												" --key ", 
+												" --key ",
 												{
 													"Fn::GetAtt": [
 														"StoreAdminPassword",
 														"FileId"
 													]
 												},
+												" --region ", { "Ref" : "AWS::Region" },
 												" /root/CD-Image/temppassword\n",
 											"echo Object successfully retrieved from S3 bucket.\n",
-											
+
 											"/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
 											"echo Credentials file successfully created.\n",
-											
+
 											"shred -u /root/CD-Image/temppassword\n",
 											"aws s3api delete-object --bucket ",
 												{
@@ -2361,9 +2457,10 @@
 														"FileId"
 													]
 												},
+												" --region ", { "Ref" : "AWS::Region" },
 												"\n",
 											"echo Object successfully deleted from S3 bucket.\n",
-											
+
 											"/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
 												{
 													"Fn::GetAtt": [
@@ -2396,7 +2493,19 @@
                             },
 							"04-RemoveInstallationFolder": {
                                 "command": "sudo rm -rf /root/CD-Image"
-                            }
+                            },
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "/opt/aws/bin/cfn-signal -e $? ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource PSMPMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
                         }
                     }
                 }
@@ -2432,7 +2541,7 @@
                 },
                 "Path": "/",
                 "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                    { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM" }
                 ],
                 "Policies": [
                     {
@@ -2449,15 +2558,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:",
-                                                    "logs:*:*:*"
-                                                ]
-                                            ]
-                                        }
+                                        { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
                                     ]
                                 }
                             ]
@@ -2486,10 +2587,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/",
                                         {
                                             "Fn::GetAtt": [
@@ -2552,10 +2653,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "VaultFilesBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -2589,10 +2690,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -2852,7 +2953,7 @@
                 "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
                 "AssertDescription": "The password confirmation does not match."
               }
-            ] 
+            ]
         }
     },
     "Metadata": {
@@ -2877,7 +2978,7 @@
                     "Parameters": [
                         "VaultInstanceName",
                         "VaultMasterPassword",
-						"RetypeMasterPassword",					   
+						"RetypeMasterPassword",
                         "VaultAdminPassword",
 						"RetypeAdminPassword",
 						"VaultDRPassword",
@@ -3146,6 +3247,14 @@
                 "PVWA": "ami-0e87db62",
                 "PSM": "ami-0e87db62",
                 "PSMP": "ami-fdb4e891"
+            },
+            "us-gov-west-1": {
+                "Vault": "ami-815ac4e0",
+                "Components": "ami-875ac4e6",
+                "CPM": "ami-875ac4e6",
+                "PVWA": "ami-875ac4e6",
+                "PSM": "ami-875ac4e6",
+                "PSMP": "ami-ba5ac4db"
             }
         }     
     }
