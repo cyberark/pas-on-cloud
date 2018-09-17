@@ -43,7 +43,6 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -51,11 +50,6 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
-                                        { "Ref": "DeployBucket" },
->>>>>>> Merge changes from govcloud to develop (#33)
                                         "/*"
                                     ]
                                 ]
@@ -71,7 +65,6 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -79,11 +72,6 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
-                                        { "Ref": "DeployBucket" },
->>>>>>> Merge changes from govcloud to develop (#33)
                                         "/*"
                                     ]
                                 ]
@@ -104,7 +92,6 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -112,11 +99,6 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
-                                        { "Ref": "DeployBucket" },
->>>>>>> Merge changes from govcloud to develop (#33)
                                         "/*"
                                     ]
                                 ]
@@ -709,15 +691,11 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
-<<<<<<< HEAD
                                             "\ts3Client = boto3.client('s3', region_name='",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
                                             "', config= boto3.session.Config(signature_version='s3v4'))\n",
-=======
-                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
->>>>>>> Merge changes from govcloud to develop (#33)
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -725,15 +703,11 @@
                                             "\treturn objectResponse['Body'].read()\n",
                                             "\n",
                                             "def downloadFile(bucket,filePath,target):\n",
-<<<<<<< HEAD
                                             "\ts3Client = boto3.client('s3', region_name='",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
                                             "')\n",
-=======
-                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" },"')\n",
->>>>>>> Merge changes from govcloud to develop (#33)
                                             "\ts3Client.download_file(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath,\n",
@@ -847,7 +821,6 @@
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
                             },
-<<<<<<< HEAD
                             "3-ChangeHostName": {
                                 "command": {
                                     "Fn::Join": [
@@ -883,34 +856,6 @@
                                     ]
                                 }
                             }
-=======
- 							"3-ChangeHostName" : {
-								"command" : {
-									"Fn::Join": [
-										"",
-										[
-											"powershell.exe -Command Rename-Computer -NewName ",
-											{ "Ref": "VaultHostName" },
-											" -Force -Restart"
-										]
-									]
-								},
-								"waitAfterCompletion" : "forever",
-                                "ignoreErrors": "false"
-							},
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource VaultMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
->>>>>>> Merge changes from govcloud to develop (#33)
                         }
                     }
                 }
@@ -993,7 +938,6 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -1001,11 +945,6 @@
                                         {
                                             "Ref": "VaultFilesBucket"
                                         },
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
-                                        { "Ref": "VaultFilesBucket" },
->>>>>>> Merge changes from govcloud to develop (#33)
                                         "/*"
                                     ]
                                 ]
@@ -1040,7 +979,6 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -1048,11 +986,6 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
-                                        { "Ref": "DeployBucket" },
->>>>>>> Merge changes from govcloud to develop (#33)
                                         "/*"
                                     ]
                                 ]

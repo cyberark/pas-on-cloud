@@ -43,13 +43,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -66,13 +61,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -94,13 +84,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -701,62 +686,35 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
                                 "ignoreErrors": "true"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "03-CPMserviceConfig": {
                                 "command": "sc config \"CyberArk Password Manager\" start=auto",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "04-CPMSserviceConfig": {
                                 "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "05-CPMserviceStart": {
                                 "command": "sc start \"CyberArk Password Manager\"",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "06-CPMSserviceStart": {
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "07-ChangeHostName": {
                                 "command": {
@@ -772,7 +730,6 @@
                                     ]
                                 },
                                 "waitAfterCompletion": "forever",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
                             },
                             "99-SignalCompletion": {
@@ -789,32 +746,6 @@
                                 }
                             }
                         }
-=======
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource CPMMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1113,53 +1044,31 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
                                 "ignoreErrors": "true"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
+
                             },
                             "03-startAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "04-CSTserviceConfig": {
                                 "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "05-CSTserviceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "06-ChangeHostName": {
                                 "command": {
@@ -1175,7 +1084,6 @@
                                     ]
                                 },
                                 "waitAfterCompletion": "forever",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
                             },
                             "99-SignalCompletion": {
@@ -1192,32 +1100,6 @@
                                 }
                             }
                         }
-=======
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource PVWAMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1523,35 +1405,20 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
                                 "ignoreErrors": "true"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "03-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
                                 "waitAfterCompletion": "0",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
-=======
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "04-ChangeHostName": {
                                 "command": {
@@ -1567,7 +1434,6 @@
                                     ]
                                 },
                                 "waitAfterCompletion": "forever",
-<<<<<<< HEAD
                                 "ignoreErrors": "false"
                             },
                             "99-SignalCompletion": {
@@ -1583,32 +1449,6 @@
                                 }
                             }
                         }
-=======
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource PSMMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1871,7 +1711,6 @@
                                     "Fn::Join": [
                                         "",
                                         [
-<<<<<<< HEAD
                                             "#!/bin/bash -e\n",
                                             "chmod 700 /root/CD-Image/register_and_activation.sh\n",
                                             "aws configure set default.s3.signature_version s3v4\n",
@@ -1938,74 +1777,6 @@
                                                 ]
                                             },
                                             " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
-=======
-											"#!/bin/bash -e\n",
-											"chmod 700 /root/CD-Image/register_and_activation.sh\n",
-											"aws configure set default.s3.signature_version s3v4\n",
-											"aws s3api get-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ", 
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-                                                " --region ", { "Ref" : "AWS::Region" },
-												" /root/CD-Image/temppassword\n",
-											"echo Object successfully retrieved from S3 bucket.\n",
-											
-											"/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username ",
-											{
-                                                "Ref": "VaultAdminUser"
-                                            }, 
-											" -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
-											"echo Credentials file successfully created.\n",
-											
-											"shred -u /root/CD-Image/temppassword\n",
-											"aws s3api delete-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ",
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-                                                " --region ", { "Ref" : "AWS::Region" },
-												"\n",
-											"echo Object successfully deleted from S3 bucket.\n",
-											
-											"/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
-												{
-													"Fn::If" : [
-														"DRValueEmpty",
-														{
-															"Fn::Join": [
-																"",
-																[
-																	{"Ref": "VaultPrivateIP"}
-																]
-															]
-														},
-														{
-															"Fn::Join": [
-																"",
-																[
-																	{"Ref": "VaultPrivateIP"},
-																	",",
-																	{ "Ref" : "DRPrivateIP" }
-																]
-															]
-														}
-													]
-												},
-												" $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
->>>>>>> Merge changes from govcloud to develop (#33)
                                         ]
                                     ]
                                 }
@@ -2091,7 +1862,6 @@
                             "11-RemoveInstallationFolder": {
                                 "command": "sudo rm -rf /root/CD-Image/"
                             },
-<<<<<<< HEAD
                             "99-SignalCompletion": {
                                 "command": {"Fn::Join": [
                                     "",
@@ -2104,20 +1874,6 @@
                                 ]
                                 }
                             }
-=======
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "/opt/aws/bin/cfn-signal -e $? ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource PSMPMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
->>>>>>> Merge changes from govcloud to develop (#33)
                         }
                     }
                 }
@@ -2152,13 +1908,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/",
                                         {

@@ -43,13 +43,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -66,13 +61,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -94,13 +84,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -675,7 +660,6 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
@@ -713,44 +697,6 @@
                                     ]
                                 }
                             }
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
-                            },                            
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"3-ChangeHostName" : {
-								"command" : {
-									"Fn::Join": [
-										"",
-										[
-											"powershell.exe -Command Rename-Computer -NewName ",
-											{ "Ref": "VaultHostName" },
-											" -Force -Restart"
-										]
-									]
-								},
-								"waitAfterCompletion" : "forever",
-								"ignoreErrors": "false"
-							},
-                            "99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource VaultDRMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
->>>>>>> Merge changes from govcloud to develop (#33)
                         }
                     }
                 }
@@ -896,13 +842,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
@@ -938,13 +879,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]

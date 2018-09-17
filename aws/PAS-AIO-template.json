@@ -43,13 +43,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -66,13 +61,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -94,13 +84,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -710,21 +695,13 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
                                 "ignoreErrors": "true"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
                             },
@@ -742,33 +719,6 @@
                                 }
                             }
                         }
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource VaultMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -918,13 +868,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/",
                                         {
@@ -988,13 +933,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
@@ -1030,13 +970,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -1439,7 +1374,6 @@
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
-<<<<<<< HEAD
                                 "ignoreErrors": "true"
                             },
                             "02-CPMdeploy": {
@@ -1511,87 +1445,6 @@
                                 }
                             }
                         }
-=======
-								"ignoreErrors": "true"
-                            },                            
-                            "02-CPMdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployCPM.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "03-CPMServiceConfig": {
-                                "command": "sc config \"CyberArk Password Manager\" start=auto",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "04-CPMScannerServiceConfig": {
-                                "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "05-CPMServiceStart": {
-                                "command": "sc start \"CyberArk Password Manager\"",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "06-CPMScannerServiceStart": {
-                                "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "07-PVWAdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployPVWA.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "08-StartAppPool": {
-                                "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "09-ScheduledTasksServiceConfig": {
-                                "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "10-ScheduledTasksServiceStart": {
-                                "command": "sc start \"CyberArk Scheduled Tasks\"",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "11-PSMdeploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deployPSM.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-                            "12-PSMServiceConfig": {
-                                "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource ComponentsMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },

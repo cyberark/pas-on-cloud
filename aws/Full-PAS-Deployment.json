@@ -43,13 +43,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -66,13 +61,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -94,13 +84,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -242,7 +227,6 @@
                             "\n",
                             [
                                 "import uuid",
-<<<<<<< HEAD
                                 "import boto3",
                                 "import cfnresponse",
                                 "",
@@ -268,33 +252,6 @@
                                 "    except Exception as E:",
                                 "        print E",
                                 "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
-=======
-								"import boto3",
-								"import cfnresponse",
-								"",
-								"def DeleteFile(bucket, filePath):",
-								"    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
-								"    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
-								"    print response",
-								"",
-								"def lambda_handler(event, context):",
-								"",
-								"    physicalResourceId = str(uuid.uuid4())",
-								"    if 'PhysicalResourceId' in event:",
-								"        physicalResourceId = event['PhysicalResourceId']",
-								"    ",
-								"    try:",
-								"        if event['RequestType'] == 'Create':",
-								"            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
-								"            print 'File Deleted'",
-								"            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
-								"        if event['RequestType'] == 'Delete':",
-								"            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
-								"",
-								"    except Exception as E:",
-								"        print E",
-								"        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
->>>>>>> Merge changes from govcloud to develop (#33)
                             ]
                         ]
                     }
@@ -744,7 +701,6 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
@@ -769,40 +725,6 @@
                                 }
                             }
                         }
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
-                            },
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource VaultMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1160,7 +1082,6 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
@@ -1185,40 +1106,6 @@
                                 }
                             }
                         }
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
-                            },
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource VaultDRMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1598,7 +1485,6 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
@@ -1608,51 +1494,24 @@
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
-                            },
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "03-CPMserviceConfig": {
                                 "command": "sc config \"CyberArk Password Manager\" start=auto",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "04-CPMSserviceConfig": {
                                 "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "05-CPMserviceStart": {
                                 "command": "sc start \"CyberArk Password Manager\"",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "06-CPMSserviceStart": {
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
                             },
@@ -1670,33 +1529,6 @@
                                 }
                             }
                         }
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource CPMMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -1979,47 +1811,28 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
-=======
-                            "1-restartSSM": {
->>>>>>> Merge changes from govcloud to develop (#33)
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
 								"ignoreErrors": "true"
                             },
-<<<<<<< HEAD
                             "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
-=======
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
->>>>>>> Merge changes from govcloud to develop (#33)
 								"ignoreErrors": "false"
                             },
                             "03-startAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
-=======
-								"waitAfterCompletion": "0",
->>>>>>> Merge changes from govcloud to develop (#33)
 								"ignoreErrors": "false"
                             },
                             "04-CSTserviceConfig": {
                                 "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
-=======
-								"waitAfterCompletion": "0",
->>>>>>> Merge changes from govcloud to develop (#33)
 								"ignoreErrors": "false"
                             },
                             "05-CSTserviceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
 								"ignoreErrors": "false"
                             },
@@ -2037,33 +1850,6 @@
                                 }
                             }
                         }
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource PVWAMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -2352,7 +2138,6 @@
                             }
                         },
                         "commands": {
-<<<<<<< HEAD
                             "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
                                 "waitAfterCompletion": "30",
@@ -2362,21 +2147,9 @@
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-=======
-                            "1-restartSSM": {
-                                "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30",
-								"ignoreErrors": "true"
-                            },
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
->>>>>>> Merge changes from govcloud to develop (#33)
                             },
                             "03-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-<<<<<<< HEAD
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
                             },
@@ -2394,33 +2167,6 @@
                                 }
                             }
                         }
-=======
-								"waitAfterCompletion": "0",
-								"ignoreErrors": "false"
-                            },
-							"99-SignalCompletion": {
-							    "command": {"Fn::Join": [
-                                                            "",
-                                                            [
-                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
-																"         --stack ", { "Ref" : "AWS::StackId" },
-																"         --resource PSMMachine ",
-																"         --region ", { "Ref" : "AWS::Region" }
-															]
-														]
-											}
-							}
-                        },
-						"services": {
-						    "windows": {
-						        "AmazonSSMAgent": {
-							        "enabled" : "true",
-                                    "ensureRunning" : "true",
-                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
-							    }
-						    }
-						}
->>>>>>> Merge changes from govcloud to develop (#33)
                     }
                 }
             },
@@ -2682,7 +2428,6 @@
                                     "Fn::Join": [
                                         "",
                                         [
-<<<<<<< HEAD
                                             "#!/bin/bash -e\n",
                                             "chmod 700 /root/CD-Image/register_and_activation.sh\n",
                                             "aws configure set default.s3.signature_version s3v4\n",
@@ -2733,60 +2478,6 @@
                                                 ]
                                             },
                                             " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
-=======
-											"#!/bin/bash -e\n",
-											"chmod 700 /root/CD-Image/register_and_activation.sh\n",
-											"aws configure set default.s3.signature_version s3v4\n",
-											"aws s3api get-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ",
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-												" --region ", { "Ref" : "AWS::Region" },
-												" /root/CD-Image/temppassword\n",
-											"echo Object successfully retrieved from S3 bucket.\n",
-
-											"/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
-											"echo Credentials file successfully created.\n",
-
-											"shred -u /root/CD-Image/temppassword\n",
-											"aws s3api delete-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ",
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-												" --region ", { "Ref" : "AWS::Region" },
-												"\n",
-											"echo Object successfully deleted from S3 bucket.\n",
-
-											"/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
-												{
-													"Fn::GetAtt": [
-														"VaultMachine",
-														"PrivateIp"
-													]
-												},
-												",",
-												{
-													"Fn::GetAtt": [
-														"VaultDRMachine",
-														"PrivateIp"
-													]
-												},
-												" $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
->>>>>>> Merge changes from govcloud to develop (#33)
                                         ]
                                     ]
                                 }
@@ -2899,13 +2590,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/",
                                         {
@@ -2970,13 +2656,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
@@ -3012,13 +2693,8 @@
                                     "",
                                     [
                                         "arn:",
-<<<<<<< HEAD
                                         { "Ref": "AWS::Partition" },
                                         ":s3:::",
-=======
-										{ "Ref": "AWS::Partition" },
-										":s3:::",
->>>>>>> Merge changes from govcloud to develop (#33)
                                         { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
@@ -3267,7 +2943,6 @@
     "Rules": {
         "PasswordConfirmation": {
             "Assertions": [
-<<<<<<< HEAD
                 {
                     "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
                     "AssertDescription": "The password confirmation does not match."
@@ -3280,20 +2955,6 @@
                     "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
                     "AssertDescription": "The password confirmation does not match."
                 }
-=======
-              {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              },
-			  {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              },
-			  {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              }
->>>>>>> Merge changes from govcloud to develop (#33)
             ]
         }
     },
@@ -3319,11 +2980,7 @@
                     "Parameters": [
                         "VaultInstanceName",
                         "VaultMasterPassword",
-<<<<<<< HEAD
                         "RetypeMasterPassword",
-=======
-						"RetypeMasterPassword",
->>>>>>> Merge changes from govcloud to develop (#33)
                         "VaultAdminPassword",
                         "RetypeAdminPassword",
                         "VaultDRPassword",
