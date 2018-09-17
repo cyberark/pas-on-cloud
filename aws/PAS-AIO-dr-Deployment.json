@@ -2277,14 +2277,6 @@
                 "PSM": "ami-0d7a9a6ebd8620ba7",
                 "PSMP": "ami-0552713509028f263"
             },
-            "eu-west-2": {
-                "Vault": "ami-f66a8891",
-                "Components": "ami-0ce70a6b",
-                "CPM": "ami-0ce70a6b",
-                "PVWA": "ami-0ce70a6b",
-                "PSM": "ami-0ce70a6b",
-                "PSMP": "ami-a99674ce"
-            },
 			"ap-southeast-1": {
                 "Vault": "ami-0adec27e3d97acd46",
                 "Components": "ami-05943d8fc0385ac36",
