@@ -1687,60 +1687,60 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-45f2643a",
-                "Components": "ami-0c0e9973",
-                "CPM": "ami-0c0e9973",
-                "PVWA": "ami-0c0e9973",
-                "PSM": "ami-0c0e9973",
-                "PSMP": "ami-a6f167d9"
+                "Vault": "ami-0f5ec5156d710a17d",
+                "Components": "ami-0b1a58bb5b5a78b3b",
+                "CPM": "ami-04297c47b96216bc5",
+                "PVWA": "ami-09e356fcd13ab5322",
+                "PSM": "ami-041d5a44246c242d6",
+                "PSMP": "ami-0defaf6be121916f3"
             },
-            "us-east-2": {
-                "Vault": "ami-239fa246",
-                "Components": "ami-57a29f32",
-                "CPM": "ami-57a29f32",
-                "PVWA": "ami-57a29f32",
-                "PSM": "ami-57a29f32",
-                "PSMP": "ami-6e9ea30b"
+            "eu-west-2": {
+                "Vault": "ami-074ee03bfbfff5fda",
+                "Components": "ami-0c92618583f701176",
+                "CPM": "ami-079a10f6ba5c4eeb4",
+                "PVWA": "ami-046e947dcae85aafb",
+                "PSM": "ami-0e6d2cea1cf1d0275",
+                "PSMP": "ami-07f89768f972c452d"
             },
             "us-west-1": {
-                "Vault": "ami-60213800",
-                "Components": "ami-4a342d2a",
-                "CPM": "ami-4a342d2a",
-                "PVWA": "ami-4a342d2a",
-                "PSM": "ami-4a342d2a",
-                "PSMP": "ami-c22f36a2"
+                "Vault": "ami-07299e5004f82cd23",
+                "Components": "ami-0c5a6a83a10cb26f6",
+                "CPM": "ami-07c541154a7e96144",
+                "PVWA": "ami-097c5f4e826713cdc",
+                "PSM": "ami-05d0a3a64d916a9ac",
+                "PSMP": "ami-05dc3895953bbb30a"
             },
             "us-west-2": {
-                "Vault": "ami-a291e3da",
-                "Components": "ami-46b9cb3e",
-                "CPM": "ami-46b9cb3e",
-                "PVWA": "ami-46b9cb3e",
-                "PSM": "ami-46b9cb3e",
-                "PSMP": "ami-e796e49f"
+                "Vault": "ami-04bcd462788163d5e",
+                "Components": "ami-03ba37302025864d6",
+                "CPM": "ami-0c5cb23b443a850cd",
+                "PVWA": "ami-072e7e3ea1b3a8c66",
+                "PSM": "ami-09044a911cd7607d6",
+                "PSMP": "ami-0e385d7a54dd97c29"
             },
             "ca-central-1": {
-                "Vault": "ami-9550d0f1",
-                "Components": "ami-6f4bcb0b",
-                "CPM": "ami-6f4bcb0b",
-                "PVWA": "ami-6f4bcb0b",
-                "PSM": "ami-6f4bcb0b",
-                "PSMP": "ami-9250d0f6"
+                "Vault": "ami-031efdcf451f76851",
+                "Components": "ami-0c4cfb708d8b6eb90",
+                "CPM": "ami-07794b680287e83f7",
+                "PVWA": "ami-08ab8db5ba0c00f78",
+                "PSM": "ami-0560ae7636022d241",
+                "PSMP": "ami-0a3770ee62a03ae54"
             },
 			"eu-west-1": {
-                "Vault": "ami-e0af9f99",
-                "Components": "ami-95b383ec",
-                "CPM": "ami-95b383ec",
-                "PVWA": "ami-95b383ec",
-                "PSM": "ami-95b383ec",
-                "PSMP": "ami-3faf9f46"
+                "Vault": "ami-055875a33d1855454",
+                "Components": "ami-0929c8dfe71e7caa6",
+                "CPM": "ami-020e9f9fbc526c078",
+                "PVWA": "ami-0e94dfc838d034ac6",
+                "PSM": "ami-098a84a8de32990bd",
+                "PSMP": "ami-07e5542d089692bc2"
             },
 			"eu-central-1": {
-                "Vault": "ami-f9cae512",
-                "Components": "ami-7cf8d797",
-                "CPM": "ami-7cf8d797",
-                "PVWA": "ami-7cf8d797",
-                "PSM": "ami-7cf8d797",
-                "PSMP": "ami-acc8e747"
+                "Vault": "ami-070990fb0a4adcb1c",
+                "Components": "ami-0b7366d5a32014f5f",
+                "CPM": "ami-04fece7e673892d18",
+                "PVWA": "ami-0d78264adddbf0e09",
+                "PSM": "ami-0d7a9a6ebd8620ba7",
+                "PSMP": "ami-0552713509028f263"
             },
             "eu-west-2": {
                 "Vault": "ami-f66a8891",
@@ -1751,52 +1751,52 @@
                 "PSMP": "ami-a99674ce"
             },
 			"ap-southeast-1": {
-                "Vault": "ami-556d5c29",
-                "Components": "ami-de7849a2",
-                "CPM": "ami-de7849a2",
-                "PVWA": "ami-de7849a2",
-                "PSM": "ami-de7849a2",
-                "PSMP": "ami-506d5c2c"
+                "Vault": "ami-0adec27e3d97acd46",
+                "Components": "ami-05943d8fc0385ac36",
+                "CPM": "ami-0b23b9f2a11c03e5e",
+                "PVWA": "ami-0000bd3a98e040b6d",
+                "PSM": "ami-0e5b9367ec4cd4d82",
+                "PSMP": "ami-029e0bb6069e7afd8"
             },
 			"ap-southeast-2": {
-                "Vault": "ami-d18253b3",
-                "Components": "ami-f896479a",
-                "CPM": "ami-f896479a",
-                "PVWA": "ami-f896479a",
-                "PSM": "ami-f896479a",
-                "PSMP": "ami-b18150d3"
+                "Vault": "ami-076c51f5281dc1139",
+                "Components": "ami-0bd6311d26ddb7c8e",
+                "CPM": "ami-0a8ef23737b1ba7f0",
+                "PVWA": "ami-0c1b309ab91825a56",
+                "PSM": "ami-00da2f855a0ae8a3a",
+                "PSMP": "ami-0b33117017a0627ac"
             },
 			"ap-northeast-2": {
-                "Vault": "ami-23b51d4d",
-                "Components": "ami-91bf17ff",
-                "CPM": "ami-91bf17ff",
-                "PVWA": "ami-91bf17ff",
-                "PSM": "ami-91bf17ff",
-                "PSMP": "ami-d9b119b7"
+                "Vault": "ami-0095711fbd0234bb5",
+                "Components": "ami-00c130264e5feba9e",
+                "CPM": "ami-056f7261892b501f8",
+                "PVWA": "ami-09772e4a0f0d37718",
+                "PSM": "ami-00d3b879e3daaded2",
+                "PSMP": "ami-0bee3849042c5f67e"
             },
 			"ap-northeast-1": {
-                "Vault": "ami-ac17e0d3",
-                "Components": "ami-a327d0dc",
-                "CPM": "ami-a327d0dc",
-                "PVWA": "ami-a327d0dc",
-                "PSM": "ami-a327d0dc",
-                "PSMP": "ami-982adde7"
+                "Vault": "ami-023a9797d305d37cd",
+                "Components": "ami-031857c6252af5e59",
+                "CPM": "ami-042a9b4c302b117da",
+                "PVWA": "ami-0c6e1d4aa4c75ff02",
+                "PSM": "ami-05724a67e503a9513",
+                "PSMP": "ami-04e8a59042a5e181b"
             },
             "ap-south-1": {
-                "Vault": "ami-676d4008",
-                "Components": "ami-7795b718",
-                "CPM": "ami-7795b718",
-                "PVWA": "ami-7795b718",
-                "PSM": "ami-7795b718",
-                "PSMP": "ami-776c4118"
+                "Vault": "ami-094b09c2952027426",
+                "Components": "ami-03793b4dca2f75186",
+                "CPM": "ami-0ddb8f72eaacc45ef",
+                "PVWA": "ami-0dd19ebb4d09508cc",
+                "PSM": "ami-0231d3b20edbcfadc",
+                "PSMP": "ami-0f64dbebffa1acdca"
             },
             "sa-east-1": {
-                "Vault": "ami-96b7ebfa",
-                "Components": "ami-0e87db62",
-                "CPM": "ami-0e87db62",
-                "PVWA": "ami-0e87db62",
-                "PSM": "ami-0e87db62",
-                "PSMP": "ami-fdb4e891"
+                "Vault": "ami-0f63a29405c49eac9",
+                "Components": "ami-0ecd0542b88a4833c",
+                "CPM": "ami-09674547d0d8cc81a",
+                "PVWA": "ami-01a3f3486b3326c0b",
+                "PSM": "ami-0e38b8a579840237e",
+                "PSMP": "ami-04ccb81bb661e9db7"
             },
             "us-gov-west-1": {
                 "Vault": "ami-815ac4e0",
