@@ -42,10 +42,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -60,10 +60,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -83,10 +83,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -217,7 +217,7 @@
             },
             "Condition": "EULACondition"
         },
-		"DeletePasswordLambda": {
+        "DeletePasswordLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Description": "Delete file from s3 bucket",
@@ -227,31 +227,31 @@
                             "\n",
                             [
                                 "import uuid",
-								"import boto3",
-								"import cfnresponse",
-								"",
-								"def DeleteFile(bucket, filePath):",
-								"    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
-								"    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
-								"    print response",
-								"",    
-								"def lambda_handler(event, context):",
-								"",
-								"    physicalResourceId = str(uuid.uuid4())",
-								"    if 'PhysicalResourceId' in event:",
-								"        physicalResourceId = event['PhysicalResourceId']",
-								"    ",
-								"    try:",
-								"        if event['RequestType'] == 'Create':",
-								"            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
-								"            print 'File Deleted'",
-								"            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
-								"        if event['RequestType'] == 'Delete':",
-								"            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
-								"",
-								"    except Exception as E:",
-								"        print E",
-								"        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                                "import boto3",
+                                "import cfnresponse",
+                                "",
+                                "def DeleteFile(bucket, filePath):",
+                                "    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
+                                "    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
+                                "    print response",
+                                "",
+                                "def lambda_handler(event, context):",
+                                "",
+                                "    physicalResourceId = str(uuid.uuid4())",
+                                "    if 'PhysicalResourceId' in event:",
+                                "        physicalResourceId = event['PhysicalResourceId']",
+                                "    ",
+                                "    try:",
+                                "        if event['RequestType'] == 'Create':",
+                                "            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
+                                "            print 'File Deleted'",
+                                "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                                "        if event['RequestType'] == 'Delete':",
+                                "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                                "",
+                                "    except Exception as E:",
+                                "        print E",
+                                "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
                             ]
                         ]
                     }
@@ -316,7 +316,7 @@
                 "DeployBucket"
             ]
         },
-		"CleanMasterPassword": {
+        "CleanMasterPassword": {
             "Type": "AWS::CloudFormation::CustomResource",
             "Version": "1.0",
             "Properties": {
@@ -331,9 +331,9 @@
                 },
                 "key": {
                     "Fn::GetAtt": [
-						"StoreMasterPassword",
-						"FileId"
-					]
+                        "StoreMasterPassword",
+                        "FileId"
+                    ]
                 }
             },
             "Condition": "EULACondition",
@@ -342,10 +342,10 @@
                 "DeployBucketPolicy",
                 "StorePasswordLambda",
                 "DeployBucket",
-				"VaultDRMachine"
+                "VaultDRMachine"
             ]
         },
-		"CleanDRPassword": {
+        "CleanDRPassword": {
             "Type": "AWS::CloudFormation::CustomResource",
             "Version": "1.0",
             "Properties": {
@@ -360,9 +360,9 @@
                 },
                 "key": {
                     "Fn::GetAtt": [
-						"StoreDRPassword",
-						"FileId"
-					]
+                        "StoreDRPassword",
+                        "FileId"
+                    ]
                 }
             },
             "Condition": "EULACondition",
@@ -371,7 +371,7 @@
                 "DeployBucketPolicy",
                 "StorePasswordLambda",
                 "DeployBucket",
-				"VaultDRMachine"
+                "VaultDRMachine"
             ]
         },
         "VaultMachine": {
@@ -423,7 +423,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultMachine",
                                 "  --region ",
@@ -578,7 +578,7 @@
                                         ]
                                     ]
                                 }
-                            },                                
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -681,28 +681,48 @@
                                             "licensef,",
                                             "'/AcceptEULA',",
                                             "'yes',",
-											"'/KMSRegion','",
-											{
-												"Ref": "AWS::Region"
-											},
+                                            "'/KMSRegion','",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
                                             "']))\n"
                                         ]
                                     ]
                                 }
                             }
                         },
+                        "services": {
+                            "windows": {
+                                "AmazonSSMAgent": {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+                                }
+                            }
+                        },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "1-restartSSM": {
+                            "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
-                            "2-deploy": {
+                                "waitAfterCompletion": "30",
+                                "ignoreErrors": "true"
+                            },
+                            "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
+                            },
+                            "99-SignalCompletion": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "cfn-signal.exe -e %ERRORLEVEL% ",
+                                            "         --stack ", { "Ref" : "AWS::StackId" },
+                                            "         --resource VaultMachine ",
+                                            "         --region ", { "Ref" : "AWS::Region" }
+                                        ]
+                                    ]
+                                }
                             }
                         }
                     }
@@ -776,7 +796,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource VaultDRMachine",
                                 "  --region ",
@@ -931,7 +951,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -1042,28 +1062,48 @@
                                             "licensef,",
                                             "'/AcceptEULA',",
                                             "'yes',",
-											"'/KMSRegion','",
-											{
-												"Ref": "AWS::Region"
-											},
+                                            "'/KMSRegion','",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
                                             "']))\n"
                                         ]
                                     ]
                                 }
                             }
                         },
+                        "services": {
+                            "windows": {
+                                "AmazonSSMAgent": {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+                                }
+                            }
+                        },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "1-restartSSM": {
+                            "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
-                            "2-deploy": {
+                                "waitAfterCompletion": "30",
+                                "ignoreErrors": "true"
+                            },
+                            "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
+                            },
+                            "99-SignalCompletion": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "cfn-signal.exe -e %ERRORLEVEL% ",
+                                            "         --stack ", { "Ref" : "AWS::StackId" },
+                                            "         --resource VaultDRMachine ",
+                                            "         --region ", { "Ref" : "AWS::Region" }
+                                        ]
+                                    ]
+                                }
                             }
                         }
                     }
@@ -1149,7 +1189,7 @@
                 },
                 "Path": "/",
                 "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                    { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM" }
                 ],
                 "Policies": [
                     {
@@ -1166,15 +1206,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:",
-                                                    "logs:*:*:*"
-                                                ]
-                                            ]
-                                        }
+                                        { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
                                     ]
                                 }
                             ]
@@ -1233,7 +1265,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource CPMMachine",
                                 "  --region ",
@@ -1388,7 +1420,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -1410,8 +1442,8 @@
                                                     "PrivateIp"
                                                 ]
                                             },
-											",",
-											{
+                                            ",",
+                                            {
                                                 "Fn::GetAtt": [
                                                     "VaultDRMachine",
                                                     "PrivateIp"
@@ -1443,34 +1475,58 @@
                                 }
                             }
                         },
+                        "services": {
+                            "windows": {
+                                "AmazonSSMAgent": {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+                                }
+                            }
+                        },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "1-restartSSM": {
+                            "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
-                            "2-deploy": {
+                                "waitAfterCompletion": "30",
+                                "ignoreErrors": "true"
+                            },
+                            "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
                             },
-                            "3-CPMserviceConfig": {
+                            "03-CPMserviceConfig": {
                                 "command": "sc config \"CyberArk Password Manager\" start=auto",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
                             },
-                            "4-CPMSserviceConfig": {
+                            "04-CPMSserviceConfig": {
                                 "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
                             },
-                            "5-CPMserviceStart": {
+                            "05-CPMserviceStart": {
                                 "command": "sc start \"CyberArk Password Manager\"",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
                             },
-                            "6-CPMSserviceStart": {
+                            "06-CPMSserviceStart": {
                                 "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
+                            },
+                            "99-SignalCompletion": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "cfn-signal.exe -e %ERRORLEVEL% ",
+                                            "         --stack ", { "Ref" : "AWS::StackId" },
+                                            "         --resource CPMMachine ",
+                                            "         --region ", { "Ref" : "AWS::Region" }
+                                        ]
+                                    ]
+                                }
                             }
                         }
                     }
@@ -1535,7 +1591,7 @@
                                 "cfn-signal.exe -e %ERRORLEVEL% ",
                                 "  --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "  --resource PVWAMachine",
                                 "  --region ",
@@ -1712,8 +1768,8 @@
                                                     "PrivateIp"
                                                 ]
                                             },
-											",",
-											{
+                                            ",",
+                                            {
                                                 "Fn::GetAtt": [
                                                     "VaultDRMachine",
                                                     "PrivateIp"
@@ -1745,30 +1801,53 @@
                                 }
                             }
                         },
+                        "services": {
+                            "windows": {
+                                "AmazonSSMAgent": {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+                                }
+                            }
+                        },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "1-restartSSM": {
+                            "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
-                            "2-deploy": {
+                                "waitAfterCompletion": "30",
+								"ignoreErrors": "true"
+                            },
+                            "02-deploy": {
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
-                            "3-startAppPool": {
+                            "03-startAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
-                            "4-CSTserviceConfig": {
+                            "04-CSTserviceConfig": {
                                 "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+								"ignoreErrors": "false"
                             },
-                            "5-CSTserviceStart": {
+                            "05-CSTserviceStart": {
                                 "command": "sc start \"CyberArk Scheduled Tasks\"",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+								"ignoreErrors": "false"
+                            },
+                            "99-SignalCompletion": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "cfn-signal.exe -e %ERRORLEVEL% ",
+                                            "         --stack ", { "Ref" : "AWS::StackId" },
+                                            "         --resource PVWAMachine ",
+                                            "         --region ", { "Ref" : "AWS::Region" }
+                                        ]
+                                    ]
+                                }
                             }
                         }
                     }
@@ -1987,7 +2066,7 @@
                                         ]
                                     ]
                                 }
-                            },                            
+                            },
                             "C:\\deploy.py": {
                                 "content": {
                                     "Fn::Join": [
@@ -2010,8 +2089,8 @@
                                                     "PrivateIp"
                                                 ]
                                             },
-											",",
-											{
+                                            ",",
+                                            {
                                                 "Fn::GetAtt": [
                                                     "VaultDRMachine",
                                                     "PrivateIp"
@@ -2049,22 +2128,43 @@
                                 }
                             }
                         },
+                        "services": {
+                            "windows": {
+                                "AmazonSSMAgent": {
+                                    "enabled" : "true",
+                                    "ensureRunning" : "true",
+                                    "files" : ["C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"]
+                                }
+                            }
+                        },
                         "commands": {
-                            "0-enableSSM": {
-                                "command": "powershell.exe -Command \"Set-Service -Name AmazonSSMAgent -StartupType Automatic\"",
-                                "waitAfterCompletion": "0"
-                            },
-                            "1-restartSSM": {
+                            "01-restartSSM": {
                                 "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                                "waitAfterCompletion": "30"
-                            },                            
-                            "2-deploy": {
-                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "30",
+                                "ignoreErrors": "true"
                             },
-                            "3-PSMserviceConfig": {
+                            "02-deploy": {
+                                "command": "C:\\Python27\\python.exe C:\\deploy.py",
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
+                            },
+                            "03-PSMserviceConfig": {
                                 "command": "sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
-								"waitAfterCompletion": "0"
+                                "waitAfterCompletion": "0",
+                                "ignoreErrors": "false"
+                            },
+                            "99-SignalCompletion": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "cfn-signal.exe -e %ERRORLEVEL% ",
+                                            "         --stack ", { "Ref" : "AWS::StackId" },
+                                            "         --resource PSMMachine ",
+                                            "         --region ", { "Ref" : "AWS::Region" }
+                                        ]
+                                    ]
+                                }
                             }
                         }
                     }
@@ -2080,7 +2180,7 @@
             },
             "DeletionPolicy": "Retain"
         },
-		"PSMPMachine": {
+        "PSMPMachine": {
             "Type": "AWS::EC2::Instance",
             "Properties": {
                 "Tags": [
@@ -2118,7 +2218,7 @@
                                 "/opt/aws/bin/cfn-init -v ",
                                 "         --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "         --resource PSMPMachine ",
                                 "         --configsets install_all ",
@@ -2130,7 +2230,7 @@
                                 "/opt/aws/bin/cfn-signal -e $? ",
                                 "         --stack ",
                                 {
-                                    "Ref": "AWS::StackName"
+                                    "Ref": "AWS::StackId"
                                 },
                                 "         --resource PSMPMachine ",
                                 "         --region ",
@@ -2321,7 +2421,7 @@
                                 }
                             }
                         }
-                    },                                        
+                    },
                     "install_psmp": {
                         "files": {
                             "/root/CD-Image/activatePSMP": {
@@ -2329,72 +2429,72 @@
                                     "Fn::Join": [
                                         "",
                                         [
-											"#!/bin/bash -e\n",
-											"chmod 700 /root/CD-Image/register_and_activation.sh\n",
-											"aws configure set default.s3.signature_version s3v4\n",
-											"aws s3api get-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ", 
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-												" /root/CD-Image/temppassword\n",
-											"echo Object successfully retrieved from S3 bucket.\n",
-											
-											"/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
-											"echo Credentials file successfully created.\n",
-											
-											"shred -u /root/CD-Image/temppassword\n",
-											"aws s3api delete-object --bucket ",
-												{
-													"Ref": "DeployBucket"
-												},
-												" --key ",
-												{
-													"Fn::GetAtt": [
-														"StoreAdminPassword",
-														"FileId"
-													]
-												},
-												"\n",
-											"echo Object successfully deleted from S3 bucket.\n",
-											
-											"/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
-												{
-													"Fn::GetAtt": [
-														"VaultMachine",
-														"PrivateIp"
-													]
-												},
-												",",
-												{
-													"Fn::GetAtt": [
-														"VaultDRMachine",
-														"PrivateIp"
-													]
-												},
-												" $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
+                                            "#!/bin/bash -e\n",
+                                            "chmod 700 /root/CD-Image/register_and_activation.sh\n",
+                                            "aws configure set default.s3.signature_version s3v4\n",
+                                            "aws s3api get-object --bucket ",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            " --key ",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreAdminPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            " /root/CD-Image/temppassword\n",
+                                            "echo Object successfully retrieved from S3 bucket.\n",
+
+                                            "/opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password $(cat /root/CD-Image/temppassword) -Hostname\n",
+                                            "echo Credentials file successfully created.\n",
+
+                                            "shred -u /root/CD-Image/temppassword\n",
+                                            "aws s3api delete-object --bucket ",
+                                            {
+                                                "Ref": "DeployBucket"
+                                            },
+                                            " --key ",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "StoreAdminPassword",
+                                                    "FileId"
+                                                ]
+                                            },
+                                            "\n",
+                                            "echo Object successfully deleted from S3 bucket.\n",
+
+                                            "/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "VaultMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+                                            ",",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "VaultDRMachine",
+                                                    "PrivateIp"
+                                                ]
+                                            },
+                                            " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
                                         ]
                                     ]
                                 }
                             }
                         },
                         "commands": {
-							"01-Chmod": {
+                            "01-Chmod": {
                                 "command": "sudo chmod 700 /root/CD-Image/activatePSMP"
                             },
                             "02-PSMPdeploy": {
                                 "command": "sudo /root/CD-Image/activatePSMP"
                             },
-							"03-ClearData": {
+                            "03-ClearData": {
                                 "command": "sudo shred -u /root/CD-Image/activatePSMP"
                             },
-							"04-RemoveInstallationFolder": {
+                            "04-RemoveInstallationFolder": {
                                 "command": "sudo rm -rf /root/CD-Image"
                             }
                         }
@@ -2410,7 +2510,7 @@
                     "Timeout": "PT10M"
                 }
             },
-			"DeletionPolicy": "Retain"
+            "DeletionPolicy": "Retain"
         },
         "VaultInstancesRole": {
             "Type": "AWS::IAM::Role",
@@ -2432,7 +2532,7 @@
                 },
                 "Path": "/",
                 "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+                    { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM" }
                 ],
                 "Policies": [
                     {
@@ -2449,15 +2549,7 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:",
-                                                    "logs:*:*:*"
-                                                ]
-                                            ]
-                                        }
+                                        { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
                                     ]
                                 }
                             ]
@@ -2486,10 +2578,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/",
                                         {
                                             "Fn::GetAtt": [
@@ -2552,10 +2644,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "VaultFilesBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "VaultFilesBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -2589,10 +2681,10 @@
                                 "Fn::Join": [
                                     "",
                                     [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "DeployBucket"
-                                        },
+                                        "arn:",
+                                        { "Ref": "AWS::Partition" },
+                                        ":s3:::",
+                                        { "Ref": "DeployBucket" },
                                         "/*"
                                     ]
                                 ]
@@ -2674,7 +2766,7 @@
             "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
             "ConstraintDescription": "Vault Master password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-	"RetypeMasterPassword": {
+        "RetypeMasterPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Master user.",
             "NoEcho": true,
@@ -2684,25 +2776,25 @@
             "Type": "String",
             "Description": "Enter a password for the Vault Administrator user.",
             "NoEcho": true,
-	    "MinLength": 8,
-	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-	    "ConstraintDescription": "Vault Administrator password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
+            "MinLength": 8,
+            "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+            "ConstraintDescription": "Vault Administrator password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-	"RetypeAdminPassword": {
+        "RetypeAdminPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault Administrator user.",
             "NoEcho": true,
             "MinLength": 8
         },
-	"VaultDRPassword": {
+        "VaultDRPassword": {
             "Type": "String",
             "Description": "Enter a password for the Vault DR user.",
             "NoEcho": true,
             "MinLength": 8,
-	    "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
-	    "ConstraintDescription": "Vault DR password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
+            "AllowedPattern": "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\\*\\(\\)_\\-+=:])(?=\\S+$).{8,}$",
+            "ConstraintDescription": "Vault DR password must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character"
         },
-	"RetypeDRPassword": {
+        "RetypeDRPassword": {
             "Type": "String",
             "Description": "Retype the password for the Vault DR user.",
             "NoEcho": true,
@@ -2798,16 +2890,16 @@
             "Type": "List<AWS::EC2::SecurityGroup::Id>",
             "Description": "Assign Security Groups to the PSM instance."
         },
-		"PSMInstanceSubnetId": {
+        "PSMInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the PSM instance will reside."
         },
-		"PSMPInstanceName": {
+        "PSMPInstanceName": {
             "Type": "String",
             "Description": "Enter a name for the PSM SSH Proxy instance.",
             "Default": "CyberArk PSM SSH Proxy"
         },
-		"PSMPInstanceType": {
+        "PSMPInstanceType": {
             "Type": "String",
             "Description": "Select the instance type of the PSM SSH Proxy instance.",
             "AllowedValues": [
@@ -2818,11 +2910,11 @@
             ],
             "Default": "m4.large"
         },
-		"PSMPInstanceSecurityGroups": {
+        "PSMPInstanceSecurityGroups": {
             "Type": "List<AWS::EC2::SecurityGroup::Id>",
             "Description": "Assign Security Groups to the PSM SSH Proxy instance."
         },
-		"PSMPInstanceSubnetId": {
+        "PSMPInstanceSubnetId": {
             "Type": "AWS::EC2::Subnet::Id",
             "Description": "Select the Subnet Id where the PSM SSH Proxy instance will reside."
         }
@@ -2840,19 +2932,19 @@
     "Rules": {
         "PasswordConfirmation": {
             "Assertions": [
-              {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              },
-			  {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              },
-			  {
-                "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
-                "AssertDescription": "The password confirmation does not match."
-              }
-            ] 
+                {
+                    "Assert" : {"Fn::Equals": [{"Ref": "VaultMasterPassword"}, {"Ref": "RetypeMasterPassword"}]},
+                    "AssertDescription": "The password confirmation does not match."
+                },
+                {
+                    "Assert" : {"Fn::Equals": [{"Ref": "VaultAdminPassword"}, {"Ref": "RetypeAdminPassword"}]},
+                    "AssertDescription": "The password confirmation does not match."
+                },
+                {
+                    "Assert" : {"Fn::Equals": [{"Ref": "VaultDRPassword"}, {"Ref": "RetypeDRPassword"}]},
+                    "AssertDescription": "The password confirmation does not match."
+                }
+            ]
         }
     },
     "Metadata": {
@@ -2877,11 +2969,11 @@
                     "Parameters": [
                         "VaultInstanceName",
                         "VaultMasterPassword",
-						"RetypeMasterPassword",					   
+                        "RetypeMasterPassword",
                         "VaultAdminPassword",
-						"RetypeAdminPassword",
-						"VaultDRPassword",
-						"RetypeDRPassword",
+                        "RetypeAdminPassword",
+                        "VaultDRPassword",
+                        "RetypeDRPassword",
                         "VaultInstanceType",
                         "VaultInstanceSecurityGroups",
                         "VaultInstanceSubnetId",
@@ -2918,10 +3010,10 @@
                         "PSMInstanceName",
                         "PSMInstanceType",
                         "PSMInstanceSecurityGroups",
-						"PSMInstanceSubnetId"
+                        "PSMInstanceSubnetId"
                     ]
                 },
-				{
+                {
                     "Label": {
                         "default": "PSM SSH Proxy configuration"
                     },
@@ -2929,7 +3021,7 @@
                         "PSMPInstanceName",
                         "PSMPInstanceType",
                         "PSMPInstanceSecurityGroups",
-						"PSMPInstanceSubnetId"
+                        "PSMPInstanceSubnetId"
                     ]
                 }
             ],
@@ -2955,19 +3047,19 @@
                 "VaultMasterPassword": {
                     "default": "Vault Master Password"
                 },
-				"RetypeMasterPassword": {
+                "RetypeMasterPassword": {
                     "default": "Retype Master Password"
                 },
                 "VaultAdminPassword": {
                     "default": "Vault Admin Password"
-				},
-				"RetypeAdminPassword": {
+                },
+                "RetypeAdminPassword": {
                     "default": "Retype Admin Password"
                 },
-				"VaultDRPassword": {
+                "VaultDRPassword": {
                     "default": "DR Password"
                 },
-				"RetypeDRPassword": {
+                "RetypeDRPassword": {
                     "default": "Retype DR Password"
                 },
                 "VaultInstanceType": {
@@ -3015,19 +3107,19 @@
                 "PSMInstanceSecurityGroups": {
                     "default": "PSM Instance Security Groups"
                 },
-				"PSMInstanceSubnetId": {
+                "PSMInstanceSubnetId": {
                     "default": "PSM Instance Subnet Id"
                 },
-				"PSMPInstanceName": {
+                "PSMPInstanceName": {
                     "default": "PSM SSH Proxy Instance Name"
                 },
-				"PSMPInstanceType": {
+                "PSMPInstanceType": {
                     "default": "PSM SSH Proxy Instance Type"
                 },
-				"PSMPInstanceSecurityGroups": {
+                "PSMPInstanceSecurityGroups": {
                     "default": "PSM SSH Proxy Instance Security Groups"
                 },
-				"PSMPInstanceSubnetId": {
+                "PSMPInstanceSubnetId": {
                     "default": "PSM SSH Proxy Instance Subnet Id"
                 }
             }
@@ -3036,76 +3128,118 @@
     "Mappings": {
         "RegionMap": {
             "us-east-1": {
-                "Vault": "ami-45f2643a",
-                "Components": "ami-0c0e9973",
-                "PSMP": "ami-a6f167d9"
-            },
-            "us-east-2": {
-                "Vault": "ami-239fa246",
-                "Components": "ami-57a29f32",
-                "PSMP": "ami-6e9ea30b"
-            },
-            "us-west-1": {
-                "Vault": "ami-60213800",
-                "Components": "ami-4a342d2a",
-                "PSMP": "ami-c22f36a2"
-            },
-            "us-west-2": {
-                "Vault": "ami-a291e3da",
-                "Components": "ami-46b9cb3e",
-                "PSMP": "ami-e796e49f"
-            },
-            "ca-central-1": {
-                "Vault": "ami-9550d0f1",
-                "Components": "ami-6f4bcb0b",
-                "PSMP": "ami-9250d0f6"
-            },
-			"eu-west-1": {
-                "Vault": "ami-e0af9f99",
-                "Components": "ami-95b383ec",
-                "PSMP": "ami-3faf9f46"
-            },
-			"eu-central-1": {
-                "Vault": "ami-f9cae512",
-                "Components": "ami-7cf8d797",
-                "PSMP": "ami-acc8e747"
+                "Vault": "ami-0f5ec5156d710a17d",
+                "Components": "ami-0b1a58bb5b5a78b3b",
+                "CPM": "ami-04297c47b96216bc5",
+                "PVWA": "ami-09e356fcd13ab5322",
+                "PSM": "ami-041d5a44246c242d6",
+                "PSMP": "ami-0defaf6be121916f3"
             },
             "eu-west-2": {
-                "Vault": "ami-f66a8891",
-                "Components": "ami-0ce70a6b",
-                "PSMP": "ami-a99674ce"
+                "Vault": "ami-074ee03bfbfff5fda",
+                "Components": "ami-0c92618583f701176",
+                "CPM": "ami-079a10f6ba5c4eeb4",
+                "PVWA": "ami-046e947dcae85aafb",
+                "PSM": "ami-0e6d2cea1cf1d0275",
+                "PSMP": "ami-07f89768f972c452d"
             },
-			"ap-southeast-1": {
-                "Vault": "ami-556d5c29",
-                "Components": "ami-de7849a2",
-                "PSMP": "ami-506d5c2c"
+            "us-west-1": {
+                "Vault": "ami-07299e5004f82cd23",
+                "Components": "ami-0c5a6a83a10cb26f6",
+                "CPM": "ami-07c541154a7e96144",
+                "PVWA": "ami-097c5f4e826713cdc",
+                "PSM": "ami-05d0a3a64d916a9ac",
+                "PSMP": "ami-05dc3895953bbb30a"
             },
-			"ap-southeast-2": {
-                "Vault": "ami-d18253b3",
-                "Components": "ami-f896479a",
-                "PSMP": "ami-b18150d3"
+            "us-west-2": {
+                "Vault": "ami-04bcd462788163d5e",
+                "Components": "ami-03ba37302025864d6",
+                "CPM": "ami-0c5cb23b443a850cd",
+                "PVWA": "ami-072e7e3ea1b3a8c66",
+                "PSM": "ami-09044a911cd7607d6",
+                "PSMP": "ami-0e385d7a54dd97c29"
             },
-			"ap-northeast-2": {
-                "Vault": "ami-23b51d4d",
-                "Components": "ami-91bf17ff",
-                "PSMP": "ami-d9b119b7"
+            "ca-central-1": {
+                "Vault": "ami-031efdcf451f76851",
+                "Components": "ami-0c4cfb708d8b6eb90",
+                "CPM": "ami-07794b680287e83f7",
+                "PVWA": "ami-08ab8db5ba0c00f78",
+                "PSM": "ami-0560ae7636022d241",
+                "PSMP": "ami-0a3770ee62a03ae54"
             },
-			"ap-northeast-1": {
-                "Vault": "ami-ac17e0d3",
-                "Components": "ami-a327d0dc",
-                "PSMP": "ami-982adde7"
+            "eu-west-1": {
+                "Vault": "ami-055875a33d1855454",
+                "Components": "ami-0929c8dfe71e7caa6",
+                "CPM": "ami-020e9f9fbc526c078",
+                "PVWA": "ami-0e94dfc838d034ac6",
+                "PSM": "ami-098a84a8de32990bd",
+                "PSMP": "ami-07e5542d089692bc2"
+            },
+            "eu-central-1": {
+                "Vault": "ami-070990fb0a4adcb1c",
+                "Components": "ami-0b7366d5a32014f5f",
+                "CPM": "ami-04fece7e673892d18",
+                "PVWA": "ami-0d78264adddbf0e09",
+                "PSM": "ami-0d7a9a6ebd8620ba7",
+                "PSMP": "ami-0552713509028f263"
+            },
+            "ap-southeast-1": {
+                "Vault": "ami-0adec27e3d97acd46",
+                "Components": "ami-05943d8fc0385ac36",
+                "CPM": "ami-0b23b9f2a11c03e5e",
+                "PVWA": "ami-0000bd3a98e040b6d",
+                "PSM": "ami-0e5b9367ec4cd4d82",
+                "PSMP": "ami-029e0bb6069e7afd8"
+            },
+            "ap-southeast-2": {
+                "Vault": "ami-076c51f5281dc1139",
+                "Components": "ami-0bd6311d26ddb7c8e",
+                "CPM": "ami-0a8ef23737b1ba7f0",
+                "PVWA": "ami-0c1b309ab91825a56",
+                "PSM": "ami-00da2f855a0ae8a3a",
+                "PSMP": "ami-0b33117017a0627ac"
+            },
+            "ap-northeast-2": {
+                "Vault": "ami-0095711fbd0234bb5",
+                "Components": "ami-00c130264e5feba9e",
+                "CPM": "ami-056f7261892b501f8",
+                "PVWA": "ami-09772e4a0f0d37718",
+                "PSM": "ami-00d3b879e3daaded2",
+                "PSMP": "ami-0bee3849042c5f67e"
+            },
+            "ap-northeast-1": {
+                "Vault": "ami-023a9797d305d37cd",
+                "Components": "ami-031857c6252af5e59",
+                "CPM": "ami-042a9b4c302b117da",
+                "PVWA": "ami-0c6e1d4aa4c75ff02",
+                "PSM": "ami-05724a67e503a9513",
+                "PSMP": "ami-04e8a59042a5e181b"
             },
             "ap-south-1": {
-                "Vault": "ami-676d4008",
-                "Components": "ami-7795b718",
-                "PSMP": "ami-776c4118"
+                "Vault": "ami-094b09c2952027426",
+                "Components": "ami-03793b4dca2f75186",
+                "CPM": "ami-0ddb8f72eaacc45ef",
+                "PVWA": "ami-0dd19ebb4d09508cc",
+                "PSM": "ami-0231d3b20edbcfadc",
+                "PSMP": "ami-0f64dbebffa1acdca"
             },
             "sa-east-1": {
-                "Vault": "ami-96b7ebfa",
-                "Components": "ami-0e87db62",
-                "PSMP": "ami-fdb4e891"
+                "Vault": "ami-0f63a29405c49eac9",
+                "Components": "ami-0ecd0542b88a4833c",
+                "CPM": "ami-09674547d0d8cc81a",
+                "PVWA": "ami-01a3f3486b3326c0b",
+                "PSM": "ami-0e38b8a579840237e",
+                "PSMP": "ami-04ccb81bb661e9db7"
+            },
+            "us-gov-west-1": {
+                "Vault": "ami-815ac4e0",
+                "Components": "ami-875ac4e6",
+                "CPM": "ami-875ac4e6",
+                "PVWA": "ami-875ac4e6",
+                "PSM": "ami-875ac4e6",
+                "PSMP": "ami-ba5ac4db"
             }
-        }     
+        }
     }
 }
 
