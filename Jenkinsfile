@@ -35,7 +35,6 @@ pipeline {
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
         }
-
       }
     }
   }
