@@ -43,6 +43,7 @@
                                     "",
                                     [
                                         "arn:",
+<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -50,6 +51,11 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
+=======
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                         "/*"
                                     ]
                                 ]
@@ -65,6 +71,7 @@
                                     "",
                                     [
                                         "arn:",
+<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -72,6 +79,11 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
+=======
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                         "/*"
                                     ]
                                 ]
@@ -92,6 +104,7 @@
                                     "",
                                     [
                                         "arn:",
+<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -99,6 +112,11 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
+=======
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                         "/*"
                                     ]
                                 ]
@@ -466,7 +484,19 @@
                                         "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
+<<<<<<< HEAD
                                         { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
+=======
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:",
+                                                    "logs:*:*:*"
+                                                ]
+                                            ]
+                                        }
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                     ]
                                 }
                             ]
@@ -691,11 +721,15 @@
                                             "import subprocess\n",
                                             "\n",
                                             "def fetchPassword(bucket,filePath):\n",
+<<<<<<< HEAD
                                             "\ts3Client = boto3.client('s3', region_name='",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
                                             "', config= boto3.session.Config(signature_version='s3v4'))\n",
+=======
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" }, "', config= boto3.session.Config(signature_version='s3v4'))\n",
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                             "\tobjectResponse = s3Client.get_object(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath\n",
@@ -703,11 +737,15 @@
                                             "\treturn objectResponse['Body'].read()\n",
                                             "\n",
                                             "def downloadFile(bucket,filePath,target):\n",
+<<<<<<< HEAD
                                             "\ts3Client = boto3.client('s3', region_name='",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
                                             "')\n",
+=======
+                                            "\ts3Client = boto3.client('s3', region_name='", { "Ref": "AWS::Region" },"')\n",
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                             "\ts3Client.download_file(\n",
                                             "\t\tBucket = bucket,\n",
                                             "\t\tKey = filePath,\n",
@@ -821,6 +859,7 @@
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
                             },
+<<<<<<< HEAD
                             "3-ChangeHostName": {
                                 "command": {
                                     "Fn::Join": [
@@ -856,6 +895,34 @@
                                     ]
                                 }
                             }
+=======
+ 							"3-ChangeHostName" : {
+								"command" : {
+									"Fn::Join": [
+										"",
+										[
+											"powershell.exe -Command Rename-Computer -NewName ",
+											{ "Ref": "VaultHostName" },
+											" -Force -Restart"
+										]
+									]
+								},
+								"waitAfterCompletion" : "forever",
+                                "ignoreErrors": "false"
+							},
+							"99-SignalCompletion": {
+							    "command": {"Fn::Join": [
+                                                            "",
+                                                            [
+                                                                "cfn-signal.exe -e %ERRORLEVEL% ",
+																"         --stack ", { "Ref" : "AWS::StackId" },
+																"         --resource VaultMachine ",
+																"         --region ", { "Ref" : "AWS::Region" }
+															]
+														]
+											}
+							}
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                         }
                     }
                 }
@@ -938,6 +1005,7 @@
                                     "",
                                     [
                                         "arn:",
+<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -945,6 +1013,11 @@
                                         {
                                             "Ref": "VaultFilesBucket"
                                         },
+=======
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "VaultFilesBucket" },
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                         "/*"
                                     ]
                                 ]
@@ -979,6 +1052,7 @@
                                     "",
                                     [
                                         "arn:",
+<<<<<<< HEAD
                                         {
                                             "Ref": "AWS::Partition"
                                         },
@@ -986,6 +1060,11 @@
                                         {
                                             "Ref": "DeployBucket"
                                         },
+=======
+										{ "Ref": "AWS::Partition" },
+										":s3:::",
+                                        { "Ref": "DeployBucket" },
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                                         "/*"
                                     ]
                                 ]
@@ -1273,6 +1352,7 @@
                 "PVWA": "ami-08ab8db5ba0c00f78",
                 "PSM": "ami-0560ae7636022d241",
                 "PSMP": "ami-0a3770ee62a03ae54"
+<<<<<<< HEAD
             },
             "eu-west-1": {
                 "Vault": "ami-055875a33d1855454",
@@ -1283,6 +1363,18 @@
                 "PSMP": "ami-07e5542d089692bc2"
             },
             "eu-central-1": {
+=======
+            },
+			"eu-west-1": {
+                "Vault": "ami-055875a33d1855454",
+                "Components": "ami-0929c8dfe71e7caa6",
+                "CPM": "ami-020e9f9fbc526c078",
+                "PVWA": "ami-0e94dfc838d034ac6",
+                "PSM": "ami-098a84a8de32990bd",
+                "PSMP": "ami-07e5542d089692bc2"
+            },
+			"eu-central-1": {
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                 "Vault": "ami-070990fb0a4adcb1c",
                 "Components": "ami-0b7366d5a32014f5f",
                 "CPM": "ami-04fece7e673892d18",
@@ -1290,7 +1382,11 @@
                 "PSM": "ami-0d7a9a6ebd8620ba7",
                 "PSMP": "ami-0552713509028f263"
             },
+<<<<<<< HEAD
             "ap-southeast-1": {
+=======
+			"ap-southeast-1": {
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                 "Vault": "ami-0adec27e3d97acd46",
                 "Components": "ami-05943d8fc0385ac36",
                 "CPM": "ami-0b23b9f2a11c03e5e",
@@ -1298,7 +1394,11 @@
                 "PSM": "ami-0e5b9367ec4cd4d82",
                 "PSMP": "ami-029e0bb6069e7afd8"
             },
+<<<<<<< HEAD
             "ap-southeast-2": {
+=======
+			"ap-southeast-2": {
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                 "Vault": "ami-076c51f5281dc1139",
                 "Components": "ami-0bd6311d26ddb7c8e",
                 "CPM": "ami-0a8ef23737b1ba7f0",
@@ -1306,7 +1406,11 @@
                 "PSM": "ami-00da2f855a0ae8a3a",
                 "PSMP": "ami-0b33117017a0627ac"
             },
+<<<<<<< HEAD
             "ap-northeast-2": {
+=======
+			"ap-northeast-2": {
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                 "Vault": "ami-0095711fbd0234bb5",
                 "Components": "ami-00c130264e5feba9e",
                 "CPM": "ami-056f7261892b501f8",
@@ -1314,7 +1418,11 @@
                 "PSM": "ami-00d3b879e3daaded2",
                 "PSMP": "ami-0bee3849042c5f67e"
             },
+<<<<<<< HEAD
             "ap-northeast-1": {
+=======
+			"ap-northeast-1": {
+>>>>>>> 6e8697d5d7bfd93d62e6833867f2991d54a3dc51
                 "Vault": "ami-023a9797d305d37cd",
                 "Components": "ami-031857c6252af5e59",
                 "CPM": "ami-042a9b4c302b117da",

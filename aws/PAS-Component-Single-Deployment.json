@@ -1053,7 +1053,6 @@
                                 "command": "C:\\Python27\\python.exe C:\\deploy.py",
                                 "waitAfterCompletion": "0",
                                 "ignoreErrors": "false"
-
                             },
                             "03-startAppPool": {
                                 "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
