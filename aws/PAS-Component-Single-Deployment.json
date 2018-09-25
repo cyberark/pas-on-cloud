@@ -142,6 +142,24 @@
                                 }
                             ]
                         }
+                    },
+					{
+                        "PolicyName": "SSM",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:PutParameter",
+										"ssm:DeleteParameter"
+                                    ],
+                                    "Resource":  [
+                                        { "Fn::Sub": "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*" }
+                                    ]
+                                }
+                            ]
+                        }
                     }
                 ]
             },
@@ -150,7 +168,7 @@
         "StorePasswordLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Description": "Encrypts given string and saves chipper to bucket",
+                "Description": "Encrypts given string and saves chipper to bucket and parameter store",
                 "Code": {
                     "ZipFile": {
                         "Fn::Join": [
@@ -169,11 +187,25 @@
                                 "        Body = body",
                                 "    )",
                                 "",
+                                "def storePassword(name, value):",
+                                "    ssmClient = boto3.client('ssm')",
+                                "    return ssmClient.put_parameter(",
+                                "        Name = name,",
+                                "        Value = value,",
+                                "        Type = 'SecureString'",
+                                "    )",
+                                "",
                                 "def deleteFile(bucket, file):",
                                 "    s3Client = boto3.client('s3')",
                                 "    return s3Client.delete_object(",
                                 "        Bucket = bucket,",
                                 "        Key = file",
+                                "    )",
+                                "",
+                                "def deletePassword(name):",
+                                "    ssmClient = boto3.client('ssm')",
+                                "    return ssmClient.delete_parameter(",
+                                "        Name = name",
                                 "    )",
                                 "",
                                 "def lambda_handler(event, context):",
@@ -191,11 +223,13 @@
                                 "        if event['RequestType'] == 'Delete':",
                                 "            deleteFile(event['ResourceProperties']['BucketId'], physicalResourceId)",
                                 "            print 'The secret file deleted'",
+                                "            deletePassword(physicalResourceId)",
                                 "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                                 "",
                                 "        if event['RequestType'] == 'Create':",
                                 "            createFile(event['ResourceProperties']['BucketId'], physicalResourceId, event['ResourceProperties']['PlainText'])",
                                 "            print 'The secret file created'",
+                                "            storePassword(physicalResourceId, event['ResourceProperties']['PlainText'])",
                                 "            response = { 'FileId': physicalResourceId }",
                                 "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)",
                                 "",
@@ -220,7 +254,7 @@
         "DeletePasswordLambda": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Description": "Delete file from s3 bucket",
+                "Description": "Delete file from s3 bucket and parameter store",
                 "Code": {
                     "ZipFile": {
                         "Fn::Join": [
@@ -235,6 +269,12 @@
                                 "    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
                                 "    print response",
                                 "",
+                                "def deletePassword(name):",
+                                "    ssmClient = boto3.client('ssm')",
+                                "    return ssmClient.delete_parameter(",
+                                "        Name = name",
+                                "    )",
+                                "",
                                 "def lambda_handler(event, context):",
                                 "",
                                 "    physicalResourceId = str(uuid.uuid4())",
@@ -245,6 +285,7 @@
                                 "        if event['RequestType'] == 'Create':",
                                 "            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
                                 "            print 'File Deleted'",
+                                "            deletePassword(event['ResourceProperties']['key'])",
                                 "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                                 "        if event['RequestType'] == 'Delete':",
                                 "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
