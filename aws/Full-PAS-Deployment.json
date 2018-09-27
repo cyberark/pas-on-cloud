@@ -2551,7 +2551,7 @@
                               [
                                  "#!/bin/bash -e\n",
                                  "chmod 700 /root/CD-Image/register_and_activation.sh\n",
-                                 "temppassword = `aws ssm get-parameter --name ",
+                                 "temppassword=`aws ssm get-parameter --name ",
                                  {
                                     "Fn::GetAtt":[
                                        "StoreAdminPassword",
