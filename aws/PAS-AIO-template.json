@@ -920,10 +920,10 @@
          },
          "Condition":"EULACondition"
       },
-      "ComponentInstancesSSMPolicy":{
+      "InstancesSSMPolicy":{
          "Type":"AWS::IAM::Policy",
          "Properties":{
-            "PolicyName":"ComponentInsancesSsmAccess",
+            "PolicyName":"InstancesSsmAccess",
             "PolicyDocument":{
                "Statement":[
                   {
@@ -942,6 +942,9 @@
             "Roles":[
                {
                   "Ref":"ComponentInstanceRole"
+               },
+               {
+                  "Ref":"VaultInstancesRole"
                }
             ]
          },
@@ -999,33 +1002,6 @@
                            ]
                         ]
                      }
-                  }
-               ]
-            },
-            "Roles":[
-               {
-                  "Ref":"VaultInstancesRole"
-               }
-            ]
-         },
-         "Condition":"EULACondition"
-      },
-      "VaultInstancesSSMPolicy":{
-         "Type":"AWS::IAM::Policy",
-         "Properties":{
-            "PolicyName":"VaultInstancesSsmAccess",
-            "PolicyDocument":{
-               "Statement":[
-                  {
-                     "Effect":"Allow",
-                     "Action":[
-                        "ssm:GetParameter"
-                     ],
-                     "Resource":[
-                        {
-                           "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
-                        }
-                     ]
                   }
                ]
             },
