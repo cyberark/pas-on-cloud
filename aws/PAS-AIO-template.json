@@ -644,17 +644,17 @@
                                  "import subprocess\n",
                                  "import random, string\n",
                                  "\n",
-                                 "def fetchPassword(bucket,filePath):\n",
-                                 "\ts3Client = boto3.client('s3', region_name='",
+                                 "def fetchPassword(name):\n",
+                                 "\tssmClient = boto3.client('ssm', region_name='",
                                  {
                                     "Ref":"AWS::Region"
                                  },
-                                 "', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                 "\tobjectResponse = s3Client.get_object(\n",
-                                 "\t\tBucket = bucket,\n",
-                                 "\t\tKey = filePath\n",
+                                 "')\n",
+                                 "\tobjectResponse = ssmClient.get_parameter(\n",
+                                 "\t\tName = name,\n",
+                                 "\t\tWithDecryption = True\n",
                                  "\t)\n",
-                                 "\treturn objectResponse['Body'].read()\n",
+                                 "\treturn objectResponse['Parameter']['Value']\n",
                                  "\n",
                                  "def downloadFile(bucket,filePath,target):\n",
                                  "\ts3Client = boto3.client('s3', region_name='",
@@ -671,10 +671,6 @@
                                  "\n",
                                  "masterp = fetchPassword('",
                                  {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "','",
-                                 {
                                     "Fn::GetAtt":[
                                        "StoreMasterPassword",
                                        "FileId"
@@ -682,10 +678,6 @@
                                  },
                                  "')\n",
                                  "adminp = fetchPassword('",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "','",
                                  {
                                     "Fn::GetAtt":[
                                        "StoreAdminPassword",
@@ -928,42 +920,22 @@
          },
          "Condition":"EULACondition"
       },
-      "ComponentS3DeployBucketPolicy":{
+      "ComponentInstancesSSMPolicy":{
          "Type":"AWS::IAM::Policy",
          "Properties":{
-            "PolicyName":"ComponentInstancesDeployBucketAccess",
+            "PolicyName":"ComponentInsancesSsmAccess",
             "PolicyDocument":{
                "Statement":[
                   {
                      "Effect":"Allow",
                      "Action":[
-                        "s3:GetObject",
-                        "s3:GetObjectVersion",
-                        "s3:DeleteObject",
-                        "s3:DeleteObjectVersion"
+                        "ssm:GetParameter"
                      ],
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"DeployBucket"
-                              },
-                              "/",
-                              {
-                                 "Fn::GetAtt":[
-                                    "StoreAdminPassword",
-                                    "FileId"
-                                 ]
-                              }
-                           ]
-                        ]
-                     }
+                     "Resource":[
+                        {
+                           "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
+                        }
+                     ]
                   }
                ]
             },
@@ -1038,36 +1010,22 @@
          },
          "Condition":"EULACondition"
       },
-      "VaultInstancesS3DeployBucketPolicy":{
+      "VaultInstancesSSMPolicy":{
          "Type":"AWS::IAM::Policy",
          "Properties":{
-            "PolicyName":"VaultInsancesDeployBucketAccess",
+            "PolicyName":"VaultInstancesSsmAccess",
             "PolicyDocument":{
                "Statement":[
                   {
                      "Effect":"Allow",
                      "Action":[
-                        "s3:GetObject",
-                        "s3:GetObjectVersion",
-                        "s3:DeleteObject",
-                        "s3:DeleteObjectVersion"
+                        "ssm:GetParameter"
                      ],
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"DeployBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     }
+                     "Resource":[
+                        {
+                           "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
+                        }
+                     ]
                   }
                ]
             },
@@ -1311,8 +1269,30 @@
                            "Fn::Join":[
                               "",
                               [
+                                 "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
+                                 "\n",
+                                 "def fetchPassword(name):\n",
+                                 "\tssmClient = boto3.client('ssm', region_name='",
+                                 {
+                                    "Ref":"AWS::Region"
+                                 },
+                                 "')\n",
+                                 "\tobjectResponse = ssmClient.get_parameter(\n",
+                                 "\t\tName = name,\n",
+                                 "\t\tWithDecryption = True\n",
+                                 "\t)\n",
+                                 "\treturn objectResponse['Parameter']['Value']\n",
+                                 "\n",
+                                 "adminp = fetchPassword('",
+                                 {
+                                    "Fn::GetAtt":[
+                                       "StoreAdminPassword",
+                                       "FileId"
+                                    ]
+                                 },
+                                 "')\n",
                                  "\n",
                                  "callArray = [",
                                  "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
@@ -1332,21 +1312,9 @@
                                  "'1858',",
                                  "'/vaultuser',",
                                  "'Administrator',",
-                                 "'/bucketname',",
-                                 "'",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "',",
-                                 "'/objectkey',",
-                                 "'",
-                                 {
-                                    "Fn::GetAtt":[
-                                       "StoreAdminPassword",
-                                       "FileId"
-                                    ]
-                                 },
-                                 "']\n",
+                                 "'/vaultpassword',",
+                                 "adminp",
+                                 "]\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -1357,8 +1325,30 @@
                            "Fn::Join":[
                               "",
                               [
+                                 "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
+                                 "\n",
+                                 "def fetchPassword(name):\n",
+                                 "\tssmClient = boto3.client('ssm', region_name='",
+                                 {
+                                    "Ref":"AWS::Region"
+                                 },
+                                 "')\n",
+                                 "\tobjectResponse = ssmClient.get_parameter(\n",
+                                 "\t\tName = name,\n",
+                                 "\t\tWithDecryption = True\n",
+                                 "\t)\n",
+                                 "\treturn objectResponse['Parameter']['Value']\n",
+                                 "\n",
+                                 "adminp = fetchPassword('",
+                                 {
+                                    "Fn::GetAtt":[
+                                       "StoreAdminPassword",
+                                       "FileId"
+                                    ]
+                                 },
+                                 "')\n",
                                  "\n",
                                  "callArray = [",
                                  "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
@@ -1378,21 +1368,9 @@
                                  "'1858',",
                                  "'/vaultuser',",
                                  "'Administrator',",
-                                 "'/bucketname',",
-                                 "'",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "',",
-                                 "'/objectkey',",
-                                 "'",
-                                 {
-                                    "Fn::GetAtt":[
-                                       "StoreAdminPassword",
-                                       "FileId"
-                                    ]
-                                 },
-                                 "']\n",
+                                 "'/vaultpassword',",
+                                 "adminp",
+                                 "]\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -1403,9 +1381,31 @@
                            "Fn::Join":[
                               "",
                               [
+                                 "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
                                  "import urllib2\n",
+                                 "\n",
+                                 "def fetchPassword(name):\n",
+                                 "\tssmClient = boto3.client('ssm', region_name='",
+                                 {
+                                    "Ref":"AWS::Region"
+                                 },
+                                 "')\n",
+                                 "\tobjectResponse = ssmClient.get_parameter(\n",
+                                 "\t\tName = name,\n",
+                                 "\t\tWithDecryption = True\n",
+                                 "\t)\n",
+                                 "\treturn objectResponse['Parameter']['Value']\n",
+                                 "\n",
+                                 "adminp = fetchPassword('",
+                                 {
+                                    "Fn::GetAtt":[
+                                       "StoreAdminPassword",
+                                       "FileId"
+                                    ]
+                                 },
+                                 "')\n",
                                  "\n",
                                  "callArray = [",
                                  "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
@@ -1425,21 +1425,9 @@
                                  "'1858',",
                                  "'/vaultuser',",
                                  "'Administrator',",
-                                 "'/bucketname',",
-                                 "'",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "',",
-                                 "'/objectkey',",
-                                 "'",
-                                 {
-                                    "Fn::GetAtt":[
-                                       "StoreAdminPassword",
-                                       "FileId"
-                                    ]
-                                 },
-                                 "']\n",
+                                 "'/vaultpassword',",
+                                 "adminp",
+                                 "]\n",
                                  "properties = urllib2.urlopen('http://169.254.169.254/latest/meta-data').read()\n",
                                  "if 'public-ipv4' in properties:\n",
                                  "\tipv4 = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4').read()\n",
