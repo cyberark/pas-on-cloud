@@ -1057,7 +1057,7 @@
                                  {
                                     "Ref":"AWS::StackId"
                                  },
-                                 "         --resource VaultMachine ",
+                                 "         --resource VaultDRMachine ",
                                  "         --region ",
                                  {
                                     "Ref":"AWS::Region"
