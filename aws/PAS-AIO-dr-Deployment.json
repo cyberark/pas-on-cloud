@@ -1023,52 +1023,6 @@
                               ]
                            ]
                         }
-                     },
-                     "C:\\clean.py":{
-                        "content":{
-                           "Fn::Join":[
-                              "",
-                              [
-                                 "import boto3\n",
-                                 "\n",
-                                 "def deleteFile(bucket,filePath):\n",
-                                 "\ts3Client = boto3.client('s3', region_name='",
-                                 {
-                                    "Ref":"AWS::Region"
-                                 },
-                                 "', config= boto3.session.Config(signature_version='s3v4'))\n",
-                                 "\treturn s3Client.delete_object(\n",
-                                 "\t\tBucket = bucket,\n",
-                                 "\t\tKey = filePath\n",
-                                 "\t)",
-                                 "\n",
-                                 "print deleteFile('",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "','",
-                                 {
-                                    "Fn::GetAtt":[
-                                       "StoreMasterPassword",
-                                       "SsmId"
-                                    ]
-                                 },
-                                 "')\n",
-                                 "print deleteFile('",
-                                 {
-                                    "Ref":"DeployBucket"
-                                 },
-                                 "','",
-                                 {
-                                    "Fn::GetAtt":[
-                                       "StoreDRPassword",
-                                       "SsmId"
-                                    ]
-                                 },
-                                 "')\n"
-                              ]
-                           ]
-                        }
                      }
                   },
                   "services":{
