@@ -1058,8 +1058,15 @@
             "Properties" : {
                 "VpcEndpointType": "Interface",
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".ssm" ] ] },
-                "VpcId" : {"Ref" : "VaultVPC"},
-                "SubnetIds": [{"Ref": "VaultMainSubnet" }]
+                "VpcId" : {"Ref" : "VaultVPC"}
+            }
+        },
+        "VaultKMSEndpoint" : {
+            "Type" : "AWS::EC2::VPCEndpoint",
+            "Properties" : {
+                "VpcEndpointType": "Interface",
+                "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".kms" ] ] },
+                "VpcId" : {"Ref" : "VaultVPC"}
             }
         }
     },
