@@ -2131,7 +2131,7 @@
             "CPM":"ami-079a10f6ba5c4eeb4",
             "PVWA":"ami-046e947dcae85aafb",
             "PSM":"ami-0ccf83cef896a80ea",
-            "PSMP":"ami-07f89768f972c452d"
+            "PSMP":"ami-0e6d2cea1cf1d0275"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
