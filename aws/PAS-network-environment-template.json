@@ -1027,24 +1027,41 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "S3Endpoint" : {
+        "VaultS3Endpoint" : {
             "Type" : "AWS::EC2::VPCEndpoint",
-                  "Properties" : {
-                    "PolicyDocument" : {
-                      "Version":"2012-10-17",
-                      "Statement":[{
+            "Properties" : {
+                "PolicyDocument" : {
+                    "Version":"2012-10-17",
+                    "Statement":[{
                         "Effect":"Allow",
                         "Principal": "*",
                         "Action":["s3:GetObject"],
                         "Resource":[{
-                                 "Fn::Sub":"arn:${AWS::Partition}:s3:::*"
-                              }]
-                      }]
-                    },
-                    "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
-                    "VpcId" : {"Ref" : "VaultVPC"}
-                  }
+                             "Fn::Sub":"arn:${AWS::Partition}:s3:::*"
+                        }]
+                    }]
+                },
+                "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
+                "VpcId" : {"Ref" : "VaultVPC"}
             }
+        },
+        "VaultCFNEndpoint" : {
+            "Type" : "AWS::EC2::VPCEndpoint",
+            "Properties" : {
+                "VpcEndpointType": "Interface",
+                "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".cloudformation" ] ] },
+                "VpcId" : {"Ref" : "VaultVPC"}
+            }
+        },
+        "VaultSSMEndpoint" : {
+            "Type" : "AWS::EC2::VPCEndpoint",
+            "Properties" : {
+                "VpcEndpointType": "Interface",
+                "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".ssm" ] ] },
+                "VpcId" : {"Ref" : "VaultVPC"},
+                "SubnetIds": [{"Ref": "VaultMainSubnet" }]
+            }
+        }
     },
     "Description": "This template will create the required network environment for CyberArk PAS products. **WARNING** You will be billed for the AWS resources used if you create a stack from this template",
     "Metadata": {
