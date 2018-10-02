@@ -75,7 +75,7 @@
       "StorePasswordLambda":{
          "Type":"AWS::Lambda::Function",
          "Properties":{
-            "Description":"Encrypts given string and saves chipper to parameter store",
+            "Description":"Saves given password to parameter store",
             "Code":{
                "ZipFile":{
                   "Fn::Join":[
