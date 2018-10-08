@@ -13,44 +13,6 @@
             "AccessControl": "Private"
          }
       },
-      "DeployBucketPolicy": {
-         "Type": "AWS::S3::BucketPolicy",
-         "Properties": {
-            "Bucket": {
-               "Ref": "DeployBucket"
-            },
-            "PolicyDocument": {
-               "Version": "2012-10-17",
-               "Statement": [{
-                  "Effect": "Allow",
-                  "Principal": {
-                     "AWS": {
-                        "Fn::GetAtt": [
-                           "LambdaDeployRole",
-                           "Arn"
-                        ]
-                     }
-                  },
-                  "Action": [
-                     "s3:PutObject",
-                     "s3:DeleteObject",
-                     "s3:DeleteObjectVersion"
-                  ],
-                  "Resource": {
-                     "Fn::Join": [
-                        "", [
-                           "arn:aws:s3:::",
-                           {
-                              "Ref": "DeployBucket"
-                           },
-                           "/*"
-                        ]
-                     ]
-                  }
-               }]
-            }
-         }
-      },
       "LambdaDeployRole": {
          "Type": "AWS::IAM::Role",
          "Properties": {
