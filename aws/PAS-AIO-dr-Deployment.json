@@ -7,70 +7,105 @@
          },
          "DeletionPolicy":"Retain"
       },
-      "LambdaDeployRole":{
-         "Type":"AWS::IAM::Role",
-         "Properties":{
-            "AssumeRolePolicyDocument":{
-               "Version":"2012-10-17",
-               "Statement":[
-                  {
-                     "Effect":"Allow",
-                     "Principal":{
-                        "Service":[
-                           "lambda.amazonaws.com"
-                        ]
-                     },
-                     "Action":[
-                        "sts:AssumeRole"
+      "DeployBucket": {
+         "Type": "AWS::S3::Bucket",
+         "Properties": {
+            "AccessControl": "Private"
+         }
+      },
+      "LambdaDeployRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Version": "2012-10-17",
+               "Statement": [{
+                  "Effect": "Allow",
+                  "Principal": {
+                     "Service": [
+                        "lambda.amazonaws.com"
                      ]
-                  }
-               ]
+                  },
+                  "Action": [
+                     "sts:AssumeRole"
+                  ]
+               }]
             },
-            "Policies":[
-               {
-                  "PolicyName":"CloudWatch",
-                  "PolicyDocument":{
-                     "Version":"2012-10-17",
-                     "Statement":[
-                        {
-                           "Effect":"Allow",
-                           "Action":[
-                              "logs:CreateLogGroup",
-                              "logs:CreateLogStream",
-                              "logs:DescribeLogGroups",
-                              "logs:DescribeLogStreams",
-                              "logs:PutLogEvents"
-                           ],
-                           "Resource":[
-                              "*"
-                           ]
-                        }
-                     ]
+            "Policies": [{
+                  "PolicyName": "CloudWatch",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                           "logs:CreateLogGroup",
+                           "logs:CreateLogStream",
+                           "logs:DescribeLogGroups",
+                           "logs:DescribeLogStreams",
+                           "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                           "*"
+                        ]
+                     }]
                   }
                },
                {
-                  "PolicyName":"SSM",
-                  "PolicyDocument":{
-                     "Version":"2012-10-17",
-                     "Statement":[
-                        {
-                           "Effect":"Allow",
-                           "Action":[
-                              "ssm:PutParameter",
-                              "ssm:DeleteParameter"
-                           ],
-                           "Resource":[
-                              {
-                                 "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
-                              }
-                           ]
-                        }
-                     ]
+                  "PolicyName": "SSM",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                           "ssm:PutParameter",
+                           "ssm:DeleteParameter"
+                        ],
+                        "Resource": [{
+                           "Fn::Sub": "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
+                        }]
+                     }]
+                  }
+               },
+               {
+                  "PolicyName": "S3",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                           "s3:GetObject",
+                           "s3:GetObjectVersion",
+                           "s3:PutObject",
+                           "s3:DeleteObject",
+                           "s3:DeleteObjectVersion"
+                        ],
+                        "Resource": [{
+                           "Fn::Join": [
+                              "", [
+                                 "arn:aws:s3:::",
+                                 {
+                                    "Ref": "DeployBucket"
+                                 },
+                                 "/*"
+                              ]
+                           ]},
+                           {
+                              "Fn::Join": [
+                                 "", [
+                                    "arn:aws:s3:::",
+                                    {
+                                       "Ref": "VaultFilesBucket"
+                                    },
+                                    "/*"
+                                 ]
+                              ]
+                           }
+                        ]
+                     }]
                   }
                }
             ]
          },
-         "Condition":"EULACondition"
+         "Condition": "EULACondition"
       },
       "StorePasswordLambda":{
          "Type":"AWS::Lambda::Function",
@@ -195,6 +230,61 @@
             }
          },
          "Condition":"EULACondition"
+      },
+      "CopyfileFromBucketLambda": {
+         "Type": "AWS::Lambda::Function",
+         "Properties": {
+            "Description": "Copy files from foreign region to local region",
+            "Code": {
+               "ZipFile": {
+                  "Fn::Join": [
+                     "\n", [
+                        "import uuid",
+                        "import boto3",
+                        "import cfnresponse",
+                        "",
+                        "def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):",
+                        "    s3Resource = boto3.resource('s3')",
+                        "    copy_source = {'Bucket': bucket,'Key': fileKey}",
+                        "    s3Resource.meta.client.copy(copy_source, destBucket, destination)",
+                        "",
+                        "def DeleteObjectFromBucket(bucket, key):",
+                        "    s3Client = boto3.client('s3')",
+                        "    s3Client.delete_object(Bucket=bucket, Key=key)",
+                        "",
+                        "def lambda_handler(event, context):",
+                        "",
+                        "    physicalResourceId = str(uuid.uuid4())",
+                        "    if 'PhysicalResourceId' in event:",
+                        "        physicalResourceId = event['PhysicalResourceId']",
+                        "",
+                        "    try:",
+                        "        if event['RequestType'] == 'Delete':",
+                        "            DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])",
+                        "            print 'Object Deleted Successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "        if event['RequestType'] == 'Create':",
+                        "            CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])",
+                        "            print 'file copied successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "    except Exception as E:",
+                        "        print E",
+                        "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                     ]
+                  ]
+               }
+            },
+            "Runtime": "python2.7",
+            "Handler": "index.lambda_handler",
+            "Role": {
+               "Fn::GetAtt": [
+                  "LambdaDeployRole",
+                  "Arn"
+               ]
+            }
+         }
       },
       "StoreMasterPassword":{
          "Type":"AWS::CloudFormation::CustomResource",
@@ -324,6 +414,64 @@
             "LambdaDeployRole",
             "StorePasswordLambda",
             "VaultDRMachine"
+         ]
+      },
+      "CopyLicenseToBucket": {
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Version": "1.0",
+         "Properties": {
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "CopyfileFromBucketLambda",
+                  "Arn"
+               ]
+            },
+            "BucketName": {
+               "Ref": "VaultFilesBucket"
+            },
+            "FileKey": {
+               "Ref": "LicenseFile"
+            },
+            "FileName": {
+               "Ref": "LicenseFile"
+            },
+            "DestBucket": {
+               "Ref": "DeployBucket"
+            }
+         },
+         "Condition": "EULACondition",
+         "DependsOn": [
+            "LambdaDeployRole",
+            "StorePasswordLambda"
+         ]
+      },
+      "CopyRecpubToBucket": {
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Version": "1.0",
+         "Properties": {
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "CopyfileFromBucketLambda",
+                  "Arn"
+               ]
+            },
+            "BucketName": {
+               "Ref": "VaultFilesBucket"
+            },
+            "FileKey": {
+               "Ref": "RecoveryPublicKey"
+            },
+            "FileName": {
+               "Ref": "RecoveryPublicKey"
+            },
+            "DestBucket": {
+               "Ref": "DeployBucket"
+            }
+         },
+         "Condition": "EULACondition",
+         "DependsOn": [
+            "LambdaDeployRole",
+            "CopyfileFromBucketLambda"
          ]
       },
       "VaultMachine":{
@@ -594,7 +742,7 @@
                                  "\n",
                                  "licensef = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
@@ -603,7 +751,7 @@
                                  "','C:\\\\vaultLicense.xml')\n",
                                  "publickeyf = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
@@ -970,7 +1118,7 @@
                                  "\n",
                                  "licensef = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
@@ -979,7 +1127,7 @@
                                  "','C:\\\\vaultLicense.xml')\n",
                                  "publickeyf = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
