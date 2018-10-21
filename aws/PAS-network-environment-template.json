@@ -445,18 +445,6 @@
                 }
             }
         },
-        "VaultNATEIP": {
-            "Type": "AWS::EC2::EIP",
-            "Properties": {
-                "Domain": "vpc"
-            }
-        },
-        "ComponentsNATEIP": {
-            "Type": "AWS::EC2::EIP",
-            "Properties": {
-                "Domain": "vpc"
-            }
-        },
         "CompMainRTAssociation": {
             "Type": "AWS::EC2::SubnetRouteTableAssociation",
             "Properties": {
