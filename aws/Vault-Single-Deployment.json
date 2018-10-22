@@ -1062,7 +1062,7 @@
       },
       "VaultHostName":{
          "Type":"String",
-         "Description":"Enter the host name for the Vault instance.",
+         "Description":"Enter the host name for the Primary Vault instance.",
          "MinLength":1,
          "MaxLength":16,
          "AllowedPattern":"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$",
