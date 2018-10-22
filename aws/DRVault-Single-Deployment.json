@@ -7,112 +7,11 @@
          },
          "DeletionPolicy":"Retain"
       },
-      "DeployBucket":{
-         "Type":"AWS::S3::Bucket",
-         "Properties":{
-            "AccessControl":"Private"
-         },
-         "Condition":"EULACondition"
-      },
-      "DeployBucketPolicy":{
-         "Type":"AWS::S3::BucketPolicy",
-         "Properties":{
-            "Bucket":{
-               "Ref":"DeployBucket"
-            },
-            "PolicyDocument":{
-               "Version":"2012-10-17",
-               "Statement":[
-                  {
-                     "Effect":"Allow",
-                     "Principal":{
-                        "AWS":{
-                           "Fn::GetAtt":[
-                              "LambdaDeployRole",
-                              "Arn"
-                           ]
-                        }
-                     },
-                     "Action":[
-                        "s3:PutObject",
-                        "s3:DeleteObject",
-                        "s3:DeleteObjectVersion"
-                     ],
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"DeployBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     }
-                  },
-                  {
-                     "Sid":"DenyUnEncryptedObjectUploads",
-                     "Effect":"Deny",
-                     "Principal":"*",
-                     "Action":"s3:PutObject",
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"DeployBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     },
-                     "Condition":{
-                        "StringNotEquals":{
-                           "s3:x-amz-server-side-encryption":"AES256"
-                        }
-                     }
-                  },
-                  {
-                     "Sid":" DenyUnEncryptedInflightOperations",
-                     "Effect":"Deny",
-                     "Principal":"*",
-                     "Action":"s3:*",
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"DeployBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     },
-                     "Condition":{
-                        "Bool":{
-                           "aws:SecureTransport":false
-                        }
-                     }
-                  }
-               ]
-            }
-         },
-         "Condition":"EULACondition"
+      "DeployBucket": {
+         "Type": "AWS::S3::Bucket",
+         "Properties": {
+            "AccessControl": "Private"
+         }
       },
       "LambdaDeployRole":{
          "Type":"AWS::IAM::Role",
@@ -174,6 +73,45 @@
                         }
                      ]
                   }
+               },
+               {
+                  "PolicyName": "S3",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                           "s3:GetObject",
+                           "s3:GetObjectVersion",
+                           "s3:ListBucket",
+                           "s3:PutObject",
+                           "s3:DeleteObject",
+                           "s3:DeleteObjectVersion"
+                        ],
+                        "Resource": [{
+                           "Fn::Join": [
+                              "", [
+                                 "arn:aws:s3:::",
+                                 {
+                                    "Ref": "DeployBucket"
+                                 },
+                                 "/*"
+                              ]
+                           ]},
+                           {
+                              "Fn::Join": [
+                                 "", [
+                                    "arn:aws:s3:::",
+                                    {
+                                       "Ref": "VaultFilesBucket"
+                                    },
+                                    "/*"
+                                 ]
+                              ]
+                           }
+                        ]
+                     }]
+                  }
                }
             ]
          },
@@ -182,7 +120,7 @@
       "StorePasswordLambda":{
          "Type":"AWS::Lambda::Function",
          "Properties":{
-            "Description":"Encrypts given string and saves chipper to bucket and parameter store",
+            "Description":"Saves given password to parameter store as SecureString",
             "Code":{
                "ZipFile":{
                   "Fn::Join":[
@@ -192,28 +130,12 @@
                         "import boto3",
                         "import cfnresponse",
                         "",
-                        "def createFile(bucket, file, body):",
-                        "    s3Client = boto3.client('s3')",
-                        "    return s3Client.put_object(",
-                        "        Bucket = bucket,",
-                        "        Key = file,",
-                        "        ServerSideEncryption = 'AES256',",
-                        "        Body = body",
-                        "    )",
-                        "",
                         "def storePassword(name, value):",
                         "    ssmClient = boto3.client('ssm')",
                         "    return ssmClient.put_parameter(",
                         "        Name = name,",
                         "        Value = value,",
                         "        Type = 'SecureString'",
-                        "    )",
-                        "",
-                        "def deleteFile(bucket, file):",
-                        "    s3Client = boto3.client('s3')",
-                        "    return s3Client.delete_object(",
-                        "        Bucket = bucket,",
-                        "        Key = file",
                         "    )",
                         "",
                         "def deletePassword(name):",
@@ -228,25 +150,25 @@
                         "    if 'PhysicalResourceId' in event:",
                         "        physicalResourceId = event['PhysicalResourceId']",
                         "",
-                        "    for key in ['PlainText', 'BucketId']:",
-                        "        if key not in event['ResourceProperties'] or not event['ResourceProperties'][key]:",
-                        "            print 'The properties PlainText and BucketId must not be empty'",
+                        "    if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:",
+                        "            print 'The property Password must not be empty'",
                         "            return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)",
                         "",
                         "    try:",
                         "        if event['RequestType'] == 'Delete':",
-                        "            deleteFile(event['ResourceProperties']['BucketId'], physicalResourceId)",
-                        "            print 'The secret file deleted'",
                         "            deletePassword(physicalResourceId)",
+                        "            print 'Password successfully deleted. Id='+physicalResourceId",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "",
                         "        if event['RequestType'] == 'Create':",
-                        "            createFile(event['ResourceProperties']['BucketId'], physicalResourceId, event['ResourceProperties']['PlainText'])",
-                        "            print 'The secret file created'",
-                        "            storePassword(physicalResourceId, event['ResourceProperties']['PlainText'])",
-                        "            response = { 'FileId': physicalResourceId }",
+                        "            storePassword(physicalResourceId, event['ResourceProperties']['Password'])",
+                        "            print 'The store parameter has been created. Id='+physicalResourceId",
+                        "            response = { 'SsmId': physicalResourceId }",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)",
                         "",
+                        "    except client.exceptions.ParameterNotFound:",
+                        "        print 'Item already removed'",
+                        "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "    except Exception as E:",
                         "        print E",
                         "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
@@ -268,7 +190,7 @@
       "DeletePasswordLambda":{
          "Type":"AWS::Lambda::Function",
          "Properties":{
-            "Description":"Delete file from s3 bucket and parameter store",
+            "Description":"Delete password from parameter store",
             "Code":{
                "ZipFile":{
                   "Fn::Join":[
@@ -277,11 +199,6 @@
                         "import uuid",
                         "import boto3",
                         "import cfnresponse",
-                        "",
-                        "def DeleteFile(bucket, filePath):",
-                        "    s3Client = boto3.client('s3', config= boto3.session.Config(signature_version='s3v4'))",
-                        "    response = s3Client.delete_object(Bucket = bucket, Key = filePath)",
-                        "    print response",
                         "",
                         "def deletePassword(name):",
                         "    ssmClient = boto3.client('ssm')",
@@ -297,13 +214,15 @@
                         "    ",
                         "    try:",
                         "        if event['RequestType'] == 'Create':",
-                        "            DeleteFile(event['ResourceProperties']['bucket'], event['ResourceProperties']['key'])",
-                        "            print 'File Deleted'",
                         "            deletePassword(event['ResourceProperties']['key'])",
+                        "            print 'Password succesfully deleted. Id='+event['ResourceProperties']['key']",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "        if event['RequestType'] == 'Delete':",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "",
+                        "    except client.exceptions.ParameterNotFound:",
+                        "        print 'Item already removed'",
+                        "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "    except Exception as E:",
                         "        print E",
                         "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
@@ -322,6 +241,61 @@
          },
          "Condition":"EULACondition"
       },
+      "CopyfileFromBucketLambda": {
+         "Type": "AWS::Lambda::Function",
+         "Properties": {
+            "Description": "Copy files from foreign region to local region",
+            "Code": {
+               "ZipFile": {
+                  "Fn::Join": [
+                     "\n", [
+                        "import uuid",
+                        "import boto3",
+                        "import cfnresponse",
+                        "",
+                        "def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):",
+                        "    s3Resource = boto3.resource('s3')",
+                        "    copy_source = {'Bucket': bucket,'Key': fileKey}",
+                        "    s3Resource.meta.client.copy(copy_source, destBucket, destination)",
+                        "",
+                        "def DeleteObjectFromBucket(bucket, key):",
+                        "    s3Client = boto3.client('s3')",
+                        "    s3Client.delete_object(Bucket=bucket, Key=key)",
+                        "",
+                        "def lambda_handler(event, context):",
+                        "",
+                        "    physicalResourceId = str(uuid.uuid4())",
+                        "    if 'PhysicalResourceId' in event:",
+                        "        physicalResourceId = event['PhysicalResourceId']",
+                        "",
+                        "    try:",
+                        "        if event['RequestType'] == 'Delete':",
+                        "            DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])",
+                        "            print 'Object Deleted Successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "        if event['RequestType'] == 'Create':",
+                        "            CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])",
+                        "            print 'file copied successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "    except Exception as E:",
+                        "        print E",
+                        "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                     ]
+                  ]
+               }
+            },
+            "Runtime": "python2.7",
+            "Handler": "index.lambda_handler",
+            "Role": {
+               "Fn::GetAtt": [
+                  "LambdaDeployRole",
+                  "Arn"
+               ]
+            }
+         }
+      },
       "StoreMasterPassword":{
          "Type":"AWS::CloudFormation::CustomResource",
          "Version":"1.0",
@@ -332,19 +306,14 @@
                   "Arn"
                ]
             },
-            "BucketId":{
-               "Ref":"DeployBucket"
-            },
-            "PlainText":{
+            "Password":{
                "Ref":"VaultMasterPassword"
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
-            "StorePasswordLambda",
-            "DeployBucket"
+            "StorePasswordLambda"
          ]
       },
       "StoreAdminPassword":{
@@ -356,19 +325,72 @@
                   "Arn"
                ]
             },
-            "BucketId":{
-               "Ref":"DeployBucket"
-            },
-            "PlainText":{
+            "Password":{
                "Ref":"VaultAdminPassword"
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
-            "StorePasswordLambda",
-            "DeployBucket"
+            "StorePasswordLambda"
+         ]
+      },
+      "CopyLicenseToBucket": {
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Version": "1.0",
+         "Properties": {
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "CopyfileFromBucketLambda",
+                  "Arn"
+               ]
+            },
+            "BucketName": {
+               "Ref": "VaultFilesBucket"
+            },
+            "FileKey": {
+               "Ref": "LicenseFile"
+            },
+            "FileName": {
+               "Ref": "LicenseFile"
+            },
+            "DestBucket": {
+               "Ref": "DeployBucket"
+            }
+         },
+         "Condition": "EULACondition",
+         "DependsOn": [
+            "LambdaDeployRole",
+            "StorePasswordLambda"
+         ]
+      },
+      "CopyRecpubToBucket": {
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Version": "1.0",
+         "Properties": {
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "CopyfileFromBucketLambda",
+                  "Arn"
+               ]
+            },
+            "BucketName": {
+               "Ref": "VaultFilesBucket"
+            },
+            "FileKey": {
+               "Ref": "RecoveryPublicKey"
+            },
+            "FileName": {
+               "Ref": "RecoveryPublicKey"
+            },
+            "DestBucket": {
+               "Ref": "DeployBucket"
+            }
+         },
+         "Condition": "EULACondition",
+         "DependsOn": [
+            "LambdaDeployRole",
+            "CopyfileFromBucketLambda"
          ]
       },
       "VaultDRMachine":{
@@ -620,7 +642,7 @@
                                  {
                                     "Fn::GetAtt":[
                                        "StoreMasterPassword",
-                                       "FileId"
+                                       "SsmId"
                                     ]
                                  },
                                  "')\n",
@@ -628,7 +650,7 @@
                                  {
                                     "Fn::GetAtt":[
                                        "StoreAdminPassword",
-                                       "FileId"
+                                       "SsmId"
                                     ]
                                  },
                                  "')\n",
@@ -636,14 +658,14 @@
                                  {
                                     "Fn::GetAtt":[
                                        "StoreDRPassword",
-                                       "FileId"
+                                       "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
                                  "licensef = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
@@ -652,7 +674,7 @@
                                  "','C:\\\\vaultLicense.xml')\n",
                                  "publickeyf = downloadFile('",
                                  {
-                                    "Ref":"VaultFilesBucket"
+                                    "Ref":"DeployBucket"
                                  },
                                  "','",
                                  {
@@ -778,19 +800,14 @@
                   "Arn"
                ]
             },
-            "BucketId":{
-               "Ref":"DeployBucket"
-            },
-            "PlainText":{
+            "Password":{
                "Ref":"VaultDRPassword"
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
-            "StorePasswordLambda",
-            "DeployBucket"
+            "StorePasswordLambda"
          ]
       },
       "CleanMasterPassword":{
@@ -803,22 +820,17 @@
                   "Arn"
                ]
             },
-            "bucket":{
-               "Ref":"DeployBucket"
-            },
             "key":{
                "Fn::GetAtt":[
                   "StoreMasterPassword",
-                  "FileId"
+                  "SsmId"
                ]
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
             "StorePasswordLambda",
-            "DeployBucket",
             "VaultDRMachine"
          ]
       },
@@ -832,22 +844,17 @@
                   "Arn"
                ]
             },
-            "bucket":{
-               "Ref":"DeployBucket"
-            },
             "key":{
                "Fn::GetAtt":[
                   "StoreAdminPassword",
-                  "FileId"
+                  "SsmId"
                ]
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
             "StorePasswordLambda",
-            "DeployBucket",
             "VaultDRMachine"
          ]
       },
@@ -861,22 +868,17 @@
                   "Arn"
                ]
             },
-            "bucket":{
-               "Ref":"DeployBucket"
-            },
             "key":{
                "Fn::GetAtt":[
                   "StoreDRPassword",
-                  "FileId"
+                  "SsmId"
                ]
             }
          },
          "Condition":"EULACondition",
          "DependsOn":[
             "LambdaDeployRole",
-            "DeployBucketPolicy",
             "StorePasswordLambda",
-            "DeployBucket",
             "VaultDRMachine"
          ]
       },
@@ -1303,8 +1305,8 @@
             "Components":"ami-0c92618583f701176",
             "CPM":"ami-079a10f6ba5c4eeb4",
             "PVWA":"ami-046e947dcae85aafb",
-            "PSM":"ami-0e6d2cea1cf1d0275",
-            "PSMP":"ami-07f89768f972c452d"
+            "PSM":"ami-0ccf83cef896a80ea",
+            "PSMP":"ami-0e6d2cea1cf1d0275"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
