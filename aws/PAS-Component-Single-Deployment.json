@@ -2101,7 +2101,7 @@
          "MinLength":1,
          "MaxLength":16,
          "AllowedPattern":"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$",
-         "ConstraintDescription":"Hostname can only contain alphanumeric characters and the minus sign ('-')"
+         "ConstraintDescription":"Hostname can only contain alphanumeric characters and the hyphen('-')"
       },
       "ComponentInstanceType":{
          "Type":"String",
