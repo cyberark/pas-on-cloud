@@ -1924,7 +1924,7 @@
       },
       "VaultPrivateIP":{
          "Type":"String",
-         "Description":"Enter the IP of the Vault instance."
+         "Description":"Enter the IP of the Primary Vault instance."
       },
       "DRPrivateIP":{
          "Type":"String",
@@ -1960,7 +1960,11 @@
       },
       "ComponentHostName":{
          "Type":"String",
-         "Description":"Enter the host name for the PAS Component instance."
+         "Description":"Enter the host name for the PAS Component instance.",
+         "MinLength":1,
+         "MaxLength":16,
+         "AllowedPattern":"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$",
+         "ConstraintDescription":"Hostname can only contain alphanumeric characters and the hyphen sign ('-')"
       },
       "ComponentInstanceType":{
          "Type":"String",
