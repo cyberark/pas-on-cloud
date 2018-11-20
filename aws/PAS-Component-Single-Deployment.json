@@ -2120,12 +2120,12 @@
             "PSMP":"ami-0defaf6be121916f3"
          },
          "eu-west-2":{
-            "Vault":"ami-074ee03bfbfff5fda",
-            "Components":"ami-0c92618583f701176",
-            "CPM":"ami-079a10f6ba5c4eeb4",
-            "PVWA":"ami-046e947dcae85aafb",
-            "PSM":"ami-0ccf83cef896a80ea",
-            "PSMP":"ami-0e6d2cea1cf1d0275"
+            "Vault":"ami-0091f322e205790f0",
+            "Components":"ami-017013cb2d14a0a18",
+            "CPM":"ami-0a15bdcea89e17c98",
+            "PVWA":"ami-093b76ffa46a98a92",
+            "PSM":"ami-0c07ee59f56355496",
+            "PSMP":"ami-0dc5d2f4d9f37483a"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
