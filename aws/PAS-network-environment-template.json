@@ -905,7 +905,7 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "PrivateLinkSGIngress1": {
+        "PrivateLinkVaultSGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
@@ -917,7 +917,7 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "PrivateLinkSGEgress1": {
+        "PrivateLinkVaultSGEgress1": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
                 "GroupId": {
@@ -929,7 +929,7 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "PrivateLinkSGIngress1": {
+        "PrivateLinkComponentsSGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
@@ -941,7 +941,7 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "PrivateLinkSGEgress1": {
+        "PrivateLinkComponentsSGEgress1": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
                 "GroupId": {
