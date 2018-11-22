@@ -1215,13 +1215,21 @@
             "PSM":"ami-041d5a44246c242d6",
             "PSMP":"ami-0defaf6be121916f3"
          },
+         "us-east-2":{
+            "Vault":"ami-05f3110818d47df0c",
+            "Components":"ami-07ab97a9e0007890e",
+            "CPM":"ami-0cf0de4cb6e81ee96",
+            "PVWA":"ami-03aad21ce91631703",
+            "PSM":"ami-0e31bcff933a97757",
+            "PSMP":"ami-07f89768f972c452d"
+         },
          "eu-west-2":{
-            "Vault":"ami-0091f322e205790f0",
-            "Components":"ami-017013cb2d14a0a18",
-            "CPM":"ami-0a15bdcea89e17c98",
-            "PVWA":"ami-093b76ffa46a98a92",
-            "PSM":"ami-0c07ee59f56355496",
-            "PSMP":"ami-0dc5d2f4d9f37483a"
+            "Vault":"ami-0f41331ffbf2f3109",
+            "Components":"ami-06bb87a8441629977",
+            "CPM":"ami-02318a4ec9ced8193",
+            "PVWA":"ami-0a57ea4737853c253",
+            "PSM":"ami-04392ab0df4395e8c",
+            "PSMP":"ami-0b0ae21c63c49d775"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
