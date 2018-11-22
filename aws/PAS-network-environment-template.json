@@ -329,6 +329,36 @@
                 ]
             }
         },
+        "PrivateLinkVaultSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security group for PrivateLink to access AWS resources",
+                "VpcId": {
+                    "Ref": "VaultVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PrivateLink-Vault-SG"
+                    }
+                ]
+            }
+        },
+        "PrivateLinkComponentsSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security group for PrivateLink to access AWS resources",
+                "VpcId": {
+                    "Ref": "ComponentsVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PrivateLink-Components-SG"
+                    }
+                ]
+            }
+        },
         "VaultAclEntry1": {
             "Type": "AWS::EC2::NetworkAclEntry",
             "Properties": {
@@ -875,6 +905,54 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
+        "PrivateLinkSGIngress1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PrivateLinkVaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PrivateLinkSGEgress1": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PrivateLinkVaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PrivateLinkSGIngress1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PrivateLinkComponentsSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PrivateLinkSGEgress1": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PrivateLinkComponentsSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
         "VaultS3Endpoint" : {
             "Type" : "AWS::EC2::VPCEndpoint",
             "Properties" : {
@@ -901,7 +979,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".cloudformation" ] ] },
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
-                "SecurityGroupIds": [{"Ref" :"VaultSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -912,7 +990,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".ssm" ] ] },
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
-                "SecurityGroupIds": [{"Ref" :"VaultSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -923,7 +1001,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".kms" ] ] },
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
-                "SecurityGroupIds": [{"Ref" :"VaultSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -934,7 +1012,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".logs" ] ] },
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
-                "SecurityGroupIds": [{"Ref" :"VaultSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -945,7 +1023,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".cloudformation" ] ] },
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
-                "SecurityGroupIds": [{"Ref" :"CPMSG"},{"Ref" :"PVWASG"},{"Ref" :"PSMSG"},{"Ref" :"PSMSSHSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -956,7 +1034,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".ssm" ] ] },
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
-                "SecurityGroupIds": [{"Ref" :"CPMSG"},{"Ref" :"PVWASG"},{"Ref" :"PSMSG"},{"Ref" :"PSMSSHSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         },
@@ -967,7 +1045,7 @@
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".logs" ] ] },
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
-                "SecurityGroupIds": [{"Ref" :"CPMSG"},{"Ref" :"PVWASG"},{"Ref" :"PSMSG"},{"Ref" :"PSMSSHSG"}],
+                "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
                 "PrivateDnsEnabled" : "true"
             }
         }
