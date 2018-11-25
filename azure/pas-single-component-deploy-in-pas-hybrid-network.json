@@ -258,28 +258,10 @@
                             "subnet": {
                                 "id": "[if(equals(parameters('Component To Install'),'CPM'), variables('subnetRefComponent'), variables('subnetRefWeb'))]"
                             },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
-                            }
+                            "privateIPAllocationMethod": "Dynamic"
                         }
                     }
                 ]
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "sku": {
-                "name": "Basic"
-            },
-            "name": "[variables('publicIpAddressName')]",
-            "apiVersion": "2017-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publicIPAllocationMethod": "Static"
             }
         }
     ],
@@ -287,6 +269,10 @@
         "adminUsername": {
             "type": "String",
             "value": "[parameters('Component VM Admin User')]"
+        },
+        "networkInterface": {
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "type": "object"
         }
     }
 }
