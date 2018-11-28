@@ -818,7 +818,9 @@
          "DependsOn": [
             "StoreMasterPassword",
             "StoreAdminPassword",
-            "StoreDRPassword"
+            "StoreDRPassword",
+            "CopyLicenseToBucket",
+            "CopyRecpubToBucket"
          ],
          "DeletionPolicy": "Retain"
       },
@@ -1166,7 +1168,12 @@
                         "ignoreErrors": "false"
                      },
                      "03-CheckVaultServiceStatus": {
-                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1} \"",
+                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -ne 'Running') {exit 0} else {exit 1} \"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "04-CheckDRServiceStatus": {
+                        "command": "powershell.exe -Command \" if ((Get-Service 'CyberArk Vault Disaster Recovery').Status -eq 'Running') {exit 0} else {exit 1} \"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },

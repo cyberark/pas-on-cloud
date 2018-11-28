@@ -809,7 +809,9 @@
          },
          "DependsOn":[
             "StoreMasterPassword",
-            "StoreAdminPassword"
+            "StoreAdminPassword",
+            "CopyLicenseToBucket",
+            "CopyRecpubToBucket"
          ]
       },
       "VaultInstancesProfile":{
