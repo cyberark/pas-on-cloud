@@ -1168,7 +1168,7 @@
                         "ignoreErrors": "false"
                      },
                      "03-CheckVaultServiceStatus": {
-                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -ne 'Running') {exit 0} else {exit 1} \"",
+                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Stopped') {exit 0} else {exit 1} \"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
