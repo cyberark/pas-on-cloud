@@ -244,9 +244,9 @@
                         "import cfnresponse",
                         "",
                         "def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):",
-                        "    s3Resource = boto3.resource('s3')",
+                        "    s3Client = boto3.client('s3')",
                         "    copy_source = {'Bucket': bucket,'Key': fileKey}",
-                        "    s3Resource.meta.client.copy(copy_source, destBucket, destination)",
+                        "    s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)",
                         "",
                         "def DeleteObjectFromBucket(bucket, key):",
                         "    s3Client = boto3.client('s3')",
@@ -811,6 +811,11 @@
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
+                     "03-CheckVaultServiceStatus": {
+                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1} \"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
                      "99-SignalCompletion":{
                         "command":{
                            "Fn::Join":[
@@ -842,7 +847,9 @@
          "DependsOn":[
             "StoreMasterPassword",
             "StoreAdminPassword",
-            "StoreDRPassword"
+            "StoreDRPassword",
+            "CopyLicenseToBucket",
+            "CopyRecpubToBucket"
          ]
       },
       "VaultDRMachine":{
@@ -1194,6 +1201,16 @@
                         "command":"C:\\Python27\\python.exe C:\\deploy.py",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
+                     },
+                     "03-CheckVaultServiceStatus": {
+                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Stopped') {exit 0} else {exit 1} \"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "04-CheckDRServiceStatus": {
+                        "command": "powershell.exe -Command \" if ((Get-Service 'CyberArk Vault Disaster Recovery').Status -eq 'Running') {exit 0} else {exit 1} \"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
                      },
                      "99-SignalCompletion":{
                         "command":{
