@@ -2299,12 +2299,12 @@
             "PSMP":"ami-07f89768f972c452d"
          },
          "eu-west-2":{
-            "Vault":"ami-0f41331ffbf2f3109",
-            "Components":"ami-06bb87a8441629977",
-            "CPM":"ami-02318a4ec9ced8193",
-            "PVWA":"ami-0a57ea4737853c253",
-            "PSM":"ami-04392ab0df4395e8c",
-            "PSMP":"ami-0b0ae21c63c49d775"
+            "Vault":"ami-02ccb07cc02d33674",
+            "Components":"ami-0f0036b3b31c43091",
+            "CPM":"ami-04e350c48b0a8551b",
+            "PVWA":"ami-0ce278b70934a04e0",
+            "PSM":"ami-02cca49d137859437",
+            "PSMP":"ami-0612d4d563af42230"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
