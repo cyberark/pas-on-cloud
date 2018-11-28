@@ -7,17 +7,17 @@
             "allowedValues": [
                 "Accept",
                 "Decline"
-            ],
+          ],
             "maxLength": 6,
             "type": "String",
             "metadata": {
-                "description": "I have read and agree to the Terms and Conditions."
+                "description": "I have read and agreed to the Terms and Conditions."
             }
         },
         "Vault Private IP": {
             "type": "String",
             "metadata": {
-                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a coma (e.g 1.1.1.1,2.2.2.2)."
+                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a comma (e.g 1.1.1.1,2.2.2.2)."
             }
         },
         "Vault Admin User": {
