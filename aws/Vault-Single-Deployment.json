@@ -832,8 +832,8 @@
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "3-StartVaultService": {
-                        "command": "sc start \"PrivateArk Server\"",
+                     "3-CheckVaultServiceStatus": {
+                        "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1} \"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
