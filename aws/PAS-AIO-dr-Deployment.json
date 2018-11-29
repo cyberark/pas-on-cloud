@@ -2288,7 +2288,7 @@
             "CPM":"ami-0ad1c31ced398b934",
             "PVWA":"ami-02fce154ef8016de3",
             "PSM":"ami-080d06894e92eea12",
-            "PSMP":"ami-02f4c6722d41fa0a4"
+            "PSMP":"ami-06f817f655ef715df"
          },
          "us-east-2":{
             "Vault":"ami-05f3110818d47df0c",
@@ -2304,7 +2304,7 @@
             "CPM":"ami-04e350c48b0a8551b",
             "PVWA":"ami-0ce278b70934a04e0",
             "PSM":"ami-02cca49d137859437",
-            "PSMP":"ami-01de1da2409368f37"
+            "PSMP":"ami-04350f38e73b92609"
          },
          "us-west-1":{
             "Vault":"ami-07299e5004f82cd23",
