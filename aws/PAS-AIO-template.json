@@ -1789,12 +1789,12 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-0f5ec5156d710a17d",
-            "Components":"ami-0b1a58bb5b5a78b3b",
-            "CPM":"ami-04297c47b96216bc5",
-            "PVWA":"ami-09e356fcd13ab5322",
-            "PSM":"ami-041d5a44246c242d6",
-            "PSMP":"ami-0defaf6be121916f3"
+            "Vault":"ami-0bdb328b095d92cb3",
+            "Components":"ami-0eb577132525b57f4",
+            "CPM":"ami-0ad1c31ced398b934",
+            "PVWA":"ami-02fce154ef8016de3",
+            "PSM":"ami-080d06894e92eea12",
+            "PSMP":"ami-08888ce100145545c"
          },
          "us-east-2":{
             "Vault":"ami-05f3110818d47df0c",
