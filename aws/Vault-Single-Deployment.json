@@ -254,9 +254,15 @@
                         "import cfnresponse",
                         "",
                         "def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):",
+<<<<<<< HEAD
                         "    s3Client = boto3.client('s3')",
                         "    copy_source = {'Bucket': bucket,'Key': fileKey}",
                         "    s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)",
+=======
+                        "    s3Resource = boto3.resource('s3')",
+                        "    copy_source = {'Bucket': bucket,'Key': fileKey}",
+                        "    s3Resource.meta.client.copy(copy_source, destBucket, destination)",
+>>>>>>> master
                         "",
                         "def DeleteObjectFromBucket(bucket, key):",
                         "    s3Client = boto3.client('s3')",
@@ -832,12 +838,16 @@
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
+<<<<<<< HEAD
                      "3-CheckVaultServiceStatus": {
                         "command": "powershell.exe -Command \" if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1} \"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
                      "4-ChangeHostName":{
+=======
+                     "3-ChangeHostName":{
+>>>>>>> master
                         "command":{
                            "Fn::Join":[
                               "",
