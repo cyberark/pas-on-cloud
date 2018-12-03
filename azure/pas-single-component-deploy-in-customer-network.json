@@ -7,7 +7,7 @@
             "allowedValues": [
                 "Accept",
                 "Decline"
-            ],
+          ],
             "maxLength": 6,
             "type": "String",
             "metadata": {
