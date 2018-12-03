@@ -1,7 +1,7 @@
 pipeline {
   agent {
     node {
-      label 'LinuxTestSlave'
+      label 'cinit-slave'
     }
 
   }
