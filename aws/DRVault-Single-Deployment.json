@@ -88,27 +88,13 @@
                            "s3:DeleteObject",
                            "s3:DeleteObjectVersion"
                         ],
-                        "Resource": [{
-                           "Fn::Join": [
-                              "", [
-                                 "arn:aws:s3:::",
-                                 {
-                                    "Ref": "DeployBucket"
-                                 },
-                                 "/*"
-                              ]
-                           ]},
-                           {
-                              "Fn::Join": [
-                                 "", [
-                                    "arn:aws:s3:::",
-                                    {
-                                       "Ref": "VaultFilesBucket"
-                                    },
-                                    "/*"
-                                 ]
-                              ]
-                           }
+                        "Resource": [
+                              {
+                                 "Fn::Sub":"arn:${AWS::Partition}:s3:::${DeployBucket}/*"
+                              },
+                              {
+                                 "Fn::Sub":"arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*"
+                              }
                         ]
                      }]
                   }
@@ -906,22 +892,7 @@
                         "s3:GetObject",
                         "s3:GetObjectVersion"
                      ],
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"VaultFilesBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     }
+                     "Resource":{ "Fn::Sub": "arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*" }
                   }
                ]
             },
@@ -1413,13 +1384,13 @@
             "PSM":"ami-054b1dc1fb294ec0e",
             "PSMP":"ami-09374fa8a640ae568"
          },
-         "us-gov-west-1":{
-            "Vault":"ami-815ac4e0",
-            "Components":"ami-875ac4e6",
-            "CPM":"ami-875ac4e6",
-            "PVWA":"ami-875ac4e6",
-            "PSM":"ami-875ac4e6",
-            "PSMP":"ami-ba5ac4db"
+         "us-gov-west-1": {
+            "Vault": "ami-73482912",
+            "Components": "ami-a94425c8",
+            "CPM": "ami-835b3ae2",
+            "PVWA": "ami-4d5f3e2c",
+            "PSM": "ami-e4a0c185",
+            "PSMP": "ami-815f3ee0"
          }
       }
    },
