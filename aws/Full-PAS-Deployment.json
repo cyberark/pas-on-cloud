@@ -79,7 +79,7 @@
                            "s3:DeleteObjectVersion"
                         ],
                         "Resource": [
-						         { "Fn::Sub": "arn:${AWS::Partition}:s3:::${DeployBucket}/*" },
+						               { "Fn::Sub": "arn:${AWS::Partition}:s3:::${DeployBucket}/*" },
                            { "Fn::Sub": "arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*" }
                         ]
                      }]
