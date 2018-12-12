@@ -913,22 +913,7 @@
                         "s3:GetObject",
                         "s3:GetObjectVersion"
                      ],
-                     "Resource":{
-                        "Fn::Join":[
-                           "",
-                           [
-                              "arn:",
-                              {
-                                 "Ref":"AWS::Partition"
-                              },
-                              ":s3:::",
-                              {
-                                 "Ref":"VaultFilesBucket"
-                              },
-                              "/*"
-                           ]
-                        ]
-                     }
+                     "Resource":{ "Fn::Sub": "arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*" }
                   }
                ]
             },

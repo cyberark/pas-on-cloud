@@ -79,12 +79,8 @@
                            "s3:DeleteObjectVersion"
                         ],
                         "Resource": [
-                              {
-                                 "Fn::Sub":"arn:${AWS::Partition}:s3:::${DeployBucket}/*"
-                              },
-                              {
-                                 "Fn::Sub":"arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*"
-                              }
+						         { "Fn::Sub": "arn:${AWS::Partition}:s3:::${DeployBucket}/*" },
+                           { "Fn::Sub": "arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*" }
                         ]
                      }]
                   }
@@ -2699,21 +2695,7 @@
                      "s3:GetObject",
                      "s3:GetObjectVersion"
                   ],
-                  "Resource": {
-                     "Fn::Join": [
-                        "", [
-                           "arn:",
-                           {
-                              "Ref": "AWS::Partition"
-                           },
-                           ":s3:::",
-                           {
-                              "Ref": "VaultFilesBucket"
-                           },
-                           "/*"
-                        ]
-                     ]
-                  }
+                  "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*" }
                }]
             },
             "Roles": [{
