@@ -53,7 +53,7 @@ pipeline {
     stage('pytest') {
       steps {
         script {
-          sh(script: "testenv/bin/pytest aws/ --region $AWS_REGION --branch ${env.BRANCH_NAME} --commitid ${env.GIT_COMMIT} --template-url $TEMPLATE_URL", returnStdout: true)
+          sh(script: "testenv/bin/pytest tests/aws/ --region $AWS_REGION --branch ${env.BRANCH_NAME} --commit-id ${env.GIT_COMMIT} --template-url $TEMPLATE_URL", returnStdout: true)
         }
       }
     }
