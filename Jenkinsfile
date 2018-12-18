@@ -51,6 +51,11 @@ pipeline {
 
       }
     }
+    stage('Run CFN- LINT') {
+      steps {
+         sh "testenv/bin/cfn-lint aws/**/*.json"
+      }
+    }
     stage('pytest') {
       steps {
         sh "testenv/bin/pytest -v tests --branch ${env.BRANCH_NAME} --commitid ${env.GIT_COMMIT} --region $AWS_REGION --templateurl $TEMPLATE_URL" 
