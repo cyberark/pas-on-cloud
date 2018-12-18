@@ -78,7 +78,7 @@
                   "PolicyName": "S3",
                   "PolicyDocument": {
                      "Version": "2012-10-17",
-                    "Statement": [{
+                     "Statement": [{
                         "Effect": "Allow",
                         "Action": [
                            "s3:GetObject",
@@ -166,7 +166,7 @@
                         "            response = { 'SsmId': physicalResourceId }",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)",
                         "",
-                                                                                                "    except client.exceptions.ParameterNotFound:",
+						"    except client.exceptions.ParameterNotFound:",
                         "        print 'Item already removed'",
                         "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "    except Exception as E:",
@@ -177,7 +177,7 @@
                }
             },
             "Runtime":"python2.7",
-           "Handler":"index.lambda_handler",
+            "Handler":"index.lambda_handler",
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -431,7 +431,7 @@
                                         "logs:CreateLogGroup",
                                         "logs:CreateLogStream",
                                         "logs:PutLogEvents",
-                                       "logs:DescribeLogStreams"
+                                        "logs:DescribeLogStreams"
                                     ],
                                     "Resource": [
                                         { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
@@ -644,7 +644,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                           "[plugins]\n",
+                                            "[plugins]\n",
                                             "cwlogs = cwlogs\n",
                                             "[default]\n",
                                             "region = ",
@@ -1054,7 +1054,7 @@
                 "PVWA": "ami-08ab8db5ba0c00f78",
                 "PSM": "ami-0560ae7636022d241",
                 "PSMP": "ami-0a3770ee62a03ae54",
-                "PTA": "ami-0a3770ee62a03ae54"
+                "PTA": "ami-02da822bac722d339"
             },
             "eu-west-1": {
                 "Vault": "ami-055875a33d1855454",
