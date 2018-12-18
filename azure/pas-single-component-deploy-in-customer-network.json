@@ -7,17 +7,17 @@
             "allowedValues": [
                 "Accept",
                 "Decline"
-            ],
+          ],
             "maxLength": 6,
             "type": "String",
             "metadata": {
-                "description": "I have read and agree to the Terms and Conditions."
+                "description": "I have read and agreed to the Terms and Conditions."
             }
         },
         "Vault Private IP": {
             "type": "String",
             "metadata": {
-                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a coma (e.g 1.1.1.1,2.2.2.2)."
+                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a comma (e.g 1.1.1.1,2.2.2.2)."
             }
         },
         "Vault Admin User": {
@@ -77,6 +77,18 @@
                 "description": "Enter Components Image ID."
             }
         },
+        "Component VNet": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the VNet name."
+            }
+        },
+        "Component Subnet": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Subnet name."
+            }
+        },
         "Component AvailablitySet Name": {
             "type": "String",
             "metadata": {
@@ -85,9 +97,8 @@
         }
     },
     "variables": {
-        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', 'Components-Vnet')]",
-        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/','Components-Subnet')]",
-        "subnetRefWeb": "[concat(variables('vnetId'), '/subnets/', 'Web-Subnet')]",
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet'))]",
+        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "availabilitySetPlatformFaultDomainCount": 3,
         "availabilitySetPlatformUpdateDomainCount": 5,
@@ -256,30 +267,12 @@
                         "name": "ipconfig1",
                         "properties": {
                             "subnet": {
-                                "id": "[if(equals(parameters('Component To Install'),'CPM'), variables('subnetRefComponent'), variables('subnetRefWeb'))]"
+                                "id": "[variables('subnetRefComponent')]"
                             },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
-                            }
+                            "privateIPAllocationMethod": "Dynamic"
                         }
                     }
                 ]
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "sku": {
-                "name": "Basic"
-            },
-            "name": "[variables('publicIpAddressName')]",
-            "apiVersion": "2017-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publicIPAllocationMethod": "Static"
             }
         }
     ],
@@ -287,6 +280,10 @@
         "adminUsername": {
             "type": "String",
             "value": "[parameters('Component VM Admin User')]"
+        },
+        "networkInterface": {
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "type": "object"
         }
     }
 }

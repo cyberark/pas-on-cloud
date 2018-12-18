@@ -5,8 +5,8 @@ CyberArk PAS AzureRM templates were created to automate the deployment process o
 | AzureRM Template Name | Description | Deploy |
 |-----------------------|-------------|--------|
 | pas-hybrid-network | Creation of the network environment to support the hybrid PAS deployment | <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcyberark%2Fpas-on-cloud%2Fmaster%2Fazure%2Fpas-hybrid-network.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a> |
-| pas-single-component | Deploying a single PAS component CPM, PVWA, PSM or PSMP instance in an existing network environment |  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcyberark%2Fpas-on-cloud%2Fmaster%2Fazure%2Fpas-single-component.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a> |
+| pas-single-component-deploy-in-pas-hybrid-network | Deploying a single PAS component CPM, PVWA, PSM or PSMP instance in the pas-hybrid network environment |  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcyberark%2Fpas-on-cloud%2Fmaster%2Fazure%2Fpas-single-component-deploy-in-pas-hybrid-network.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a> |
+| pas-single-component-deploy-in-customer-network | Deploying a single PAS component CPM, PVWA, PSM or PSMP instance in an existing network environment |  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcyberark%2Fpas-on-cloud%2Fmaster%2Fazure%2Fpas-single-component-deploy-in-customer-network.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a> |
 
 # Sharing CyberArk PAS Images
-To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have the CyberArk components AccessSAS and CyberArk PSMP AccessSAS URLs before executing the script.
-
+To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.

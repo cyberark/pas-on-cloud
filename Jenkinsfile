@@ -23,6 +23,7 @@ pipeline {
 
       }
     }
+
     stage('Upload templates to S3 bucket') {
       steps {
         s3Upload(bucket: "$BUCKET", file: 'aws', path: "$BUCKET_PATH/")
@@ -37,13 +38,13 @@ pipeline {
           echo "Template description: ${response}"
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-network-environment-template.json", returnStdout: true)
-          echo "Template description: ${response}"
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
           echo "Template description: ${response}"
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
-          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-template.json", returnStdout: true)
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-NAT.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-PrivateLink.json", returnStdout: true)
           echo "Template description: ${response}"
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
@@ -81,8 +82,6 @@ pipeline {
   post {
     always {
       s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/")
-
     }
-
   }
 }
