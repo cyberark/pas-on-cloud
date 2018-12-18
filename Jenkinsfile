@@ -48,12 +48,28 @@ pipeline {
           response = sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
           echo "Template description: ${response}"
         }
-
       }
     }
-    stage('Run CFN- LINT') {
+    stage('cfn-lint') {
       steps {
-         sh "testenv/bin/cfn-lint aws/**/*.json"
+        script {
+          response = sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-network-environment-template.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-template.json", returnStdout: true)
+          echo "Template description: ${response}"
+          response = sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.json", returnStdout: true)
+          echo "Template description: ${response}"
+        }
       }
     }
     stage('pytest') {
