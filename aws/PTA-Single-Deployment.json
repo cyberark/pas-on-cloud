@@ -1,0 +1,1150 @@
+{
+   "Resources":{
+      "LogGroup":{
+         "Type":"AWS::Logs::LogGroup",
+         "Properties":{
+            "RetentionInDays":30
+         },
+         "DeletionPolicy":"Retain"
+      },
+      "DeployBucket": {
+         "Type": "AWS::S3::Bucket",
+         "Properties": {
+            "AccessControl": "Private"
+         }
+      },
+      "LambdaDeployRole":{
+         "Type":"AWS::IAM::Role",
+         "Properties":{
+            "AssumeRolePolicyDocument":{
+               "Version":"2012-10-17",
+               "Statement":[
+                  {
+                     "Effect":"Allow",
+                     "Principal":{
+                        "Service":[
+                           "lambda.amazonaws.com"
+                        ]
+                     },
+                     "Action":[
+                        "sts:AssumeRole"
+                     ]
+                  }
+               ]
+            },
+            "Policies":[
+               {
+                  "PolicyName":"CloudWatch",
+                  "PolicyDocument":{
+                     "Version":"2012-10-17",
+                     "Statement":[
+                        {
+                           "Effect":"Allow",
+                           "Action":[
+                              "logs:CreateLogGroup",
+                              "logs:CreateLogStream",
+                              "logs:DescribeLogGroups",
+                              "logs:DescribeLogStreams",
+                              "logs:PutLogEvents"
+                           ],
+                           "Resource":[
+                              "*"
+                           ]
+                        }
+                     ]
+                  }
+               },
+               {
+                  "PolicyName":"SSM",
+                  "PolicyDocument":{
+                     "Version":"2012-10-17",
+                     "Statement":[
+                        {
+                           "Effect":"Allow",
+                           "Action":[
+                              "ssm:PutParameter",
+                              "ssm:DeleteParameter"
+                           ],
+                           "Resource":[
+                              {
+                                 "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
+                              }
+                           ]
+                        }
+                     ]
+                  }
+               },
+               {
+                  "PolicyName": "S3",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Action": [
+                           "s3:GetObject",
+                           "s3:GetObjectVersion",
+                           "s3:ListBucket",
+                           "s3:PutObject",
+                           "s3:DeleteObject",
+                           "s3:DeleteObjectVersion"
+                        ],
+                        "Resource": [ {
+                           "Fn::Join": [
+                              "", [
+                                 "arn:aws:s3:::",
+                                 {
+                                    "Ref": "DeployBucket"
+                                 },
+                                 "/*"
+                              ]
+                           ]},
+                            {
+                              "Fn::Join": [
+                                 "", [
+                                    "arn:aws:s3:::",
+                                    {
+                                       "Ref": "PTALicenseBucket"
+                                    },
+                                    "/*"
+                                 ]
+                              ]
+                           }
+                        ]
+                     }]
+                  }
+               }
+            ]
+         },
+         "Condition":"EULACondition"
+      },
+      "StorePasswordLambda":{
+         "Type":"AWS::Lambda::Function",
+         "Properties":{
+            "Description":"Saves given password to parameter store as SecureString",
+            "Code":{
+               "ZipFile":{
+                  "Fn::Join":[
+                     "\n",
+                     [
+                        "import uuid",
+                        "import boto3",
+                        "import cfnresponse",
+                        "",
+                        "def storePassword(name, value):",
+                        "    ssmClient = boto3.client('ssm')",
+                        "    return ssmClient.put_parameter(",
+                        "        Name = name,",
+                        "        Value = value,",
+                        "        Type = 'SecureString'",
+                        "    )",
+                        "",
+                        "def deletePassword(name):",
+                        "    ssmClient = boto3.client('ssm')",
+                        "    return ssmClient.delete_parameter(",
+                        "        Name = name",
+                        "    )",
+                        "",
+                        "def lambda_handler(event, context):",
+                        "",
+                        "    physicalResourceId = str(uuid.uuid4())",
+                        "    if 'PhysicalResourceId' in event:",
+                        "        physicalResourceId = event['PhysicalResourceId']",
+                        "",
+                        "    if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:",
+                        "            print 'The property Password must not be empty'",
+                        "            return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)",
+                        "",
+                        "    try:",
+                        "        if event['RequestType'] == 'Delete':",
+                        "            deletePassword(physicalResourceId)",
+                        "            print 'Password successfully deleted. Id='+physicalResourceId",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "        if event['RequestType'] == 'Create':",
+                        "            storePassword(physicalResourceId, event['ResourceProperties']['Password'])",
+                        "            print 'The store parameter has been created. Id='+physicalResourceId",
+                        "            response = { 'SsmId': physicalResourceId }",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)",
+                        "",
+                                                                                                "    except client.exceptions.ParameterNotFound:",
+                        "        print 'Item already removed'",
+                        "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "    except Exception as E:",
+                        "        print E",
+                        "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                     ]
+                  ]
+               }
+            },
+            "Runtime":"python2.7",
+           "Handler":"index.lambda_handler",
+            "Role":{
+               "Fn::GetAtt":[
+                  "LambdaDeployRole",
+                  "Arn"
+               ]
+            }
+         },
+         "Condition":"EULACondition"
+      },
+      "DeletePasswordLambda":{
+         "Type":"AWS::Lambda::Function",
+         "Properties":{
+            "Description":"Delete password from parameter store",
+            "Code":{
+               "ZipFile":{
+                  "Fn::Join":[
+                     "\n",
+                     [
+                        "import uuid",
+                        "import boto3",
+                        "import cfnresponse",
+                        "",
+                        "def deletePassword(name):",
+                        "    ssmClient = boto3.client('ssm')",
+                        "    return ssmClient.delete_parameter(",
+                        "        Name = name",
+                        "    )",
+                        "",
+                        "def lambda_handler(event, context):",
+                        "",
+                        "    physicalResourceId = str(uuid.uuid4())",
+                        "    if 'PhysicalResourceId' in event:",
+                        "        physicalResourceId = event['PhysicalResourceId']",
+                        "    ",
+                        "    try:",
+                        "        if event['RequestType'] == 'Create':",
+                        "            deletePassword(event['ResourceProperties']['key'])",
+                        "            print 'Password succesfully deleted. Id='+event['ResourceProperties']['key']",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "        if event['RequestType'] == 'Delete':",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "    except client.exceptions.ParameterNotFound:",
+                        "        print 'Item already removed'",
+                        "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "    except Exception as E:",
+                        "        print E",
+                        "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                     ]
+                  ]
+               }
+            },
+            "Runtime":"python2.7",
+            "Handler":"index.lambda_handler",
+            "Role":{
+               "Fn::GetAtt":[
+                  "LambdaDeployRole",
+                  "Arn"
+               ]
+            }
+         },
+         "Condition":"EULACondition"
+      },
+      "CopyfileFromBucketLambda": {
+         "Type": "AWS::Lambda::Function",
+         "Properties": {
+            "Description": "Copy files from foreign region to local region",
+            "Code": {
+               "ZipFile": {
+                  "Fn::Join": [
+                     "\n", [
+                        "import uuid",
+                        "import boto3",
+                        "import cfnresponse",
+                        "",
+                        "def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):",
+                        "    s3Client = boto3.client('s3')",
+                        "    copy_source = {'Bucket': bucket,'Key': fileKey}",
+                        "    s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)",
+                        "",
+                        "def DeleteObjectFromBucket(bucket, key):",
+                        "    s3Client = boto3.client('s3')",
+                        "    s3Client.delete_object(Bucket=bucket, Key=key)",
+                        "",
+                        "def lambda_handler(event, context):",
+                        "",
+                        "    physicalResourceId = str(uuid.uuid4())",
+                        "    if 'PhysicalResourceId' in event:",
+                        "        physicalResourceId = event['PhysicalResourceId']",
+                        "",
+                        "    try:",
+                        "        if event['RequestType'] == 'Delete':",
+                        "            DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])",
+                        "            print 'Object Deleted Successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "        if event['RequestType'] == 'Create':",
+                        "            CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])",
+                        "            print 'file copied successfully'",
+                        "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
+                        "",
+                        "    except Exception as E:",
+                        "        print E",
+                        "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
+                     ]
+                  ]
+               }
+            },
+            "Runtime": "python2.7",
+            "Handler": "index.lambda_handler",
+            "Role": {
+               "Fn::GetAtt": [
+                  "LambdaDeployRole",
+                  "Arn"
+               ]
+            }
+         }
+      },
+      "StoreAdminPassword":{
+         "Type":"AWS::CloudFormation::CustomResource",
+         "Properties":{
+            "ServiceToken":{
+               "Fn::GetAtt":[
+                  "StorePasswordLambda",
+                  "Arn"
+               ]
+            },
+            "Password":{
+               "Ref":"VaultAdminPassword"
+            }
+         },
+         "Condition":"EULACondition",
+         "DependsOn":[
+            "LambdaDeployRole",
+            "StorePasswordLambda"
+         ]
+      },
+      "StorePTAPassword":{
+         "Type":"AWS::CloudFormation::CustomResource",
+         "Properties":{
+            "ServiceToken":{
+               "Fn::GetAtt":[
+                  "StorePasswordLambda",
+                  "Arn"
+               ]
+            },
+            "Password":{
+               "Ref":"PTARootPassword"
+            }
+         },
+         "Condition":"EULACondition",
+         "DependsOn":[
+            "LambdaDeployRole",
+            "StorePasswordLambda"
+         ]
+      },
+      "CleanAdminPassword":{
+         "Type":"AWS::CloudFormation::CustomResource",
+         "Version":"1.0",
+         "Properties":{
+            "ServiceToken":{
+               "Fn::GetAtt":[
+                  "DeletePasswordLambda",
+                  "Arn"
+               ]
+            },
+            "key":{
+               "Fn::GetAtt":[
+                  "StoreAdminPassword",
+                  "SsmId"
+               ]
+            }
+         },
+         "Condition":"EULACondition",
+         "DependsOn":[
+            "LambdaDeployRole",
+            "StorePasswordLambda"
+         ]
+        },
+        "CopyLicenseToBucket": {
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Version": "1.0",
+         "Properties": {
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "CopyfileFromBucketLambda",
+                  "Arn"
+               ]
+            },
+            "BucketName": {
+               "Ref": "PTALicenseBucket"
+            },
+            "FileKey": {
+               "Ref": "LicenseFile"
+            },
+            "FileName": {
+               "Ref": "LicenseFile"
+            },
+            "DestBucket": {
+               "Ref": "DeployBucket"
+            }
+         },
+         "Condition": "EULACondition",
+         "DependsOn": [
+            "LambdaDeployRole",
+            "CopyfileFromBucketLambda"
+          ]
+        },
+        "ComponentInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Roles": [
+                    {
+                        "Ref": "ComponentInstanceRole"
+                    }
+                ]
+            },
+            "Condition": "EULACondition"
+        },
+        "ComponentInstanceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM" }
+                ],
+                "Policies": [
+                    {
+                        "PolicyName": "LogRolePolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents",
+                                       "logs:DescribeLogStreams"
+                                    ],
+                                    "Resource": [
+                                        { "Fn::Sub": "arn:${AWS::Partition}:logs:*:*:*" }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "Condition": "EULACondition"
+        },
+        "PTAMachine": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "SecurityGroupIds": {
+                    "Ref": "PTAInstanceSecurityGroups"
+                },
+                "SubnetId": {
+                    "Ref": "PTAInstanceSubnetId"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "PTA"
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "PTAInstanceType"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -e\n",
+                                "/opt/aws/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource PTAMachine ",
+                                "         --configsets install_all ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource PTAMachine ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "ComponentInstanceProfile"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "install_all": [
+                            "install_cfn",
+                            "install_logs",
+                            "install_pta"
+                        ]
+                    },
+                    "install_cfn": {
+                        "files": {
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.PTAMachine.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/opt/aws/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource PTAMachine ",
+                                            "         --configsets install_all ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "services": {
+                            "sysvinit": {
+                                "cfn-hup": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "/etc/cfn/cfn-hup.conf",
+                                        "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "install_logs": {
+                        "files": {
+                            "/etc/awslogs/awslogs.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[general]\n",
+                                            "state_file= /var/awslogs/state/agent-state\n",
+                                            "[/var/log/cloud-init.log]\n",
+                                            "file = /var/log/cloud-init.log\n",
+                                            "log_group_name = ",
+                                            {
+                                                "Ref": "LogGroup"
+                                            },
+                                            "\n",
+                                            "log_stream_name = {instance_id}/cloud-init.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cloud-init-output.log]\n",
+                                            "file = /var/log/cloud-init-output.log\n",
+                                            "log_group_name = ",
+                                            {
+                                                "Ref": "LogGroup"
+                                            },
+                                            "\n",
+                                            "log_stream_name = {instance_id}/cloud-init-output.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-init.log]\n",
+                                            "file = /var/log/cfn-init.log\n",
+                                            "log_group_name = ",
+                                            {
+                                                "Ref": "LogGroup"
+                                            },
+                                            "\n",
+                                            "log_stream_name = {instance_id}/cfn-init.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-hup.log]\n",
+                                            "file = /var/log/cfn-hup.log\n",
+                                            "log_group_name = ",
+                                            {
+                                                "Ref": "LogGroup"
+                                            },
+                                            "\n",
+                                            "log_stream_name = {instance_id}/cfn-hup.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-wire.log]\n",
+                                            "file = /var/log/cfn-wire.log\n",
+                                            "log_group_name = ",
+                                            {
+                                                "Ref": "LogGroup"
+                                            },
+                                            "\n",
+                                            "log_stream_name = {instance_id}/cfn-wire.log\n",
+                                            "datetime_format = \n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000444",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/awslogs/awscli.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                           "[plugins]\n",
+                                            "cwlogs = cwlogs\n",
+                                            "[default]\n",
+                                            "region = ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000444",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "01_create_state_directory": {
+                                "command": "mkdir -p /var/awslogs/state"
+                            }
+                        },
+                        "services": {
+                            "sysvinit": {
+                                "awslogs": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "/etc/awslogs/awslogs.conf"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "install_pta":{
+                          "files":{
+                             "/root/CD-Image/changeRootPWD":{
+                                "content":{
+                                   "Fn::Join":[
+                                      "",
+                                      [
+                                         "#!/bin/bash -e\n",
+                                         "temppassword=`aws ssm get-parameter --name ",
+                                         {
+                                            "Fn::GetAtt":[
+                                               "StoreAdminPassword",
+                                               "SsmId"
+                                            ]
+                                         },
+                                         " --region=",
+                                         {
+                                            "Ref":"AWS::Region"
+                                         },
+                                         " --with-decryption --output text --query Parameter.Value`\n",
+                                         "echo Object successfully retrieved from ssm.\n",
+                                         
+                                         "echo -e '$temppassword\n$temppassword' | sudo passwd",
+                                         
+                                         " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
+                                      ]
+                                   ]
+                                }
+                             }
+                          },
+                        "commands": {
+                            "99-SignalCompletion": {
+                                "command": {"Fn::Join": [
+                                    "",
+                                    [
+                                        "/opt/aws/bin/cfn-signal -e $? ",
+                                        "         --stack ", { "Ref" : "AWS::StackId" },
+                                        "         --resource PTAMachine ",
+                                        "         --region ", { "Ref" : "AWS::Region" }
+                                    ]
+                                ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Condition": "EULACondition",
+            "DependsOn": [
+                "StoreAdminPassword",
+                "StorePTAPassword"
+            ],
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Timeout": "PT10M"
+                }
+            },
+            "DeletionPolicy": "Retain"
+        },
+        "ComponentInstancesSSMPolicy":{
+         "Type":"AWS::IAM::Policy",
+         "Properties":{
+            "PolicyName":"ComponentInsancesSsmAccess",
+            "PolicyDocument":{
+               "Statement":[
+                  {
+                     "Effect":"Allow",
+                     "Action":[
+                        "ssm:GetParameter"
+                     ],
+                     "Resource":[
+                        {
+                           "Fn::Sub":"arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*"
+                        }
+                     ]
+                  }
+               ]
+            },
+            "Roles":[
+               {
+                  "Ref":"ComponentInstanceRole"
+               }
+            ]
+         },
+         "Condition":"EULACondition"
+       }
+    },
+    "Parameters": {
+        "EULA": {
+            "Type": "String",
+            "Description": "I have read and agree to the Terms and Conditions.",
+            "AllowedValues": [
+                "Accept",
+                "Decline"
+            ],
+            "Default": "Decline"
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Select an existing Key Pair from your AWS account.",
+            "ConstraintDescription": "Can contain only ASCII characters."
+        },
+        "PTALicenseBucket":{
+            "Type":"String",
+            "Description":"Enter the name of the bucket containing the license file."
+        },
+        "LicenseFile":{
+            "Type":"String",
+            "Description":"Enter the path of the license file within the bucket.",
+            "Default":"license.xml"
+        },
+        "PTARootPassword": {
+            "Type": "String",
+            "Description": "Enter a password for root account of PTA instance.",
+            "NoEcho": true,
+            "MinLength": 8
+        },
+        "RetypeRootPassword": {
+            "Type":"String",
+            "Description":"Retype the password for the Root user.",
+            "NoEcho":true,
+            "MinLength":8
+        },
+        "VaultPrivateIP": {
+            "Type": "String",
+            "Description": "Enter the IP of the Vault instance."
+        },
+        "DRPrivateIP": {
+            "Type": "String",
+            "Description": "Enter the IP of the Vault DR instance. (Optional)"
+        },
+        "VaultAdminUser": {
+            "Type": "String",
+            "Description": "Enter the Vault Administrator user.",
+            "Default": "Administrator",
+            "MinLength": 8
+        },
+        "VaultAdminPassword": {
+            "Type": "String",
+            "Description": "Enter a password for the Vault Administrator user.",
+            "NoEcho": true,
+            "MinLength": 8
+        },
+        "PVWAPrivateDNS": {
+            "Type": "String",
+            "Description": "Enter the private DNS of the PVWA instance."
+        },
+        "PVWAPort": {
+            "Type": "String",
+            "Description": "Enter the Port of the PVWA instance"
+        },
+        "PVWAConnectionMethod": {
+            "Type": "String",
+            "Description": "Select the Port of the PVWA instance.",
+            "AllowedValues": [
+                "Http",
+                "Https"
+            ],
+            "Default": "Https"
+        },
+        "PVWAApplicationContext": {
+            "Type": "String",
+            "Description": "Enter the Application Context of the PVWA instance"
+        },
+        "PTAInstanceType": {
+            "Type": "String",
+            "Description": "Select the instance type of the PTA instance.",
+            "AllowedValues": [
+                "m4.2xlarge",
+                "m4.4xlarge"
+            ],
+            "Default": "m4.2xlarge"
+        },
+        "PTAInstanceSecurityGroups": {
+            "Type": "List<AWS::EC2::SecurityGroup::Id>",
+            "Description": "Assign Security Groups to the PTA instance."
+        },
+        "PTAInstanceSubnetId": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Select the Subnet Id where the PTA instance will reside."
+        }
+    },
+    "Conditions": {
+        "EULACondition": {
+            "Fn::Equals": [
+                "Accept",
+                {
+                    "Ref": "EULA"
+                }
+            ]
+        },
+        "DRValueEmpty" : {
+            "Fn::Equals": [
+                "",
+                {
+                    "Ref" : "DRPrivateIP"
+                }
+            ]
+        }
+    },
+    "Rules":{
+      "PasswordConfirmation":{
+         "Assertions":[
+            {
+               "Assert":{
+                  "Fn::Equals":[
+                     {
+                        "Ref":"PTARootPassword"
+                     },
+                     {
+                        "Ref":"RetypeRootPassword"
+                     }
+                  ]
+               },
+               "AssertDescription":"The password confirmation does not match."
+            }
+         ]
+      }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "General parameters"
+                    },
+                    "Parameters": [
+                        "EULA",
+                        "KeyName"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Vault and DR information"
+                    },
+                    "Parameters": [
+                        "VaultPrivateIP",
+                        "DRPrivateIP",
+                        "VaultAdminUser",
+                        "VaultAdminPassword"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "PTA configuration"
+                    },
+                    "Parameters": [
+                        "PTALicenseBucket",
+                        "LicenseFile",
+                        "PTARootPassword",
+                        "RetypeRootPassword",
+                        "PTAInstanceType",
+                        "PTAInstanceSecurityGroups",
+                        "PTAInstanceSubnetId"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "PVWA configuration"
+                    },
+                    "Parameters": [
+                        "PVWAPrivateDNS",
+                        "PVWAPort",
+                        "PVWAConnectionMethod",
+                        "PVWAApplicationContext"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "EULA": {
+                    "default": "License Agreement"
+                },
+                "KeyName": {
+                    "default": "Key Pair"
+                },
+                "VaultPrivateIP": {
+                    "default": "Vault Private IP"
+                },
+                "DRPrivateIP": {
+                    "default": "Vault DR Private IP"
+                },
+                "VaultAdminUser": {
+                    "default": "Vault Admin User"
+                },
+                "VaultAdminPassword": {
+                    "default": "Vault Admin Password"
+                },
+                "PTALicenseBucket": {
+                    "default": "PTA License Bucket"
+                },
+                "LicenseFile": {
+                    "default": "License File"
+                },
+                "PTARootPassword": {
+                    "default": "PTA Root Password"
+                },
+                "RetypeRootPassword":{
+                    "default":"Retype Root Password"
+                },
+                "PTAInstanceType": {
+                    "default": "PTA Instance Type"
+                },
+                "PTAInstanceSecurityGroups": {
+                    "default": "PTA Instance Security Groups"
+                },
+                "PTAInstanceSubnetId": {
+                    "default": "PTA Instance Subnet Id"
+                },
+                "PVWAPrivateDNS": {
+                    "default": "PVWA Instance private DNS"
+                },
+                "PVWAPort": {
+                    "default": "PVWA Instance Port"
+                },
+                "PVWAConnectionMethod": {
+                    "default": "PVWA Instance Connection Method"
+                },
+                "PVWAApplicationContext": {
+                    "default": "PVWA Instance Application Context"
+                }
+            }
+        }
+    },
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "Vault": "ami-0f5ec5156d710a17d",
+                "Components": "ami-0b1a58bb5b5a78b3b",
+                "CPM": "ami-04297c47b96216bc5",
+                "PVWA": "ami-09e356fcd13ab5322",
+                "PSM": "ami-041d5a44246c242d6",
+                "PSMP": "ami-0defaf6be121916f3",
+                "PTA": "ami-02da822bac722d339"
+            },
+            "us-east-2": {
+               "Vault":"ami-05f3110818d47df0c",
+               "Components":"ami-07ab97a9e0007890e",
+               "CPM":"ami-0cf0de4cb6e81ee96",
+               "PVWA":"ami-03aad21ce91631703",
+               "PSM":"ami-0e31bcff933a97757",
+               "PSMP":"ami-07f89768f972c452d",
+               "PTA":"ami-02da822bac722d339"
+            },
+            "eu-west-2": {
+                "Vault": "ami-074ee03bfbfff5fda",
+                "Components": "ami-0c92618583f701176",
+                "CPM": "ami-079a10f6ba5c4eeb4",
+                "PVWA": "ami-046e947dcae85aafb",
+                "PSM": "ami-0e6d2cea1cf1d0275",
+                "PSMP": "ami-07f89768f972c452d",
+                "PTA": "ami-02da822bac722d339"
+            },
+            "us-west-1": {
+                "Vault": "ami-07299e5004f82cd23",
+                "Components": "ami-0c5a6a83a10cb26f6",
+                "CPM": "ami-07c541154a7e96144",
+                "PVWA": "ami-097c5f4e826713cdc",
+                "PSM": "ami-05d0a3a64d916a9ac",
+                "PSMP": "ami-05dc3895953bbb30a",
+                "PTA": "ami-02da822bac722d339"
+            },
+            "us-west-2": {
+                "Vault": "ami-04bcd462788163d5e",
+                "Components": "ami-03ba37302025864d6",
+                "CPM": "ami-0c5cb23b443a850cd",
+                "PVWA": "ami-072e7e3ea1b3a8c66",
+                "PSM": "ami-09044a911cd7607d6",
+                "PSMP": "ami-0e385d7a54dd97c29",
+                "PTA": "ami-0e26dd746598b2829"
+            },
+            "ca-central-1": {
+                "Vault": "ami-031efdcf451f76851",
+                "Components": "ami-0c4cfb708d8b6eb90",
+                "CPM": "ami-07794b680287e83f7",
+                "PVWA": "ami-08ab8db5ba0c00f78",
+                "PSM": "ami-0560ae7636022d241",
+                "PSMP": "ami-0a3770ee62a03ae54",
+                "PTA": "ami-0a3770ee62a03ae54"
+            },
+            "eu-west-1": {
+                "Vault": "ami-055875a33d1855454",
+                "Components": "ami-0929c8dfe71e7caa6",
+                "CPM": "ami-020e9f9fbc526c078",
+                "PVWA": "ami-0e94dfc838d034ac6",
+                "PSM": "ami-098a84a8de32990bd",
+                "PSMP": "ami-07e5542d089692bc2",
+                "PTA": "ami-07e5542d089692bc2"
+            },
+            "eu-central-1": {
+                "Vault": "ami-070990fb0a4adcb1c",
+                "Components": "ami-0b7366d5a32014f5f",
+                "CPM": "ami-04fece7e673892d18",
+                "PVWA": "ami-0d78264adddbf0e09",
+                "PSM": "ami-0d7a9a6ebd8620ba7",
+                "PSMP": "ami-0552713509028f263",
+                "PTA": "ami-06b0417970eaf337e"
+            },
+            "ap-southeast-1": {
+                "Vault": "ami-0adec27e3d97acd46",
+                "Components": "ami-05943d8fc0385ac36",
+                "CPM": "ami-0b23b9f2a11c03e5e",
+                "PVWA": "ami-0000bd3a98e040b6d",
+                "PSM": "ami-0e5b9367ec4cd4d82",
+                "PSMP": "ami-029e0bb6069e7afd8",
+                "PTA": "ami-029e0bb6069e7afd8"
+            },
+            "ap-southeast-2": {
+                "Vault": "ami-076c51f5281dc1139",
+                "Components": "ami-0bd6311d26ddb7c8e",
+                "CPM": "ami-0a8ef23737b1ba7f0",
+                "PVWA": "ami-0c1b309ab91825a56",
+                "PSM": "ami-00da2f855a0ae8a3a",
+                "PSMP": "ami-0b33117017a0627ac",
+                "PTA": "ami-0b33117017a0627ac"
+            },
+            "ap-northeast-2": {
+                "Vault": "ami-0095711fbd0234bb5",
+                "Components": "ami-00c130264e5feba9e",
+                "CPM": "ami-056f7261892b501f8",
+                "PVWA": "ami-09772e4a0f0d37718",
+                "PSM": "ami-00d3b879e3daaded2",
+                "PSMP": "ami-0bee3849042c5f67e",
+                "PTA": "ami-0bee3849042c5f67e"
+            },
+            "ap-northeast-1": {
+                "Vault": "ami-023a9797d305d37cd",
+                "Components": "ami-031857c6252af5e59",
+                "CPM": "ami-042a9b4c302b117da",
+                "PVWA": "ami-0c6e1d4aa4c75ff02",
+                "PSM": "ami-05724a67e503a9513",
+                "PSMP": "ami-04e8a59042a5e181b",
+                "PTA": "ami-04e8a59042a5e181b"
+            },
+            "ap-south-1": {
+                "Vault": "ami-094b09c2952027426",
+                "Components": "ami-03793b4dca2f75186",
+                "CPM": "ami-0ddb8f72eaacc45ef",
+                "PVWA": "ami-0dd19ebb4d09508cc",
+                "PSM": "ami-0231d3b20edbcfadc",
+                "PSMP": "ami-0f64dbebffa1acdca",
+                "PTA": "ami-0f64dbebffa1acdca"
+            },
+            "sa-east-1": {
+                "Vault": "ami-0f63a29405c49eac9",
+                "Components": "ami-0ecd0542b88a4833c",
+                "CPM": "ami-09674547d0d8cc81a",
+                "PVWA": "ami-01a3f3486b3326c0b",
+                "PSM": "ami-0e38b8a579840237e",
+                "PSMP": "ami-04ccb81bb661e9db7",
+                "PTA": "ami-04ccb81bb661e9db7"
+            },
+            "us-gov-west-1": {
+                "Vault": "ami-815ac4e0",
+                "Components": "ami-875ac4e6",
+                "CPM": "ami-875ac4e6",
+                "PVWA": "ami-875ac4e6",
+                "PSM": "ami-875ac4e6",
+                "PSMP": "ami-ba5ac4db",
+                "PTA": "ami-ba5ac4db"
+            }
+        }
+    },
+    "Outputs": {
+        "CloudWatchLogGroupName": {
+            "Description": "The name of the CloudWatch log group",
+            "Value": {
+                "Ref": "LogGroup"
+            }
+        }
+    }
+}
