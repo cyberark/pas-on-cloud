@@ -1,6 +1,16 @@
 # CyberArk AWS Cloud Package Release Notes
 
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
+## [10.5] (Release date 2018/09/17)
+
+### Added
+- Deployment logs are sent to CloudWatch
+- GovCloud support is added to all templates
+- Improved cfn-signal
+- Template validation for all AWS templates (CI/CD)
+
+### Removed
+- CloudFormation template to deploy PAS-AIO-Network
 
 ## [10.3] (Release date: 2018/05/21)
 
