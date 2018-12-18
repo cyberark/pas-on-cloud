@@ -54,22 +54,7 @@ pipeline {
     stage('cfn-lint') {
       steps {
         script {
-          response = sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-dr-Deployment.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-network-environment-template.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-template.json", returnStdout: true)
-          echo "Template description: ${response}"
-          response = sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.json", returnStdout: true)
-          echo "Template description: ${response}"
+          sh(script: 'testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json')
         }
       }
     }
