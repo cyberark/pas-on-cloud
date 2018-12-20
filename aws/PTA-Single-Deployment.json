@@ -1036,7 +1036,7 @@
                 "PVWA": "ami-097c5f4e826713cdc",
                 "PSM": "ami-05d0a3a64d916a9ac",
                 "PSMP": "ami-05dc3895953bbb30a",
-                "PTA": "ami-0fadc193c4459b2ed"
+                "PTA": "ami-0c5b2d77c75cd941e"
             },
             "us-west-2": {
                 "Vault": "ami-04bcd462788163d5e",
@@ -1045,7 +1045,7 @@
                 "PVWA": "ami-072e7e3ea1b3a8c66",
                 "PSM": "ami-09044a911cd7607d6",
                 "PSMP": "ami-0e385d7a54dd97c29",
-                "PTA": "ami-0fadc193c4459b2ed"
+                "PTA": "ami-0c5b2d77c75cd941e"
             },
             "ca-central-1": {
                 "Vault": "ami-031efdcf451f76851",
