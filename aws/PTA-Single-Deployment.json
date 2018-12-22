@@ -709,7 +709,7 @@
                           },
                         "commands": {
 		            "01-InstallPTA": {
-				"command": "echo "y" | sudo ./var/tmp/pta_installer.sh"
+				"command": "echo 'y' | sudo ./var/tmp/pta_installer.sh"
 			    },
                             "99-SignalCompletion": {
                                 "command": {"Fn::Join": [
