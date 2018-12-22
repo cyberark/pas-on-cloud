@@ -1030,7 +1030,7 @@
                 "PVWA": "ami-046e947dcae85aafb",
                 "PSM": "ami-0e6d2cea1cf1d0275",
                 "PSMP": "ami-07f89768f972c452d",
-                "PTA": "ami-02da822bac722d339"
+                "PTA": "ami-05112e523b346050c"
             },
             "us-west-1": {
                 "Vault": "ami-07299e5004f82cd23",
@@ -1066,7 +1066,7 @@
                 "PVWA": "ami-0e94dfc838d034ac6",
                 "PSM": "ami-098a84a8de32990bd",
                 "PSMP": "ami-07e5542d089692bc2",
-                "PTA": "ami-07e5542d089692bc2"
+                "PTA": "ami-05112e523b346050c"
             },
             "eu-central-1": {
                 "Vault": "ami-070990fb0a4adcb1c",
