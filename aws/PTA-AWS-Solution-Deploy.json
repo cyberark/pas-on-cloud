@@ -72,6 +72,14 @@
         },
         "S3Bucket": {
             "Type": "AWS::S3::Bucket"
+            "Properties": {
+                "NotificationConfiguration" : {
+                  "LambdaConfigurations" : [{
+                    "Function" : { "Ref" : "CloudTrailToSNSFunction" },
+                    "Event" : "s3:ObjectCreated:*",
+                  }]
+                }
+            }
         },
         "BucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
@@ -191,58 +199,6 @@
                 "Role": {
                     "Fn::GetAtt": [
                         "LambdaDeployRole",
-                        "Arn"
-                    ]
-                }
-            }
-        },
-        "EventsRule": {
-            "Type": "AWS::Events::Rule",
-            "Properties": {
-                "Description": "S3.PutObject for CodePipeline source file",
-                "State": "ENABLED",
-                "EventPattern": {
-                    "source": [
-                        "aws.s3"
-                    ],
-                    "detail": {
-                        "eventSource": [
-                            "s3.amazonaws.com"
-                        ],
-                        "eventName": [
-                            "PutObject"
-                        ],
-                        "requestParameters": {
-                            "bucketName": {
-                                   "Ref": "S3Bucket"
-                                }
-                        }
-                    }
-                },
-                "Targets": [
-                    {
-                        "Arn": {
-                            "Fn::GetAtt": [
-                                "CloudTrailToSNSFunction",
-                                "Arn"
-                            ]
-                        },
-                        "Id": "CloudTrailToSNSFunctionX"
-                    }
-                ]
-            }
-        },
-        "PermissionForEventsToInvokeLambda": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-                "FunctionName": {
-                    "Ref": "CloudTrailToSNSFunction"
-                },
-                "Action": "lambda:InvokeFunction",
-                "Principal": "events.amazonaws.com",
-                "SourceArn": {
-                    "Fn::GetAtt": [
-                        "EventsRule",
                         "Arn"
                     ]
                 }
