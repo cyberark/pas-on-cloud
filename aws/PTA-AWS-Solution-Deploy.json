@@ -57,8 +57,8 @@
             "Type": "AWS::CloudTrail::Trail",
             "Properties": {
                 "S3BucketName": {
-               "Ref":"S3Bucket"
-                },
+               "Ref": "s3bucket"
+            },
                 "SnsTopicName": {
                     "Fn::GetAtt": [
                         "Topic",
@@ -72,6 +72,7 @@
         },
         "S3Bucket": {
             "Type": "AWS::S3::Bucket"
+            }
         },
         "BucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
@@ -214,8 +215,8 @@
                         ],
                         "requestParameters": {
                             "bucketName": {
-                           "Ref":"S3Bucket"
-                            }
+                                   "Ref": "s3bucket"
+                                }
                         }
                     }
                 },
