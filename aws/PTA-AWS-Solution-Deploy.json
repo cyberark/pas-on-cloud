@@ -182,7 +182,7 @@
                 "Handler": "index.handler",
                 "Runtime": "nodejs8.10",
                 "Code": {
-                    "S3Bucket": "packages-for-lambda",
+                    "S3Bucket": "packages-for-lambda-ireland",
                     "S3Key": "PtaCloudTrailToSns.zip"
                 },
                 "Description": "",
