@@ -73,12 +73,41 @@
         "S3Bucket": {
             "Type": "AWS::S3::Bucket",
             "Properties": {
+                "BucketName": "ptasolutionbucket1",
                 "NotificationConfiguration" : {
                   "LambdaConfigurations" : [{
                     "Function" : { "Ref" : "CloudTrailToSNSFunction" },
                     "Event" : "s3:ObjectCreated:*"
                   }]
                 }
+            }
+        },
+        "LambdaInvokePermission": {
+            "Type": "AWS::Lambda::Permission",
+            "DependsOn": [ "CloudTrailToSNSFunction" ],
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "CloudTrailToSNSFunction",
+                        "Arn"
+                    ]
+                },
+                "Principal": "s3.amazonaws.com",
+                "SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                },
+                "SourceArn": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref": "S3Bucket"
+                                        }
+                                    ]
+                                ]
+                            }
             }
         },
         "BucketPolicy": {
