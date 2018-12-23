@@ -709,8 +709,8 @@
                           },
                         "commands": {
 		            "01-InstallPTA": {
-				"command": "echo 'y' | sudo sh /var/tmp/pta_installer.sh"
-			    },
+            				"command": "echo 'y' | sudo sh /var/tmp/pta_installer.sh"
+            			    },
                             "99-SignalCompletion": {
                                 "command": {"Fn::Join": [
                                     "",
@@ -723,7 +723,12 @@
                                 ]
                                 }
                             }
-                        }
+                        },
+                        "CreationPolicy":{
+                            "ResourceSignal":{
+                               "Timeout":"PT25M"
+                            }
+                         }
                     }
                 }
             },
