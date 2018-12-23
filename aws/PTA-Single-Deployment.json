@@ -723,12 +723,7 @@
                                 ]
                                 }
                             }
-                        },
-                        "CreationPolicy":{
-                            "ResourceSignal":{
-                               "Timeout":"PT25M"
-                            }
-                         }
+                        }
                     }
                 }
             },
@@ -739,7 +734,7 @@
             ],
             "CreationPolicy": {
                 "ResourceSignal": {
-                    "Timeout": "PT10M"
+                    "Timeout": "PT25M"
                 }
             },
             "DeletionPolicy": "Retain"
