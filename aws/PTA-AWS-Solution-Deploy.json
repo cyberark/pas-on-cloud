@@ -57,8 +57,8 @@
             "Type": "AWS::CloudTrail::Trail",
             "Properties": {
                 "S3BucketName": {
-               "Ref": "s3bucket"
-            },
+                   "Ref": "S3Bucket"
+                },
                 "SnsTopicName": {
                     "Fn::GetAtt": [
                         "Topic",
@@ -72,7 +72,6 @@
         },
         "S3Bucket": {
             "Type": "AWS::S3::Bucket"
-            }
         },
         "BucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
@@ -127,7 +126,7 @@
                         }
                     ]
                 },
-                "Bucket": "S3Bucket"
+                "Bucket": { "Ref": "S3Bucket" }
             }
         },
         "LambdaDeployRole": {
@@ -215,7 +214,7 @@
                         ],
                         "requestParameters": {
                             "bucketName": {
-                                   "Ref": "s3bucket"
+                                   "Ref": "S3Bucket"
                                 }
                         }
                     }
