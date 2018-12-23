@@ -56,7 +56,9 @@
             ],
             "Type": "AWS::CloudTrail::Trail",
             "Properties": {
-                "S3BucketName": "ptasolutionbucket",
+                "S3BucketName": {
+               "Ref":"S3Bucket"
+                },
                 "SnsTopicName": {
                     "Fn::GetAtt": [
                         "Topic",
@@ -69,10 +71,7 @@
             }
         },
         "S3Bucket": {
-            "Type": "AWS::S3::Bucket",
-            "Properties": {
-                "BucketName": "ptasolutionbucket"
-            }
+            "Type": "AWS::S3::Bucket"
         },
         "BucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
@@ -214,7 +213,9 @@
                             "PutObject"
                         ],
                         "requestParameters": {
-                            "bucketName": "ptasolutionbucket"
+                            "bucketName": {
+                           "Ref":"S3Bucket"
+                            }
                         }
                     }
                 },
