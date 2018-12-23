@@ -126,7 +126,7 @@
                         }
                     ]
                 },
-                "Bucket": "S3Bucket"
+                "Bucket": { "Ref": "S3Bucket" }
             }
         },
         "LambdaDeployRole": {
