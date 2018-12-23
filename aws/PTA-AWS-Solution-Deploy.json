@@ -71,12 +71,12 @@
             }
         },
         "S3Bucket": {
-            "Type": "AWS::S3::Bucket"
+            "Type": "AWS::S3::Bucket",
             "Properties": {
                 "NotificationConfiguration" : {
                   "LambdaConfigurations" : [{
                     "Function" : { "Ref" : "CloudTrailToSNSFunction" },
-                    "Event" : "s3:ObjectCreated:*",
+                    "Event" : "s3:ObjectCreated:*"
                   }]
                 }
             }
