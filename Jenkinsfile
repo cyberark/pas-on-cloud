@@ -46,6 +46,7 @@ pipeline {
     stage('cfn-lint') {
       steps {
         script {
+          sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json", returnStdout: true)
