@@ -14,19 +14,19 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
           {'ParameterKey': 'AdministrativeAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False}
       ]
       response = self.cf_client.create_change_set(
-          StackName='test-{}-{}-{}'.format(self.templatename, branch, commitid),
+          StackName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
           TemplateURL='{}/{}.json'.format(templateurl, self.templatename),
           UsePreviousTemplate=False,
           Parameters=template_params,
           Capabilities=['CAPABILITY_IAM'],
-          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch, commitid),
-          Description='test-{}-{}-{}'.format(self.templatename, branch, commitid),
+          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
+          Description='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
           ChangeSetType='CREATE'
       )
 
       res = self.cf_client.describe_change_set(
-          StackName='test-{}-{}-{}'.format(self.templatename, branch, commitid),
-          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch, commitid)
+          StackName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
+          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid)
       )
 
       for resource in res['Changes']:
