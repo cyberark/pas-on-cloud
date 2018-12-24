@@ -1,7 +1,6 @@
 import pytest
 import boto3
-
-
+import time
 
 class TestPASNetworkEnvironmentPrivateLinkTemplate():
   resources = {}
@@ -25,6 +24,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
           ChangeSetType='CREATE'
       )
       assert response['ResponseMetadata']['HTTPStatusCode'] == 200
+      time.sleep(5)
 
       res = cf_client.describe_change_set(
           StackName=stack_name,
