@@ -24,12 +24,16 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
           ChangeSetType='CREATE'
       )
       assert response['ResponseMetadata']['HTTPStatusCode'] == 200
-      time.sleep(5)
 
-      res = cf_client.describe_change_set(
-          StackName=stack_name,
-          ChangeSetName=stack_name
-      )
+      retries = 10
+      while retries > 0:
+        res = cf_client.describe_change_set(
+            StackName=stack_name,
+            ChangeSetName=stack_name
+        )
+        if res['ExecutionStatus'] == 'AVAILABLE':
+            break
+        time.sleep(1)
       assert res['ExecutionStatus'] == 'AVAILABLE'
       assert res['Status'] == 'CREATE_COMPLETE'
 
