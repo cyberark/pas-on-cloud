@@ -9,25 +9,29 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
   def test_PASNetworkEnvironmentPrivateLink_CreateChangeSet(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)
       templatename = 'PAS-network-environment-PrivateLink'
+      stack_name = 'test-{}-{}'.format(templatename, commitid)
       template_params = [
           {'ParameterKey': 'UsersAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False},
           {'ParameterKey': 'AdministrativeAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False}
       ]
       response = cf_client.create_change_set(
-          StackName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          StackName=stack_name,
           TemplateURL='{}/{}.json'.format(templateurl, templatename),
           UsePreviousTemplate=False,
           Parameters=template_params,
           Capabilities=['CAPABILITY_IAM'],
-          ChangeSetName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          ChangeSetName=stack_name,
           Description='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
           ChangeSetType='CREATE'
       )
+      assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
       res = cf_client.describe_change_set(
-          StackName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
-          ChangeSetName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid)
+          StackName=stack_name,
+          ChangeSetName=stack_name
       )
+      assert res['ExecutionStatus'] == 'AVAILABLE'
+      assert res['Status'] == 'CREATE_COMPLETE'
 
       for resource in res['Changes']:
           if resource['ResourceChange']['Action'] == "Add":
