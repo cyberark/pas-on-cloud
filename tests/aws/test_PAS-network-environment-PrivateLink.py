@@ -7,26 +7,26 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
   resources = {}
 
   def test_PASNetworkEnvironmentPrivateLink_CreateChangeSet(self, region, branch, commitid, templateurl):
-      self.cf_client = boto3.client('cloudformation', region_name=region)
-      self.templatename = 'PAS-network-environment-PrivateLink'
+      cf_client = boto3.client('cloudformation', region_name=region)
+      templatename = 'PAS-network-environment-PrivateLink'
       template_params = [
           {'ParameterKey': 'UsersAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False},
           {'ParameterKey': 'AdministrativeAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False}
       ]
-      response = self.cf_client.create_change_set(
-          StackName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
-          TemplateURL='{}/{}.json'.format(templateurl, self.templatename),
+      response = cf_client.create_change_set(
+          StackName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          TemplateURL='{}/{}.json'.format(templateurl, templatename),
           UsePreviousTemplate=False,
           Parameters=template_params,
           Capabilities=['CAPABILITY_IAM'],
-          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
-          Description='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
+          ChangeSetName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          Description='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
           ChangeSetType='CREATE'
       )
 
-      res = self.cf_client.describe_change_set(
-          StackName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid),
-          ChangeSetName='test-{}-{}-{}'.format(self.templatename, branch.replace('_','-'), commitid)
+      res = cf_client.describe_change_set(
+          StackName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          ChangeSetName='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid)
       )
 
       for resource in res['Changes']:
