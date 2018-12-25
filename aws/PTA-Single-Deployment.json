@@ -678,39 +678,7 @@
                         }
                     },
                     "install_pta":{
-                          "files":{
-                             "/root/CD-Image/changeRootPWD":{
-                                "content":{
-                                   "Fn::Join":[
-                                      "",
-                                      [
-                                         "#!/bin/bash -e\n",
-                                         "temppassword=`aws ssm get-parameter --name ",
-                                         {
-                                            "Fn::GetAtt":[
-                                               "StoreAdminPassword",
-                                               "SsmId"
-                                            ]
-                                         },
-                                         " --region=",
-                                         {
-                                            "Ref":"AWS::Region"
-                                         },
-                                         " --with-decryption --output text --query Parameter.Value`\n",
-                                         "echo Object successfully retrieved from ssm.\n",
-                                         
-                                         "echo -e '$temppassword\n$temppassword' | sudo passwd",
-                                         
-                                         " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
-                                      ]
-                                   ]
-                                }
-                             }
-                          },
                         "commands": {
-		            "01-InstallPTA": {
-            				"command": "echo 'y' | sudo sh /var/tmp/pta_installer.sh"
-            			    },
                             "99-SignalCompletion": {
                                 "command": {"Fn::Join": [
                                     "",
@@ -1039,7 +1007,7 @@
                 "PVWA": "ami-097c5f4e826713cdc",
                 "PSM": "ami-05d0a3a64d916a9ac",
                 "PSMP": "ami-05dc3895953bbb30a",
-                "PTA": "ami-05112e523b346050c"
+                "PTA": "ami-0d9a1f97ad43e86c4"
             },
             "us-west-2": {
                 "Vault": "ami-04bcd462788163d5e",
