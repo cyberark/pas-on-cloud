@@ -1,29 +1,64 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Parameters": {
-        "EULA": {
+        "PTAIP": {
             "Type": "String",
-            "Description": "I have read and agree to the Terms and Conditions.",
+            "Description": "PTA IP address",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})",
+            "ConstraintDescription": "must be a valid IP address of the form x.x.x.x."
+        },
+        "PTAPort": {
+            "Type": "Number",
+            "Description": "PTA Port for delivering logs",
+            "MinValue": "0",
+            "MaxValue": "65535",
+            "ConstraintDescription": "must be a valid Port between 0-65535",
+            "Default": "11514"
+        },
+        "PTAProtocol": {
+            "Type": "String",
+            "Description": "PTA Protocol for delivering logs",
             "AllowedValues": [
-                "Accept",
-                "Decline"
+                "udp",
+                "tcp"
             ],
-            "Default": "Decline"
-        }
-    },
-    "Conditions": {
-        "EULACondition": {
-            "Fn::Equals": [
-                "Accept",
-                {
-                    "Ref": "EULA"
-                }
-            ]
+            "Default": "udp"
+        },
+        "VPC": {
+			"Type": "AWS::EC2::VPC::Id",
+            "Description": "Select the VPC Id where the solution will reside.",
+			"MinLength": "1"
+		},
+        "Subnet": {
+            "Type": "AWS::EC2::Subnet::Id",
+            "Description": "Select the Subnet Id where the solution will reside.",
+            "MinLength": "1"
+        },
+        "LambdasBucket": {
+            "Type": "String",
+            "Description": "Name of the bucket containing the solution files. The bucket must be in the same region where the solution is deployed.",
+            "MinLength": "1"
         }
     },
     "Resources": {
         "Topic": {
-            "Type": "AWS::SNS::Topic"
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Fn::GetAtt": [
+                                "SNSToPTAFunction",
+                                "Arn"
+                            ]
+                        },
+                        "Protocol": "lambda"
+                    }
+                ]
+            },
+            "DependsOn": [
+                "SNSToPTAFunction"
+            ]
         },
         "TopicPolicy": {
             "Type": "AWS::SNS::TopicPolicy",
@@ -43,7 +78,10 @@
                                 "Service": "cloudtrail.amazonaws.com"
                             },
                             "Resource": "*",
-                            "Action": "SNS:Publish"
+                            "Action": [
+                                "SNS:Publish",
+                                "SNS:Receive"
+                            ]
                         }
                     ]
                 }
@@ -56,104 +94,104 @@
             ],
             "Type": "AWS::CloudTrail::Trail",
             "Properties": {
-                "S3BucketName": {
-                   "Ref": "S3Bucket"
-                },
-                "SnsTopicName": {
-                    "Fn::GetAtt": [
-                        "Topic",
-                        "TopicName"
-                    ]
-                },
+                "S3BucketName": "ptasolutionbuckettest",
+                "EnableLogFileValidation": true,
                 "IsLogging": true,
                 "IsMultiRegionTrail": true,
-				"IncludeGlobalServiceEvents": true
+                "IncludeGlobalServiceEvents": true
             }
         },
         "S3Bucket": {
             "Type": "AWS::S3::Bucket",
+            "DependsOn": [
+                "CloudTrailToSNSFunction",
+                "LambdaInvokePermission"
+            ],
             "Properties": {
-                "BucketName": "ptasolutionbucket1",
-                "NotificationConfiguration" : {
-                  "LambdaConfigurations" : [{
-                    "Function" : { "Ref" : "CloudTrailToSNSFunction" },
-                    "Event" : "s3:ObjectCreated:*"
-                  }]
+                "BucketName": "ptasolutionbuckettest",
+                "NotificationConfiguration": {
+                    "LambdaConfigurations": [
+                        {
+                            "Function": {
+                                "Fn::GetAtt": [
+                                    "CloudTrailToSNSFunction",
+                                    "Arn"
+                                ]
+                            },
+                            "Event": "s3:ObjectCreated:*",
+                            "Filter": {
+                                "S3Key": {
+                                    "Rules": [
+                                        {
+                                            "Name": "suffix",
+                                            "Value": "zip"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         },
         "LambdaInvokePermission": {
             "Type": "AWS::Lambda::Permission",
-            "DependsOn": [ "CloudTrailToSNSFunction" ],
             "Properties": {
-                "Action": "lambda:InvokeFunction",
                 "FunctionName": {
                     "Fn::GetAtt": [
                         "CloudTrailToSNSFunction",
                         "Arn"
                     ]
                 },
+                "Action": "lambda:InvokeFunction",
                 "Principal": "s3.amazonaws.com",
-                "SourceAccount": {
-                    "Ref": "AWS::AccountId"
-                },
+                "SourceArn": "arn:aws:s3:::ptasolutionbuckettest"
+            }
+        },
+        "LambdaInvokePermissionPTA": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "Principal": "sns.amazonaws.com",
                 "SourceArn": {
-                                "Fn::Join": [
-                                    "",
-                                    [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "S3Bucket"
-                                        }
-                                    ]
-                                ]
-                            }
+                    "Ref": "Topic"
+                },
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "SNSToPTAFunction",
+                        "Arn"
+                    ]
+                }
             }
         },
         "BucketPolicy": {
             "Type": "AWS::S3::BucketPolicy",
             "Properties": {
+                "Bucket": {
+                    "Ref": "S3Bucket"
+                },
                 "PolicyDocument": {
                     "Id": "MyPolicy",
                     "Version": "2012-10-17",
                     "Statement": [
                         {
-                            "Sid": "AWSCloudTrailAclCheck20150319",
+                            "Action": [
+                                "s3:GetBucketAcl"
+                            ],
                             "Effect": "Allow",
+                            "Resource": "arn:aws:s3:::ptasolutionbuckettest",
                             "Principal": {
                                 "Service": "cloudtrail.amazonaws.com"
-                            },
-                            "Action": "s3:GetBucketAcl",
-                            "Resource": {
-                                "Fn::Join": [
-                                    "",
-                                    [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "S3Bucket"
-                                        }
-                                    ]
-                                ]
                             }
                         },
                         {
-                            "Sid": "AWSCloudTrailWrite20150319",
+                            "Action": [
+                                "s3:PutObject"
+                            ],
                             "Effect": "Allow",
+                            "Resource": "arn:aws:s3:::ptasolutionbuckettest/*",
                             "Principal": {
                                 "Service": "cloudtrail.amazonaws.com"
-                            },
-                            "Action": "s3:PutObject",
-                            "Resource": {
-                                "Fn::Join": [
-                                    "",
-                                    [
-                                        "arn:aws:s3:::",
-                                        {
-                                            "Ref": "S3Bucket"
-                                        },
-                                        "/*"
-                                    ]
-                                ]
                             },
                             "Condition": {
                                 "StringEquals": {
@@ -162,11 +200,10 @@
                             }
                         }
                     ]
-                },
-                "Bucket": { "Ref": "S3Bucket" }
+                }
             }
         },
-        "LambdaDeployRole": {
+        "LambdaCloudTrailToSNSDeployRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -187,7 +224,90 @@
                 },
                 "Policies": [
                     {
-                        "PolicyName": "CloudWatch",
+                        "PolicyName": "CloudTrail",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:*"
+                                    ],
+                                    "Resource": "arn:aws:logs:*:*:*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:GetObject",
+                                        "sns:Publish"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:s3:::ptasolutionbuckettest/*",
+                                        {
+                                            "Ref": "Topic"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CloudTrailToSNSFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Runtime": "nodejs8.10",
+                "Code": {
+                    "S3Bucket": {
+                        "Ref": "LambdasBucket"
+                    },
+                    "S3Key": "PtaCloudTrailToSns.zip"
+                },
+                "Description": "",
+                "MemorySize": 128,
+                "Timeout": 20,
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaCloudTrailToSNSDeployRole",
+                        "Arn"
+                    ]
+                },
+                "Environment": {
+                    "Variables": {
+                        "SNSREGION": {
+                            "Ref": "AWS::Region"
+                        },
+                        "SNSTOPICARN": {
+                            "Ref": "Topic"
+                        }
+                    }
+                }
+            }
+        },
+        "LambdaSNSToPTADeployRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "CloudTrail",
                         "PolicyDocument": {
                             "Version": "2012-10-17",
                             "Statement": [
@@ -208,28 +328,158 @@
                                 }
                             ]
                         }
+                    },
+                    {
+                        "PolicyName": "EC2",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogGroup",
+                                  "logs:CreateLogStream",
+                                  "logs:PutLogEvents",
+                                  "ec2:CreateNetworkInterface",
+                                  "ec2:DescribeNetworkInterfaces",
+                                  "ec2:DeleteNetworkInterface"
+                                ],
+                                "Resource": "*"
+                              }
+                            ]
+                        }
                     }
                 ]
-            },
-            "Condition": "EULACondition"
+            }
         },
-        "CloudTrailToSNSFunction": {
+        "PTAAWSSolutionSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security group for PTA-AWS solution",
+                "VpcId": { "Ref" : "VPC" },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PTA-AWS-Solution-SG"
+                    }
+                ]
+            }
+        },
+        "PTAAWSSolutionSGEgress1": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTAAWSSolutionSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTAAWSSolutionSGEgress2": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTAAWSSolutionSG"
+                },
+                "IpProtocol": {
+                    "Ref": "PTAProtocol"
+                },
+                "FromPort": {
+                    "Ref": "PTAPort"
+                },
+                "ToPort": {
+                    "Ref": "PTAPort"
+                },
+                "CidrIp": {
+                    "Fn::Join": ["", [ { "Ref": "PTAIP"}, "\/32"]]
+                }
+            }
+        },
+        "SNSToPTAFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
-                "Handler": "index.handler",
-                "Runtime": "nodejs8.10",
+                "Handler": "lambda_function.py",
+                "Runtime": "python3.6",
                 "Code": {
-                    "S3Bucket": "packages-for-lambda-ireland",
-                    "S3Key": "PtaCloudTrailToSns.zip"
+                    "S3Bucket": {
+                        "Ref": "LambdasBucket"
+                    },
+                    "S3Key": "MySnsToPta.zip"
                 },
                 "Description": "",
                 "MemorySize": 128,
-                "Timeout": 20,
+                "Timeout": 5,
                 "Role": {
                     "Fn::GetAtt": [
-                        "LambdaDeployRole",
+                        "LambdaSNSToPTADeployRole",
                         "Arn"
                     ]
+                },
+                "Environment": {
+                    "Variables": {
+                        "PTAIP": {
+                            "Ref": "PTAIP"
+                        },
+                        "PTAPort": {
+                            "Ref": "PTAPort"
+                        }
+                    }
+                },
+                "VpcConfig": {
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "PTAAWSSolutionSG",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "SubnetIds": [
+                        {
+                            "Ref": "Subnet"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Solution configuration"
+                    },
+                    "Parameters": [
+                        "PTAIP",
+                        "VPC",
+                        "Subnet",
+                        "PTAPort",
+                        "PTAProtocol",
+                        "LambdasBucket"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "PTAIP": {
+                    "default": "PTA IP Address"
+                },
+                "VPC": {
+					"default": "VPC ID For Solution"
+				},
+                "Subnet": {
+                    "default": "Subnet ID For Solution"
+                },
+                "PTAPort": {
+                    "default": "PTA Port"
+                },
+                "PTAProtocol": {
+                    "default": "PTA Protocol"
+                },
+                "LambdasBucket": {
+                    "default": "Bucket Name"
                 }
             }
         }
