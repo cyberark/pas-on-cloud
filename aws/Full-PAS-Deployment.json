@@ -1921,7 +1921,6 @@
          "DependsOn": [
             "PVWAMachine"
          ],
-         "Condition": "",
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT15M"
