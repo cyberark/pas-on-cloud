@@ -811,8 +811,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -825,8 +825,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -1077,8 +1077,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -1091,8 +1091,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "DestinationSecurityGroupId": {
                     "Ref": "PVWASG"
                 }
@@ -1105,8 +1105,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "80",
-                "ToPort": "80",
+                "FromPort": 80,
+                "ToPort": 80,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -1119,8 +1119,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "8080",
-                "ToPort": "8080",
+                "FromPort": 8080,
+                "ToPort": 8080,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -1133,8 +1133,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "8443",
-                "ToPort": "8443",
+                "FromPort": 8443,
+                "ToPort": 8443,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -1147,8 +1147,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "67",
-                "ToPort": "68",
+                "FromPort": 67,
+                "ToPort": 68,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1159,8 +1159,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "27017",
-                "ToPort": "27017",
+                "FromPort": 27017,
+                "ToPort": 27017,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -1173,8 +1173,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "6514",
-                "ToPort": "6514",
+                "FromPort": 6514,
+                "ToPort": 6514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1185,8 +1185,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "7514",
-                "ToPort": "7514",
+                "FromPort": 7514,
+                "ToPort": 7514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1197,8 +1197,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -1211,8 +1211,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -1225,8 +1225,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1237,8 +1237,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1249,8 +1249,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "514",
-                "ToPort": "11514",
+                "FromPort": 514,
+                "ToPort": 11514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1261,8 +1261,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "514",
-                "ToPort": "11514",
+                "FromPort": 514,
+                "ToPort": 11514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1273,8 +1273,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1285,8 +1285,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1297,8 +1297,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "514",
-                "ToPort": "514",
+                "FromPort": 514,
+                "ToPort": 514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1309,8 +1309,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "80",
-                "ToPort": "80",
+                "FromPort": 80,
+                "ToPort": 80,
                 "DestinationSecurityGroupId": {
                     "Ref" : "PVWASG"   
                 }
@@ -1323,8 +1323,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "53",
-                "ToPort": "53",
+                "FromPort": 53,
+                "ToPort": 53,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1335,8 +1335,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "123",
-                "ToPort": "123",
+                "FromPort": 123,
+                "ToPort": 123,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1347,8 +1347,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "27017",
-                "ToPort": "27017",
+                "FromPort": 27017,
+                "ToPort": 27017,
                 "DestinationSecurityGroupId": {
                     "Ref" : "PTASG"
                 }
@@ -1361,8 +1361,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "25",
-                "ToPort": "25",
+                "FromPort": 25,
+                "ToPort": 25,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1373,8 +1373,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "587",
-                "ToPort": "587",
+                "FromPort": 587,
+                "ToPort": 587,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1385,8 +1385,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "389",
-                "ToPort": "389",
+                "FromPort": 389,
+                "ToPort": 389,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1397,8 +1397,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "636",
-                "ToPort": "636",
+                "FromPort": 636,
+                "ToPort": 636,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1409,8 +1409,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3268",
-                "ToPort": "3269",
+                "FromPort": 3268,
+                "ToPort": 3269,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1421,8 +1421,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -1435,8 +1435,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -1449,8 +1449,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
