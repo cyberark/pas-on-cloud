@@ -8,8 +8,8 @@
                     "Ref": "VaultVPCCIDR"
                 },
                 "InstanceTenancy": "default",
-                "EnableDnsSupport": "true",
-                "EnableDnsHostnames": "true",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
                 "Tags": [
                     {
                         "Key": "Name",
@@ -79,8 +79,8 @@
                     "Ref": "ComponentsVPCCIDR"
                 },
                 "InstanceTenancy": "default",
-                "EnableDnsSupport": "true",
-                "EnableDnsHostnames": "true",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
                 "Tags": [
                     {
                         "Key": "Name",
@@ -363,10 +363,10 @@
             "Type": "AWS::EC2::NetworkAclEntry",
             "Properties": {
                 "CidrBlock": "0.0.0.0/0",
-                "Egress": "true",
-                "Protocol": "-1",
+                "Egress": true,
+                "Protocol": -1,
                 "RuleAction": "allow",
-                "RuleNumber": "100",
+                "RuleNumber": 100,
                 "NetworkAclId": {
                     "Ref": "VaultNACL"
                 }
@@ -376,9 +376,9 @@
             "Type": "AWS::EC2::NetworkAclEntry",
             "Properties": {
                 "CidrBlock": "0.0.0.0/0",
-                "Protocol": "-1",
+                "Protocol": -1,
                 "RuleAction": "allow",
-                "RuleNumber": "100",
+                "RuleNumber": 100,
                 "NetworkAclId": {
                     "Ref": "VaultNACL"
                 }
@@ -388,10 +388,10 @@
             "Type": "AWS::EC2::NetworkAclEntry",
             "Properties": {
                 "CidrBlock": "0.0.0.0/0",
-                "Egress": "true",
-                "Protocol": "-1",
+                "Egress": true,
+                "Protocol": -1,
                 "RuleAction": "allow",
-                "RuleNumber": "100",
+                "RuleNumber": 100,
                 "NetworkAclId": {
                     "Ref": "ComponentsNACL"
                 }
@@ -401,9 +401,9 @@
             "Type": "AWS::EC2::NetworkAclEntry",
             "Properties": {
                 "CidrBlock": "0.0.0.0/0",
-                "Protocol": "-1",
+                "Protocol": -1,
                 "RuleAction": "allow",
-                "RuleNumber": "100",
+                "RuleNumber": 100,
                 "NetworkAclId": {
                     "Ref": "ComponentsNACL"
                 }
@@ -592,8 +592,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "SourceSecurityGroupId": {
                     "Ref": "VaultSG"
                 }
@@ -606,8 +606,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "ComponentsVPCCIDR"
                 }
@@ -620,8 +620,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "icmp",
-                "FromPort": "-1",
-                "ToPort": "-1",
+                "FromPort": -1,
+                "ToPort": -1,
                 "SourceSecurityGroupId": {
                     "Ref": "VaultSG"
                 }
@@ -634,8 +634,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "DestinationSecurityGroupId": {
                     "Ref": "VaultSG"
                 }
@@ -648,8 +648,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "icmp",
-                "FromPort": "-1",
-                "ToPort": "-1",
+                "FromPort": -1,
+                "ToPort": -1,
                 "DestinationSecurityGroupId": {
                     "Ref": "VaultSG"
                 }
@@ -662,8 +662,8 @@
                     "Ref": "VaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -674,8 +674,8 @@
                     "Ref": "CPMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3389",
-                "ToPort": "3389",
+                "FromPort": 3389,
+                "ToPort": 3389,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -688,8 +688,8 @@
                     "Ref": "CPMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -702,8 +702,8 @@
                     "Ref": "CPMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -714,8 +714,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3389",
-                "ToPort": "3389",
+                "FromPort": 3389,
+                "ToPort": 3389,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -728,8 +728,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3389",
-                "ToPort": "3389",
+                "FromPort": 3389,
+                "ToPort": 3389,
                 "CidrIp": {
                     "Ref": "UsersAccessCIDR"
                 }
@@ -742,8 +742,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -754,8 +754,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -768,8 +768,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3389",
-                "ToPort": "3389",
+                "FromPort": 3389,
+                "ToPort": 3389,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -780,8 +780,8 @@
                     "Ref": "PSMSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -792,8 +792,8 @@
                     "Ref": "PSMSSHSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -806,8 +806,8 @@
                     "Ref": "PSMSSHSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "CidrIp": {
                     "Ref": "UsersAccessCIDR"
                 }
@@ -820,8 +820,8 @@
                     "Ref": "PSMSSHSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -832,8 +832,8 @@
                     "Ref": "PSMSSHSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -846,8 +846,8 @@
                     "Ref": "PSMSSHSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -858,8 +858,8 @@
                     "Ref": "PVWASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": {
                     "Ref": "UsersAccessCIDR"
                 }
@@ -872,8 +872,8 @@
                     "Ref": "PVWASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "3389",
-                "ToPort": "3389",
+                "FromPort": 3389,
+                "ToPort": 3389,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
                 }
@@ -886,8 +886,8 @@
                     "Ref": "PVWASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "1858",
-                "ToPort": "1858",
+                "FromPort": 1858,
+                "ToPort": 1858,
                 "CidrIp": {
                     "Ref": "VaultVPCCIDR"
                 }
@@ -900,8 +900,8 @@
                     "Ref": "PVWASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -912,8 +912,8 @@
                     "Ref": "PrivateLinkVaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -924,8 +924,8 @@
                     "Ref": "PrivateLinkVaultSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -936,8 +936,8 @@
                     "Ref": "PrivateLinkComponentsSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -948,8 +948,8 @@
                     "Ref": "PrivateLinkComponentsSG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "443",
-                "ToPort": "443",
+                "FromPort": 443,
+                "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -980,7 +980,7 @@
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "VaultSSMEndpoint" : {
@@ -991,7 +991,7 @@
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "VaultKMSEndpoint" : {
@@ -1002,7 +1002,7 @@
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "VaultCWEndpoint" : {
@@ -1013,7 +1013,7 @@
                 "VpcId" : {"Ref" : "VaultVPC"},
                 "SubnetIds" : [{"Ref" : "VaultMainSubnet"}, {"Ref" : "VaultDRSubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkVaultSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "ComponentsCFNEndpoint" : {
@@ -1024,7 +1024,7 @@
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "ComponentsSSMEndpoint" : {
@@ -1035,7 +1035,7 @@
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         },
         "ComponentsCWEndpoint" : {
@@ -1046,7 +1046,7 @@
                 "VpcId" : {"Ref" : "ComponentsVPC"},
                 "SubnetIds" : [{"Ref" : "ComponentsMainSubnet"}, {"Ref" : "ComponentsSecondarySubnet"}],
                 "SecurityGroupIds": [{"Ref" :"PrivateLinkComponentsSG"}],
-                "PrivateDnsEnabled" : "true"
+                "PrivateDnsEnabled" : true
             }
         }
     },
