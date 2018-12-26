@@ -1597,7 +1597,7 @@
             }
          },
          "DependsOn": [
-            "CPMMachine"
+            "VaultDRMachine"
          ],
          "CreationPolicy": {
             "ResourceSignal": {
@@ -1934,7 +1934,7 @@
             }
          },
          "DependsOn": [
-            "VaultDRMachine"
+            "PVWAMachine"
          ],
          "Condition": "",
          "CreationPolicy": {
