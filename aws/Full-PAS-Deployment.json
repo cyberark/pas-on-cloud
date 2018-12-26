@@ -282,8 +282,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "StoreAdminPassword": {
@@ -301,8 +300,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CleanMasterPassword": {
@@ -431,13 +429,11 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "CopyfileFromBucketLambda"
+            "LambdaDeployRole"
          ]
       },
       "VaultMachine": {
          "Type": "AWS::EC2::Instance",
-         "Condition": "",
          "Properties": {
             "Tags": [{
                "Key": "Name",
@@ -798,9 +794,6 @@
             }
          },
          "DependsOn": [
-            "StoreMasterPassword",
-            "StoreAdminPassword",
-            "StoreDRPassword",
             "CopyLicenseToBucket",
             "CopyRecpubToBucket"
          ],
@@ -1181,15 +1174,11 @@
                }
             }
          },
-         "DependsOn": [
-            "VaultMachine"
-         ],
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT15M"
             }
          },
-         "Condition": "",
          "DeletionPolicy": "Retain"
       },
       "StoreDRPassword": {
@@ -1207,8 +1196,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "VaultInstancesProfile": {
@@ -1596,9 +1584,6 @@
                }
             }
          },
-         "DependsOn": [
-            "VaultDRMachine"
-         ],
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT15M"
@@ -2588,7 +2573,6 @@
          "DependsOn": [
             "PSMMachine"
          ],
-         "Condition": "",
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT10M"

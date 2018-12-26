@@ -1,0 +1,14 @@
+atomicwrites==1.1.5
+attrs==18.1.0
+boto3==1.7.64
+botocore==1.10.64
+docutils==0.14
+jmespath==0.9.3
+more-itertools==4.2.0
+pluggy==0.6.0
+py==1.5.4
+pytest==3.6.3
+python-dateutil==2.7.3
+s3transfer==0.1.13
+six==1.11.0
+cfn-lint==0.10.2
