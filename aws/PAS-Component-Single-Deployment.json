@@ -1400,6 +1400,11 @@
                         "waitAfterCompletion":"30",
                         "ignoreErrors":"true"
                      },
+                     "02-AddUserToPsmMasters":{
+                        "command":"powershell.exe C:\\CyberArk\\add_admin_to_psmmaster.ps1",
+                        "waitAfterCompletion":"30",
+                        "ignoreErrors":"true"
+                     }
                      "02-deploy":{
                         "command":"C:\\Python27\\python.exe C:\\deploy.py",
                         "waitAfterCompletion":"0",
