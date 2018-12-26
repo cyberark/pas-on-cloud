@@ -691,7 +691,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "514",
                 "ToPort": "514",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
             }
         },
         "VaultSGEgress5": {
@@ -703,7 +705,9 @@
                 "IpProtocol": "udp",
                 "FromPort": "514",
                 "ToPort": "514",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
             }
         },
         "CPMSGIngress1": {
@@ -944,7 +948,7 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-                "PTASGIngress1": {
+        "PTASGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
@@ -953,7 +957,23 @@
                 "IpProtocol": "tcp",
                 "FromPort": "443",
                 "ToPort": "443",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGIngress11": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "DestinationSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
             }
         },
         "PTASGIngress2": {
@@ -965,7 +985,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "80",
                 "ToPort": "80",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
             }
         },
         "PTASGIngress3": {
@@ -977,7 +999,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "8080",
                 "ToPort": "8080",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
             }
         },
         "PTASGIngress4": {
@@ -989,7 +1013,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "8443",
                 "ToPort": "8443",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
             }
         },
         "PTASGIngress5": {
@@ -1013,7 +1039,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "27017",
                 "ToPort": "27017",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
             }
         },
         "PTASGIngress7": {
@@ -1049,6 +1077,70 @@
                 "IpProtocol": "tcp",
                 "FromPort": "22",
                 "ToPort": "22",
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
+            }
+        },
+        "PTASGIngress10": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "22",
+                "ToPort": "22",
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGInress12": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "514",
+                "ToPort": "514",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress13": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": "514",
+                "ToPort": "514",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress14": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "514",
+                "ToPort": "11514",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress15": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": "514",
+                "ToPort": "11514",
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1097,7 +1189,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "80",
                 "ToPort": "80",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PVWASG"   
+                }
             }
         },
         "PTASGEgress5": {
@@ -1133,7 +1227,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "27017",
                 "ToPort": "27017",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PTASG"
+                }
             }
         },
         "PTASGEgress8": {
@@ -1205,7 +1301,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "1858",
                 "ToPort": "1858",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "VaultVPCCIDR"
+                }
             }
         },
         "PTASGEgress14": {
@@ -1217,7 +1315,9 @@
                 "IpProtocol": "udp",
                 "FromPort": "1858",
                 "ToPort": "1858",
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "VaultVPCCIDR"
+                }
             }
         },
         "PTASGEgress15": {
@@ -1229,7 +1329,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": "22",
                 "ToPort": "22",
-                "CidrIp": "0.0.0.0/0"
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
             }
         },
         "PrivateLinkVaultSGIngress1": {

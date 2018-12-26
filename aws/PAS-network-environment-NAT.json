@@ -813,7 +813,7 @@
                 "IpProtocol": "tcp",
                 "FromPort": "514",
                 "ToPort": "514",
-                "DestinationSecurityGroupId": 
+                "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
             }
@@ -827,7 +827,7 @@
                 "IpProtocol": "udp",
                 "FromPort": "514",
                 "ToPort": "514",
-                "DestinationSecurityGroupId": 
+                "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
                 }
             }
@@ -1097,7 +1097,7 @@
                     "Ref": "PVWASG"
                 }
             }
-        }
+        },
         "PTASGIngress2": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -1203,7 +1203,7 @@
                     "Ref": "PTASG"
                 }
             }
-        }
+        },
         "PTASGIngress10": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
