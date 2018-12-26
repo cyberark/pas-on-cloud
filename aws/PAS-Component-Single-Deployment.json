@@ -1404,18 +1404,18 @@
                         "command":"powershell.exe C:\\CyberArk\\add_admin_to_psmmaster.ps1",
                         "waitAfterCompletion":"30",
                         "ignoreErrors":"true"
-                     }
-                     "02-deploy":{
+                     },
+                     "03-deploy":{
                         "command":"C:\\Python27\\python.exe C:\\deploy.py",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "03-PSMserviceConfig":{
+                     "04-PSMserviceConfig":{
                         "command":"sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "04-ChangeHostName":{
+                     "05-ChangeHostName":{
                         "command":{
                            "Fn::Join":[
                               "",
