@@ -1452,48 +1452,48 @@
                         "waitAfterCompletion":"30",
                         "ignoreErrors":"true"
                      },
-                     "02-CPMdeploy":{
-                        "command":"C:\\Python27\\python.exe C:\\deployCPM.py",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "03-CPMServiceConfig":{
-                        "command":"sc config \"CyberArk Password Manager\" start=auto",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "04-CPMScannerServiceConfig":{
-                        "command":"sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "05-CPMServiceStart":{
-                        "command":"sc start \"CyberArk Password Manager\"",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "06-CPMScannerServiceStart":{
-                        "command":"sc start \"CyberArk Central Policy Manager Scanner\"",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "07-PVWAdeploy":{
+                     "02-PVWAdeploy":{
                         "command":"C:\\Python27\\python.exe C:\\deployPVWA.py",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "08-StartAppPool":{
+                     "03-StartAppPool":{
                         "command":"powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "09-ScheduledTasksServiceConfig":{
+                     "04-ScheduledTasksServiceConfig":{
                         "command":"sc config \"CyberArk Scheduled Tasks\" start=auto",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "10-ScheduledTasksServiceStart":{
+                     "05-ScheduledTasksServiceStart":{
                         "command":"sc start \"CyberArk Scheduled Tasks\"",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "06-CPMdeploy":{
+                        "command":"C:\\Python27\\python.exe C:\\deployCPM.py",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "07-CPMServiceConfig":{
+                        "command":"sc config \"CyberArk Password Manager\" start=auto",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "08-CPMScannerServiceConfig":{
+                        "command":"sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "09-CPMServiceStart":{
+                        "command":"sc start \"CyberArk Password Manager\"",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "10-CPMScannerServiceStart":{
+                        "command":"sc start \"CyberArk Central Policy Manager Scanner\"",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
