@@ -118,17 +118,7 @@
                                     "Arn"
                                 ]
                             },
-                            "Event": "s3:ObjectCreated:*",
-                            "Filter": {
-                                "S3Key": {
-                                    "Rules": [
-                                        {
-                                            "Name": "suffix",
-                                            "Value": "zip"
-                                        }
-                                    ]
-                                }
-                            }
+                            "Event": "s3:ObjectCreated:*"
                         }
                     ]
                 }
