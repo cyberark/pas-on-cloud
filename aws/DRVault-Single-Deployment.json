@@ -298,8 +298,7 @@
          },
          "Condition":"EULACondition",
          "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "StoreAdminPassword":{
@@ -317,8 +316,7 @@
          },
          "Condition":"EULACondition",
          "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CopyLicenseToBucket": {
@@ -375,8 +373,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "CopyfileFromBucketLambda"
+            "LambdaDeployRole"
          ]
       },
       "VaultDRMachine":{
@@ -780,13 +777,9 @@
             }
          },
          "DependsOn":[
-            "StoreMasterPassword",
-            "StoreAdminPassword",
-            "StoreDRPassword",
             "CopyLicenseToBucket",
             "CopyRecpubToBucket"
          ],
-         "Condition":"",
          "DeletionPolicy":"Retain"
       },
       "StoreDRPassword":{
@@ -804,8 +797,7 @@
          },
          "Condition":"EULACondition",
          "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CleanMasterPassword":{

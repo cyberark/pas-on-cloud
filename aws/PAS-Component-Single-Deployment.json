@@ -211,8 +211,7 @@
          },
          "Condition":"EULACondition",
          "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CleanAdminPassword":{
@@ -706,9 +705,6 @@
                }
             }
          },
-         "DependsOn":[
-            "StoreAdminPassword"
-         ],
          "Condition":"CreateCPMCondition",
          "CreationPolicy":{
             "ResourceSignal":{
@@ -1079,9 +1075,6 @@
                }
             }
          },
-         "DependsOn":[
-            "StoreAdminPassword"
-         ],
          "Condition":"CreatePVWACondition",
          "CreationPolicy":{
             "ResourceSignal":{
@@ -1449,9 +1442,6 @@
                }
             }
          },
-         "DependsOn":[
-            "StoreAdminPassword"
-         ],
          "Condition":"CreatePSMCondition",
          "CreationPolicy":{
             "ResourceSignal":{
@@ -1868,9 +1858,6 @@
                }
             }
          },
-         "DependsOn":[
-            "StoreAdminPassword"
-         ],
          "Condition":"CreatePSMPCondition",
          "CreationPolicy":{
             "ResourceSignal":{
