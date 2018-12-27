@@ -1039,7 +1039,7 @@
                 "IpProtocol": "tcp",
                 "FromPort": "27017",
                 "ToPort": "27017",
-                "DestinationSecurityGroupId": {
+                "SourceSecurityGroupId": {
                     "Ref": "PTASG"
                 }
             }
@@ -1077,12 +1077,12 @@
                 "IpProtocol": "tcp",
                 "FromPort": "22",
                 "ToPort": "22",
-                "DestinationSecurityGroupId": {
+                "SourceSecurityGroupId": {
                     "Ref": "PTASG"
                 }
             }
         },
-        "PTASGIngress10": {
+        "PTASGIngress12": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
@@ -1096,8 +1096,8 @@
                 }
             }
         },
-        "PTASGInress12": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
+        "PTASGInress11": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
                     "Ref": "PTASG"
@@ -1109,7 +1109,7 @@
             }
         },
         "PTASGIngress13": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
                     "Ref": "PTASG"
@@ -1121,25 +1121,25 @@
             }
         },
         "PTASGIngress14": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "514",
+                "FromPort": "11514",
                 "ToPort": "11514",
                 "CidrIp": "0.0.0.0/0"
             }
         },
         "PTASGIngress15": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
                 "GroupId": {
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "514",
+                "FromPort": "11514",
                 "ToPort": "11514",
                 "CidrIp": "0.0.0.0/0"
             }
