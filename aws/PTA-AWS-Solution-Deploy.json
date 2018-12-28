@@ -94,7 +94,13 @@
             ],
             "Type": "AWS::CloudTrail::Trail",
             "Properties": {
-                "S3BucketName": "ptasolutionbuckettest",
+                "S3BucketName": {"Fn::Join": [
+                                    "", [
+                                        "ptasolutionbucket", 
+                                        { "Ref" : "AWS::Region" }, 
+                                        { "Ref" : "AWS::AccountId" }
+                                    ]
+                                ]},
                 "EnableLogFileValidation": true,
                 "IsLogging": true,
                 "IsMultiRegionTrail": true,
@@ -108,7 +114,13 @@
                 "LambdaInvokePermission"
             ],
             "Properties": {
-                "BucketName": "ptasolutionbuckettest",
+                "BucketName": {"Fn::Join": [
+                                    "", [
+                                        "ptasolutionbucket", 
+                                        { "Ref" : "AWS::Region" }, 
+                                        { "Ref" : "AWS::AccountId" }
+                                    ]
+                                ]},
                 "NotificationConfiguration": {
                     "LambdaConfigurations": [
                         {
@@ -135,7 +147,13 @@
                 },
                 "Action": "lambda:InvokeFunction",
                 "Principal": "s3.amazonaws.com",
-                "SourceArn": "arn:aws:s3:::ptasolutionbuckettest"
+                "SourceArn": {"Fn::Join": [
+                                        "", [
+                                        "arn:aws:s3:::ptasolutionbucket", 
+                                        { "Ref" : "AWS::Region" }, 
+                                        { "Ref" : "AWS::AccountId" }
+                                    ]
+                                ]} 
             }
         },
         "LambdaInvokePermissionPTA": {
@@ -169,7 +187,13 @@
                                 "s3:GetBucketAcl"
                             ],
                             "Effect": "Allow",
-                            "Resource": "arn:aws:s3:::ptasolutionbuckettest",
+                            "Resource": {"Fn::Join": [
+                                        "", [
+                                        "arn:aws:s3:::ptasolutionbucket", 
+                                        { "Ref" : "AWS::Region" }, 
+                                        { "Ref" : "AWS::AccountId" }
+                                    ]
+                                ]}, 
                             "Principal": {
                                 "Service": "cloudtrail.amazonaws.com"
                             }
@@ -179,7 +203,14 @@
                                 "s3:PutObject"
                             ],
                             "Effect": "Allow",
-                            "Resource": "arn:aws:s3:::ptasolutionbuckettest/*",
+                            "Resource": {"Fn::Join": [
+                                        "", [
+                                        "arn:aws:s3:::ptasolutionbucket", 
+                                        { "Ref" : "AWS::Region" }, 
+                                        { "Ref" : "AWS::AccountId" },
+                                        "/*"
+                                    ]
+                                ]}, 
                             "Principal": {
                                 "Service": "cloudtrail.amazonaws.com"
                             },
@@ -232,7 +263,16 @@
                                         "sns:Publish"
                                     ],
                                     "Resource": [
-                                        "arn:aws:s3:::ptasolutionbuckettest/*",
+                                        {
+                                            "Fn::Join": [
+                                                "", [
+                                                    "arn:aws:s3:::ptasolutionbucket", 
+                                                    { "Ref" : "AWS::Region" }, 
+                                                    { "Ref" : "AWS::AccountId" },
+                                                    "/*"
+                                                ]
+                                            ] 
+                                        },
                                         {
                                             "Ref": "Topic"
                                         }
