@@ -4,9 +4,20 @@ CyberArk PTA-AWS-Solution-Deployment CloudFormation templates was created to aut
 
 # Lambdas Bucket
 
-Before running the template, create a dedicated bucket in the region where you are deploying the CloudFormation stack, with the following files:
-MySnsToPta.zip - contains the lambda from \dist\
+Before running the template, create a dedicated bucket in the region where you are deploying the CloudFormation stack, with the following files:/n
+MySnsToPta.zip/n
+PtaCloudTrailToSns.zip
 
+# Permissions
+
+The user that runs the template needs to have the following permissions:
+- Deploy CloudFormation
+- S3 full permissions
+- SNS full permissions
+- Deploy Lambda 
+- Create IAM roles
+
+# Parameters
 
 | Name | Description | Default | 
 |------------------------------|-------------|-------------|
