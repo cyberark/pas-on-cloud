@@ -11,4 +11,5 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 | Full-PAS-Deployment | Deploying a full PAS environment, where each component is deployed in a separated instance (Vault, DR Vault, PVWA, CPM, PSM and PSMP) |
 | PAS-AIO-dr-template | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM, Vault instance and DR Vault instance |
 | PAS-AIO-template | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM and Vault instance |
+| PTA-AWS-Solution | PTA-AWS solution: Creation of Trail, S3 Bucket, SNS Topic and Lambdas to identify Access Key usage in AWS Account |
 
