@@ -1070,6 +1070,20 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
+        "PVWASGEgress3": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8443,
+                "ToPort": 8443,
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PTASG"   
+                }
+            }
+        },
         "PTASGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -1093,7 +1107,7 @@
                 "IpProtocol": "tcp",
                 "FromPort": 443,
                 "ToPort": 443,
-                "DestinationSecurityGroupId": {
+                "SourceSecurityGroupId": {
                     "Ref": "PVWASG"
                 }
             }
@@ -1159,8 +1173,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "27017",
-                "ToPort": "27017",
+                "FromPort": 27017,
+                "ToPort": 27017,
                 "SourceSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -1197,8 +1211,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
+                "FromPort": 22,
+                "ToPort": 22,
                 "SourceSecurityGroupId": {
                     "Ref": "PTASG"
                 }
@@ -1227,7 +1241,9 @@
                 "IpProtocol": "tcp",
                 "FromPort": 514,
                 "ToPort": 514,
-                "CidrIp": "0.0.0.0/0"
+                "SourceSecurityGroupId": {
+                    "Ref": "VaultSG"
+                }
             }
         },
         "PTASGIngress13": {
@@ -1239,7 +1255,9 @@
                 "IpProtocol": "udp",
                 "FromPort": 514,
                 "ToPort": 514,
-                "CidrIp": "0.0.0.0/0"
+                "SourceSecurityGroupId": {
+                    "Ref": "VaultSG"
+                }
             }
         },
         "PTASGIngress14": {
@@ -1249,8 +1267,8 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "tcp",
-                "FromPort": "11514",
-                "ToPort": "11514",
+                "FromPort": 11514,
+                "ToPort": 11514,
                 "CidrIp": "0.0.0.0/0"
             }
         },
@@ -1261,9 +1279,51 @@
                     "Ref": "PTASG"
                 },
                 "IpProtocol": "udp",
-                "FromPort": "11514",
-                "ToPort": "11514",
+                "FromPort": 11514,
+                "ToPort": 11514,
                 "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress16": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGIngress17": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8080,
+                "ToPort": 8080,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGIngress18": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8443,
+                "ToPort": 8443,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
             }
         },
         "PTASGEgress1": {
