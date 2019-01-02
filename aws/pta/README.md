@@ -17,6 +17,16 @@ The user that runs the template needs to have the following permissions:
 - Deploy Lambda 
 - Create IAM roles
 
+# Network
+
+The solution sends syslogs to the pta on port 11514 and protocol TCP.
+In case that PTA was configured diffrentely, then the solution needs to be configured accordingly.
+Two main points of connection failure can be at Security Group  or Lambda:
+- Make sure that the desierd port and protocol are open in MySnsToPta Lambda's Security Group
+- Choose the correct Port when deploying the solution
+
+Note: there must be a connection between the solution VPC to the PTA network.
+
 # Parameters
 
 | Name | Description | Default | 
@@ -27,3 +37,6 @@ The user that runs the template needs to have the following permissions:
 | Subnet | Select the VPC Id where the current PTA resides| |
 | Lambdas Bucket | Enter the bucket name that contains the lambda's zip files| |
 
+# Troubleshooting
+
+Each AWS Lambda - MySnsToPta, PtaCloudTrailToSns has its own logs. In your AWS Account, go to Lambda Service and choose the lambda to display. Press Monitor to view the Lambda's metrics or you can press 'View logs in CloudWatch' to see the Lambda's logs.
