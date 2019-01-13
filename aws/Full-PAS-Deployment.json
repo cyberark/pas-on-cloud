@@ -1519,6 +1519,16 @@
                                  "'/vaultpassword',",
                                  "adminp",
                                  "]\n",
+                                 "inputHostname='",
+                                 {"Ref":"PVWAUrl"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "else:\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append(inputHostname)\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -2854,6 +2864,10 @@
          "Type": "AWS::EC2::Subnet::Id",
          "Description": "Select the Subnet Id where the PVWA instance will reside."
       },
+      "PVWAUrl":{
+         "Type":"String",
+         "Description":"e.g: https://HOSTNAME.FQDN/PasswordVault"
+      },
       "PSMInstanceName": {
          "Type": "String",
          "Description": "Enter a name for the PSM instance.",
@@ -3004,7 +3018,8 @@
                   "PVWAInstanceName",
                   "PVWAInstanceType",
                   "PVWAInstanceSecurityGroups",
-                  "PVWAInstanceSubnetId"
+                  "PVWAInstanceSubnetId",
+                  "PVWAUrl"
                ]
             },
             {
@@ -3102,6 +3117,9 @@
             },
             "PVWAInstanceSubnetId": {
                "default": "PVWA Instance Subnet Id"
+            },
+            "PVWAUrl":{
+               "default":"PVWA FQDN (Optional)"
             },
             "PSMInstanceName": {
                "default": "PSM Instance Name"
