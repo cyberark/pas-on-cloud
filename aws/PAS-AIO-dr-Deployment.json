@@ -1770,6 +1770,16 @@
                                  "'/vaultpassword',",
                                  "adminp",
                                  "]\n",
+                                 "inputHostname='",
+                                 {"Ref":"PVWAUrl"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "else:\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append(inputHostname)\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -2070,6 +2080,10 @@
       "ComponentsInstanceSubnetId":{
          "Type":"AWS::EC2::Subnet::Id",
          "Description":"Select the Subnet Id where the PAS Components instance will reside."
+      },
+      "PVWAUrl":{
+         "Type":"String",
+         "Description":"e.g: https://HOSTNAME.FQDN/PasswordVault"
       }
    },
    "Conditions":{
@@ -2168,7 +2182,8 @@
                   "ComponentsInstanceName",
                   "ComponentsInstanceType",
                   "ComponentsInstanceSecurityGroups",
-                  "ComponentsInstanceSubnetId"
+                  "ComponentsInstanceSubnetId",
+                  "PVWAUrl"
                ]
             }
          ],
@@ -2232,6 +2247,9 @@
             },
             "ComponentsInstanceSubnetId":{
                "default":"Components Instance Subnet Id"
+            },
+            "PVWAUrl":{
+               "default":"PVWA FQDN (Optional)"
             }
          }
       }
