@@ -2259,7 +2259,7 @@
             }
          },
          "DependsOn": [
-            "PVWAMachine"
+            "CPMMachine"
          ],
          "CreationPolicy": {
             "ResourceSignal": {
