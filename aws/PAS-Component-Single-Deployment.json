@@ -1413,7 +1413,11 @@
                                  {
                                     "Ref":"VaultAdminUser"
                                  },
-                                 " -password adminp -pvwaIp ",
+                                 " -password ",
+                                 {
+                                    "Ref":"VaultAdminPassword"
+                                 },
+                                 " -pvwaIp ",
                                  {
                                     "Ref": "PVWAHostName"
                                  },
