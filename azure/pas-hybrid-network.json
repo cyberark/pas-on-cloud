@@ -199,13 +199,13 @@
                         }
                     },
                     {
-                        "name": "AllowStorageServiceOut",
+                        "name": "AllowServicesOut",
                         "properties": {
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "443",
                             "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
-                            "destinationAddressPrefix": "Storage",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 140,
                             "direction": "Outbound",
@@ -336,13 +336,13 @@
                         }
                     },
                     {
-                        "name": "AllowStorageServiceOut",
+                        "name": "AllowServicesOut",
                         "properties": {
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "443",
                             "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
-                            "destinationAddressPrefix": "Storage",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 110,
                             "direction": "Outbound",
