@@ -9,7 +9,7 @@
                 },
                 "InstanceTenancy": "default",
                 "EnableDnsSupport": true,
-                "EnableDnsHostnames": false,
+                "EnableDnsHostnames": true,
                 "Tags": [
                     {
                         "Key": "Name",
@@ -107,7 +107,7 @@
                 },
                 "InstanceTenancy": "default",
                 "EnableDnsSupport": true,
-                "EnableDnsHostnames": false,
+                "EnableDnsHostnames": true,
                 "Tags": [
                     {
                         "Key": "Name",
