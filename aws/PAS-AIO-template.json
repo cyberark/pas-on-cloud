@@ -1361,15 +1361,15 @@
                                  "adminp",
                                  "]\n",
                                  "inputHostname='",
-                                 {"Ref":"PVWAUrl"},
+                                 {"Ref":"PVWAHostName"},
                                  "'\n",
                                  "if not inputHostname:\n",
                                  "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
                                  "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.f[ormat(hostname))\n",
                                  "else:\n",
                                  "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append(inputHostname)\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -1646,9 +1646,9 @@
          "Type":"AWS::EC2::Subnet::Id",
          "Description":"Select the Subnet Id where the PAS Components instance will reside."
       },
-      "PVWAUrl":{
+      "PVWAHostName":{
          "Type":"String",
-         "Description":"e.g: https://HOSTNAME.FQDN/PasswordVault"
+         "Description":"IP or FQDN of PVWA server"
       }
    },
    "Conditions":{
@@ -1732,7 +1732,7 @@
                   "ComponentsInstanceType",
                   "ComponentsInstanceSecurityGroups",
                   "ComponentsInstanceSubnetId",
-                  "PVWAUrl"
+                  "PVWAHostName"
                ]
             }
          ],
@@ -1788,7 +1788,7 @@
             "ComponentsInstanceSubnetId":{
                "default":"Components Instance Subnet Id"
             },
-            "PVWAUrl":{
+            "PVWAHostName":{
                "default":"PVWA FQDN (Optional)"
             }
          }
