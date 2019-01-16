@@ -1469,6 +1469,7 @@
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
+                                 "import urllib2\n",
                                  "\n",
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
