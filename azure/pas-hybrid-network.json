@@ -462,7 +462,7 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('variables('subnets_Web_Subnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('subnets_Web_Subnet_name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
             ]
         }
