@@ -8,7 +8,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
   def test_PASNetworkEnvironmentPrivateLink_CreateChangeSet(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)
       templatename = 'PAS-network-environment-PrivateLink'
-      stack_name = 'test-{}-{}'.format(templatename, commitid)
+      stack_name = 'test-{}-{}-{}'.format(templatename, branch.replace('_','-').replace('.','-'), commitid)
       template_params = [
           {'ParameterKey': 'UsersAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False},
           {'ParameterKey': 'AdministrativeAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False}
@@ -113,3 +113,12 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
   def test_PASNetworkEnvironmentPrivateLink_VPC(self):
       expected_VPC= {'ComponentsVPC', 'VaultVPC'}
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
+
+  def test_CleanupEnvironment(self, region, branch, commitid, templateurl):
+      cf_client = boto3.client('cloudformation', region_name=region)
+      templatename = 'PAS-network-environment-PrivateLink'
+      stack_name = 'test-{}-{}-{}'.format(templatename, branch.replace('_','-').replace('.','-'), commitid)
+      response = cf_client.delete_stack(
+          StackName=stack_name
+      )
+      assert response['ResponseMetadata']['HTTPStatusCode'] == 200
