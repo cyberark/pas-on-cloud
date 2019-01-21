@@ -2,12 +2,12 @@ import pytest
 import boto3
 import time
 
-class TestPASNetworkEnvironmentPrivateLinkTemplate():
+class TestPASNetworkEnvironmentNatTemplate():
   resources = {}
 
-  def test_PASNetworkEnvironmentPrivateLink_CreateChangeSet(self, region, branch, commitid, templateurl):
+  def test_PASNetworkEnvironmentNat_CreateChangeSet(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)
-      templatename = 'PAS-network-environment-PrivateLink'
+      templatename = 'PAS-network-environment-NAT'
       stack_name = 'test-{}-{}'.format(templatename, commitid)
       template_params = [
           {'ParameterKey': 'UsersAccessCIDR', 'ParameterValue': '0.0.0.0/0', 'UsePreviousValue': False},
@@ -46,70 +46,67 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       # Validate expected number of elements
       assert len(self.resources) == 16
 
-  def test_PASNetworkEnvironmentPrivateLink_SecurityGroups(self, region):
-      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkComponentsSG', 'PrivateLinkVaultSG', 'VaultSG'}
+  def test_PASNetworkEnvironmentNat_SecurityGroups(self, region):
+      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG'}
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
 
-  def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsEgress(self):
+  def test_PASNetworkEnvironmentNat_SecurityGroupsEgress(self):
       expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
                       'PSMSSHSGEgress1', 'PSMSSHSGEgress2', 'PSMSSHSGEgress3', 'PVWASGEgress1', 'PVWASGEgress2',
-                      'PrivateLinkComponentsSGEgress1', 'PrivateLinkVaultSGEgress1', 'VaultSGEgress1', 'VaultSGEgress2',
-                      'VaultSGEgress3'}
+                      'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3'}
       assert set(self.resources['AWS::EC2::SecurityGroupEgress']) == expected_SecurityGroupsEgress
 
-  def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsIngress(self):
+  def test_PASNetworkEnvironmentNat_SecurityGroupsIngress(self):
       expected_SecurityGroupsIngress = {'CPMSGIngress1', 'PSMSGIngress1', 'PSMSGIngress2', 'PSMSSHSGIngress1', 'PSMSSHSGIngress2',
-                      'PVWASGIngress1', 'PVWASGIngress2', 'PrivateLinkComponentsSGIngress1', 'PrivateLinkVaultSGIngress1',
-                      'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3'}
+                      'PVWASGIngress1', 'PVWASGIngress2', 'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3'}
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
-  def test_PASNetworkEnvironmentPrivateLink_SubnetNetworkAclAssociation(self):
+  def test_PASNetworkEnvironmentNat_SubnetNetworkAclAssociation(self):
       expected_SubnetNetworkAclAssociation = {'CompMainNACLAssociation', 'CompSecondaryNACLAssociation', 'VaultDRNACLAssociation',
-                      'VaultMainNACLAssociation'}
+                      'VaultMainNACLAssociation', 'VaultNatNACLAssociation', 'CompNatNACLAssociation'}
       assert set(self.resources['AWS::EC2::SubnetNetworkAclAssociation']) == expected_SubnetNetworkAclAssociation
 
-  def test_PASNetworkEnvironmentPrivateLink_SubnetRouteTableAssociation(self):
+  def test_PASNetworkEnvironmentNat_SubnetRouteTableAssociation(self):
       expected_SubnetRouteTableAssociation = {'CompMainRTAssociation', 'CompSecondaryRTAssociation', 'VaultDRRTAssociation',
-                      'VaultMainRTAssociation'}
+                      'VaultMainRTAssociation', 'CompNatRTAssociation', 'VaultNatRTAssociation'}
       assert set(self.resources['AWS::EC2::SubnetRouteTableAssociation']) == expected_SubnetRouteTableAssociation
 
-  def test_PASNetworkEnvironmentPrivateLink_Route(self):
-      expected_Route = {'CompPeerRoute', 'CompPublicNATRoute', 'VaultPeerRoute', 'VaultPublicNATRoute'}
+  def test_PASNetworkEnvironmentNat_Route(self):
+      expected_Route = {'CompPeerRoute', 'CompPublicNATRoute', 'VaultPeerRoute', 'VaultPublicNATRoute', 'CompPrivateNATRoute', 'VaultPrivateNATRoute'}
       assert set(self.resources['AWS::EC2::Route']) == expected_Route
 
-  def test_PASNetworkEnvironmentPrivateLink_NetworkAclEntry(self):
+  def test_PASNetworkEnvironmentNat_NetworkAclEntry(self):
       expected_NetworkAclEntry = {'ComponentsAclEntry1', 'ComponentsAclEntry2', 'VaultAclEntry1', 'VaultAclEntry2'}
       assert set(self.resources['AWS::EC2::NetworkAclEntry']) == expected_NetworkAclEntry
 
-  def test_PASNetworkEnvironmentPrivateLink_VPCEndpoint(self):
-      expected_VPCEndpoint = {'ComponentsCFNEndpoint', 'ComponentsCWEndpoint', 'ComponentsSSMEndpoint', 'VaultCFNEndpoint',
-                      'VaultCWEndpoint', 'VaultKMSEndpoint', 'VaultS3Endpoint', 'VaultSSMEndpoint'}
-      assert set(self.resources['AWS::EC2::VPCEndpoint']) == expected_VPCEndpoint
-
-  def test_PASNetworkEnvironmentPrivateLink_VPCGatewayAttachment(self):
+  def test_PASNetworkEnvironmentNat_VPCGatewayAttachment(self):
       expected_VPCGatewayAttachment = {'ComponentsGWAttachment', 'VaultGWAttachment'}
       assert set(self.resources['AWS::EC2::VPCGatewayAttachment']) == expected_VPCGatewayAttachment
 
-  def test_PASNetworkEnvironmentPrivateLink_InternetGateway(self):
+  def test_PASNetworkEnvironmentNat_InternetGateway(self):
       expected_InternetGateway = {'ComponentsIGW', 'VaultIGW'}
       assert set(self.resources['AWS::EC2::InternetGateway']) == expected_InternetGateway
 
-  def test_PASNetworkEnvironmentPrivateLink_Subnet(self):
-      expected_Subnet = {'ComponentsMainSubnet', 'ComponentsSecondarySubnet', 'VaultDRSubnet', 'VaultMainSubnet'}
+  def test_PASNetworkEnvironmentNat_Subnet(self):
+      expected_Subnet = {'ComponentsMainSubnet', 'ComponentsSecondarySubnet', 'VaultDRSubnet', 'VaultMainSubnet', 'VaultNATSubnet', 'ComponentsNATSubnet'}
       assert set(self.resources['AWS::EC2::Subnet']) == expected_Subnet
 
-  def test_PASNetworkEnvironmentPrivateLink_NetworkAcl(self):
+  def test_PASNetworkEnvironmentNat_NetworkAcl(self):
       expected_NetworkAcl = {'ComponentsNACL', 'VaultNACL'}
       assert set(self.resources['AWS::EC2::NetworkAcl']) == expected_NetworkAcl
 
-  def test_PASNetworkEnvironmentPrivateLink_EIP(self):
+  def test_PASNetworkEnvironmentNat_EIP(self):
       expected_EIP = {'ComponentsNATEIP', 'VaultNATEIP'}
       assert set(self.resources['AWS::EC2::EIP']) == expected_EIP
 
-  def test_PASNetworkEnvironmentPrivateLink_RouteTable(self):
+  def test_PASNetworkEnvironmentNat_NatGateway(self):
+      expected_NatGateway = {'ComponentsNATGW', 'VaultNATGW'}
+      assert set(self.resources['AWS::EC2::NatGateway']) == expected_NatGateway
+
+  def test_PASNetworkEnvironmentNat_RouteTable(self):
       expected_RouteTable = {'ComponentsPrivateRT', 'ComponentsPublicRT', 'VaultPrivateRT', 'VaultPublicRT'}
       assert set(self.resources['AWS::EC2::RouteTable']) == expected_RouteTable
 
-  def test_PASNetworkEnvironmentPrivateLink_VPC(self):
+  def test_PASNetworkEnvironmentNat_VPC(self):
       expected_VPC= {'ComponentsVPC', 'VaultVPC'}
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
