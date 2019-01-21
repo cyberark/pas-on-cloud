@@ -1469,6 +1469,7 @@
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
+                                 "import urllib2\n",
                                  "\n",
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
@@ -1519,6 +1520,16 @@
                                  "'/vaultpassword',",
                                  "adminp",
                                  "]\n",
+                                 "inputHostname='",
+                                 {"Ref":"PVWAHostName"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "else:\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -2248,7 +2259,7 @@
             }
          },
          "DependsOn": [
-            "PVWAMachine"
+            "CPMMachine"
          ],
          "CreationPolicy": {
             "ResourceSignal": {
@@ -2854,6 +2865,10 @@
          "Type": "AWS::EC2::Subnet::Id",
          "Description": "Select the Subnet Id where the PVWA instance will reside."
       },
+      "PVWAHostName":{
+         "Type":"String",
+         "Description":"IP or FQDN of PVWA server"
+      },
       "PSMInstanceName": {
          "Type": "String",
          "Description": "Enter a name for the PSM instance.",
@@ -3004,7 +3019,8 @@
                   "PVWAInstanceName",
                   "PVWAInstanceType",
                   "PVWAInstanceSecurityGroups",
-                  "PVWAInstanceSubnetId"
+                  "PVWAInstanceSubnetId",
+                  "PVWAHostName"
                ]
             },
             {
@@ -3102,6 +3118,9 @@
             },
             "PVWAInstanceSubnetId": {
                "default": "PVWA Instance Subnet Id"
+            },
+            "PVWAHostName":{
+               "default":"PVWA FQDN (Optional)"
             },
             "PSMInstanceName": {
                "default": "PSM Instance Name"

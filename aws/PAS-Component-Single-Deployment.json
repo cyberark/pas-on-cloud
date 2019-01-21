@@ -925,6 +925,7 @@
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
+                                 "import urllib2\n",
                                  "\n",
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
@@ -993,6 +994,16 @@
                                  "'/vaultpassword',",
                                  "adminp",
                                  "]\n",
+                                 "inputHostname='",
+                                 {"Ref":"PVWAHostName"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "else:\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
                                  "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
@@ -1393,10 +1404,29 @@
                         "waitAfterCompletion":"30",
                         "ignoreErrors":"true"
                      },
-                     "02-AddUserToPsmMasters":{
-                        "command":"powershell.exe C:\\CyberArk\\add_admin_to_psmmaster.ps1",
-                        "waitAfterCompletion":"30",
-                        "ignoreErrors":"true"
+                     "02-addAdminToMasterGroup":{
+                        "command":{
+                           "Fn::Join":[
+                              "",
+                              [
+                                 "powershell.exe -command \"& 'C:\\Cyberark\\Components Registration\\add_admin_to_psmmaster.ps1' -username ",
+                                 {
+                                    "Ref":"VaultAdminUser"
+                                 },
+                                 " -password ",
+                                 {
+                                    "Ref":"VaultAdminPassword"
+                                 },
+                                 " -pvwaIp ",
+                                 {
+                                    "Ref": "PVWAHostName"
+                                 },
+                                 "\""
+                              ]
+                           ]
+                        },
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
                      },
                      "03-deploy":{
                         "command":"C:\\Python27\\python.exe C:\\deploy.py",
@@ -1972,6 +2002,10 @@
       "ComponentInstanceSubnetId":{
          "Type":"AWS::EC2::Subnet::Id",
          "Description":"Select the Subnet Id where the Component instance will reside."
+      },
+      "PVWAHostName":{
+         "Type":"String",
+         "Description":"IP or FQDN of PVWA server"
       }
    },
    "Conditions":{
@@ -2057,7 +2091,8 @@
                   "ComponentHostName",
                   "ComponentInstanceType",
                   "ComponentInstanceSecurityGroups",
-                  "ComponentInstanceSubnetId"
+                  "ComponentInstanceSubnetId",
+                  "PVWAHostName"
                ]
             }
          ],
@@ -2097,6 +2132,9 @@
             },
             "ComponentInstanceSubnetId":{
                "default":"Component Instance Subnet Id"
+            },
+            "PVWAHostName":{
+               "default":"PVWA FQDN (Optional)"
             }
          }
       }
