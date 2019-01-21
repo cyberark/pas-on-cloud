@@ -20,7 +20,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
           Parameters=template_params,
           Capabilities=['CAPABILITY_IAM'],
           ChangeSetName=stack_name,
-          Description='test-{}-{}-{}'.format(templatename, branch.replace('_','-'), commitid),
+          Description='test-{}-{}-{}'.format(templatename, branch.replace('_','-').replace('.','-'), commitid),
           ChangeSetType='CREATE'
       )
       assert response['ResponseMetadata']['HTTPStatusCode'] == 200
@@ -45,7 +45,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                   resource['ResourceChange']['LogicalResourceId'])
       # Validate expected number of elements
       assert len(self.resources) == 16
-  
+
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroups(self, region):
       expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkComponentsSG', 'PrivateLinkVaultSG', 'VaultSG'}
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
