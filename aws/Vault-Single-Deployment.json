@@ -1197,7 +1197,7 @@
          },
          "eu-west-2":{
             "Vault":"ami-0ce0e830f7fddb65f",
-            "Components":"ami-090ce7558bc8867b7",
+            "Components":"ami-0e6d457e0c82e4e0f",
             "CPM":"ami-0d8cb6cf3bd0d3a83",
             "PVWA":"ami-0d57d94bdabe94d24",
             "PSM":"ami-073e2cf7e9414193f",
