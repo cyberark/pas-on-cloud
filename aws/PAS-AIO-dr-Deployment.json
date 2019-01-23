@@ -1891,7 +1891,7 @@
                      },
                      "05-ScheduledTasksServiceStart":{
                         "command":"sc start \"CyberArk Scheduled Tasks\"",
-                        "waitAfterCompletion":"0",
+                        "waitAfterCompletion":"30",
                         "ignoreErrors":"false"
                      },
                      "06-CPMdeploy":{
