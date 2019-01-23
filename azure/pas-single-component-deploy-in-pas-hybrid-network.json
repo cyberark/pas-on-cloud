@@ -52,6 +52,14 @@
                 "description": "Enter the host name for the PAS Component VM."
             }
         },
+        "Password Vault Web Access FQDN":
+        {
+            "defaultValue": "",
+            "type": "String",
+            "metadata": {
+                "description": "e.g: https://HOSTNAME.FQDN/PasswordVault"
+            }
+        },
         "Component VM Size": {
             "defaultValue": "Standard_D2s_v3",
             "type": "String",
@@ -99,11 +107,11 @@
             "name": "GuidGenerator",
             "type": "Microsoft.Resources/deployments",
             "properties": {
-                "mode": "incremental",
-                "templateLink": {
-                    "uri": "https://armtemplates-azurewebsites-net.o365.apps.cyberark.com/api/NewGuid",
-                    "contentVersion": "1.0.0.0"
-                }
+              "mode": "incremental",
+              "templateLink": {
+                "uri": "https://raw.githubusercontent.com/davidjrh/azurerm-newguid/master/NewGuid.json",
+                "contentVersion": "1.0.0.0"
+              }
             }
         },
         {
@@ -122,6 +130,9 @@
                     },
                     "computerName": {
                         "value": "[parameters('Component VM Host Name')]"
+                    },
+                    "pvwaUrl": {
+                        "value": "[parameters('Password Vault Web Access FQDN')]"
                     },
                     "adminUsername": {
                         "value": "[parameters('Component VM Admin User')]"
@@ -151,7 +162,7 @@
                         "value": "[parameters('Vault Private IP')]"
                     },
                     "Guid": {
-                        "value": "[reference('GuidGenerator').outputs.guid0.value]"
+                        "value": "[reference('GuidGenerator').outputs.guid.value]"
                     }
                 }
             },
@@ -226,7 +237,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\cyberark\\componentregistration.ps1', ' ', parameters('Component To Install'), ' ', parameters('Vault Private IP'), ' ',  parameters('Vault Admin User'),' ',parameters('Vault Admin Password'))]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\cyberark\\componentregistration.ps1', ' ', parameters('Component To Install'), ' ', parameters('Vault Private IP'), ' ',  parameters('Vault Admin User'),' ', parameters('Vault Admin Password'),' ', parameters('Password Vault Web Access FQDN'))]"
                 }
             },
             "dependsOn": [

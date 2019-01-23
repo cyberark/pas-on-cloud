@@ -10,4 +10,3 @@ CyberArk PAS AzureRM templates were created to automate the deployment process o
 
 # Sharing CyberArk PAS Images
 To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.
-

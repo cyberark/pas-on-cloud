@@ -282,8 +282,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "StoreAdminPassword": {
@@ -301,8 +300,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CleanMasterPassword": {
@@ -431,13 +429,11 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "CopyfileFromBucketLambda"
+            "LambdaDeployRole"
          ]
       },
       "VaultMachine": {
          "Type": "AWS::EC2::Instance",
-         "Condition": "",
          "Properties": {
             "Tags": [{
                "Key": "Name",
@@ -798,9 +794,6 @@
             }
          },
          "DependsOn": [
-            "StoreMasterPassword",
-            "StoreAdminPassword",
-            "StoreDRPassword",
             "CopyLicenseToBucket",
             "CopyRecpubToBucket"
          ],
@@ -1181,15 +1174,11 @@
                }
             }
          },
-         "DependsOn": [
-            "VaultMachine"
-         ],
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT15M"
             }
          },
-         "Condition": "",
          "DeletionPolicy": "Retain"
       },
       "StoreDRPassword": {
@@ -1207,8 +1196,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "VaultInstancesProfile": {
@@ -1272,6 +1260,346 @@
             }]
          },
          "Condition": "EULACondition",
+         "DeletionPolicy": "Retain"
+      },
+      "PVWAMachine": {
+         "Type": "AWS::EC2::Instance",
+         "Properties": {
+            "Tags": [{
+               "Key": "Name",
+               "Value": {
+                  "Ref": "PVWAInstanceName"
+               }
+            }],
+            "SecurityGroupIds": {
+               "Ref": "PVWAInstanceSecurityGroups"
+            },
+            "SubnetId": {
+               "Ref": "PVWAInstanceSubnetId"
+            },
+            "ImageId": {
+               "Fn::FindInMap": [
+                  "RegionMap",
+                  {
+                     "Ref": "AWS::Region"
+                  },
+                  "PVWA"
+               ]
+            },
+            "InstanceType": {
+               "Ref": "PVWAInstanceType"
+            },
+            "UserData": {
+               "Fn::Base64": {
+                  "Fn::Join": [
+                     "", [
+                        "<script>\n",
+                        "cfn-init.exe -v -s ",
+                        {
+                           "Ref": "AWS::StackId"
+                        },
+                        " -r PVWAMachine",
+                        " --region ",
+                        {
+                           "Ref": "AWS::Region"
+                        },
+                        "\n",
+                        "cfn-signal.exe -e %ERRORLEVEL% ",
+                        "  --stack ",
+                        {
+                           "Ref": "AWS::StackId"
+                        },
+                        "  --resource PVWAMachine",
+                        "  --region ",
+                        {
+                           "Ref": "AWS::Region"
+                        },
+                        "\n",
+                        "</script>"
+                     ]
+                  ]
+               }
+            },
+            "KeyName": {
+               "Ref": "KeyName"
+            },
+            "IamInstanceProfile": {
+               "Ref": "ComponentInstanceProfile"
+            }
+         },
+         "Metadata": {
+            "AWS::CloudFormation::Init": {
+               "config": {
+                  "files": {
+                     "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json": {
+                        "content": {
+                           "Fn::Join": [
+                              "", [
+                                 "{",
+                                 "  \"IsEnabled\" : true,",
+                                 "  \"EngineConfiguration\" : {",
+                                 "    \"PollInterval\" : \"00:00:05\",",
+                                 "    \"Components\" : [",
+                                 "    {",
+                                 "      \"Id\" : \"EC2ConfigLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"LogDirectoryPath\": \"C:\\\\Program Files\\\\Amazon\\\\Ec2ConfigService\\\\Logs\",",
+                                 "        \"TimestampFormat\": \"yyyy-MM-ddTHH:mm:ss.fffZ:\",",
+                                 "        \"Encoding\": \"ASCII\",",
+                                 "        \"Filter\": \"EC2ConfigLog.txt\",",
+                                 "        \"CultureName\": \"en-US\",",
+                                 "        \"TimeZoneKind\": \"UTC\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CfnInitLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                 "        \"Encoding\": \"ASCII\",",
+                                 "        \"Filter\": \"cfn-init.log\",",
+                                 "        \"CultureName\": \"en-US\",",
+                                 "        \"TimeZoneKind\": \"Local\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CfnInitCmdLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                 "        \"Encoding\": \"ASCII\",",
+                                 "        \"Filter\": \"cfn-init-cmd.log\",",
+                                 "        \"CultureName\": \"en-US\",",
+                                 "        \"TimeZoneKind\": \"Local\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CfnWireLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
+                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
+                                 "        \"Encoding\": \"ASCII\",",
+                                 "        \"Filter\": \"cfn-wire.log\",",
+                                 "        \"CultureName\": \"en-US\",",
+                                 "        \"TimeZoneKind\": \"Local\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CloudWatchEC2ConfigLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"AccessKey\": \"\",",
+                                 "        \"SecretKey\": \"\",",
+                                 {
+                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                 },
+                                 {
+                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                 },
+                                 "        \"LogStream\": \"{instance_id}/EC2ConfigLog\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CloudWatchCfnInitLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"AccessKey\": \"\",",
+                                 "        \"SecretKey\": \"\",",
+                                 {
+                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                 },
+                                 {
+                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                 },
+                                 "        \"LogStream\": \"{instance_id}/CfnInitLog\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CloudWatchCfnInitCmdLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"AccessKey\": \"\",",
+                                 "        \"SecretKey\": \"\",",
+                                 {
+                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                 },
+                                 {
+                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                 },
+                                 "        \"LogStream\": \"{instance_id}/CfnInitCmdLog\"",
+                                 "      }",
+                                 "    },",
+                                 "    {",
+                                 "      \"Id\": \"CloudWatchCfnWireLog\",",
+                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
+                                 "      \"Parameters\": {",
+                                 "        \"AccessKey\": \"\",",
+                                 "        \"SecretKey\": \"\",",
+                                 {
+                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
+                                 },
+                                 {
+                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
+                                 },
+                                 "        \"LogStream\": \"{instance_id}/CfnWireLog\"",
+                                 "      }",
+                                 "    }],",
+                                 "    \"Flows\": {",
+                                 "      \"Flows\": [",
+                                 "        \"EC2ConfigLog,CloudWatchEC2ConfigLog\",",
+                                 "        \"CfnInitLog,CloudWatchCfnInitLog\",",
+                                 "        \"CfnInitCmdLog,CloudWatchCfnInitCmdLog\",",
+                                 "        \"CfnWireLog,CloudWatchCfnWireLog\"",
+                                 "      ]",
+                                 "    }",
+                                 "  }",
+                                 "}"
+                              ]
+                           ]
+                        }
+                     },
+                     "C:\\deploy.py": {
+                        "content": {
+                           "Fn::Join": [
+                              "", [
+                                 "import boto3\n",
+                                 "import sys\n",
+                                 "import subprocess\n",
+                                 "import urllib2\n",
+                                 "\n",
+                                 "def fetchPassword(name):\n",
+                                 "\tssmClient = boto3.client('ssm', region_name='",
+                                 {
+                                    "Ref": "AWS::Region"
+                                 },
+                                 "')\n",
+                                 "\tobjectResponse = ssmClient.get_parameter(\n",
+                                 "\t\tName = name,\n",
+                                 "\t\tWithDecryption = True\n",
+                                 "\t)\n",
+                                 "\treturn objectResponse['Parameter']['Value']\n",
+                                 "\n",
+                                 "adminp = fetchPassword('",
+                                 {
+                                    "Fn::GetAtt": [
+                                       "StoreAdminPassword",
+                                       "SsmId"
+                                    ]
+                                 },
+                                 "')\n",
+                                 "\n",
+                                 "callArray = [",
+                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
+                                 "'PVWA',",
+                                 "'/accepteula',",
+                                 "'Yes',",
+                                 "'/vaultip',",
+                                 "'",
+                                 {
+                                    "Fn::GetAtt": [
+                                       "VaultMachine",
+                                       "PrivateIp"
+                                    ]
+                                 },
+                                 ",",
+                                 {
+                                    "Fn::GetAtt": [
+                                       "VaultDRMachine",
+                                       "PrivateIp"
+                                    ]
+                                 },
+                                 "',",
+                                 "'/vaultport',",
+                                 "'1858',",
+                                 "'/vaultuser',",
+                                 "'Administrator',",
+                                 "'/vaultpassword',",
+                                 "adminp",
+                                 "]\n",
+                                 "inputHostname='",
+                                 {"Ref":"PVWAHostName"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "else:\n",
+                                 "\tcallArray.append('/pvwaurl')\n",
+                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
+                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+                              ]
+                           ]
+                        }
+                     }
+                  },
+                  "services": {
+                     "windows": {
+                        "AmazonSSMAgent": {
+                           "enabled": "true",
+                           "ensureRunning": "true",
+                           "files": [
+                              "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"
+                           ]
+                        }
+                     }
+                  },
+                  "commands": {
+                     "01-restartSSM": {
+                        "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
+                        "waitAfterCompletion": "30",
+                        "ignoreErrors": "true"
+                     },
+                     "02-deploy": {
+                        "command": "C:\\Python27\\python.exe C:\\deploy.py",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "03-startAppPool": {
+                        "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "04-CSTserviceConfig": {
+                        "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "05-CSTserviceStart": {
+                        "command": "sc start \"CyberArk Scheduled Tasks\"",
+                        "waitAfterCompletion": "0",
+                        "ignoreErrors": "false"
+                     },
+                     "99-SignalCompletion": {
+                        "command": {
+                           "Fn::Join": [
+                              "", [
+                                 "cfn-signal.exe -e %ERRORLEVEL% ",
+                                 "         --stack ",
+                                 {
+                                    "Ref": "AWS::StackId"
+                                 },
+                                 "         --resource PVWAMachine ",
+                                 "         --region ",
+                                 {
+                                    "Ref": "AWS::Region"
+                                 }
+                              ]
+                           ]
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "CreationPolicy": {
+            "ResourceSignal": {
+               "Timeout": "PT15M"
+            }
+         },
          "DeletionPolicy": "Retain"
       },
       "CPMMachine": {
@@ -1602,340 +1930,7 @@
             }
          },
          "DependsOn": [
-            "VaultDRMachine"
-         ],
-         "Condition": "",
-         "CreationPolicy": {
-            "ResourceSignal": {
-               "Timeout": "PT15M"
-            }
-         },
-         "DeletionPolicy": "Retain"
-      },
-      "PVWAMachine": {
-         "Type": "AWS::EC2::Instance",
-         "Properties": {
-            "Tags": [{
-               "Key": "Name",
-               "Value": {
-                  "Ref": "PVWAInstanceName"
-               }
-            }],
-            "SecurityGroupIds": {
-               "Ref": "PVWAInstanceSecurityGroups"
-            },
-            "SubnetId": {
-               "Ref": "PVWAInstanceSubnetId"
-            },
-            "ImageId": {
-               "Fn::FindInMap": [
-                  "RegionMap",
-                  {
-                     "Ref": "AWS::Region"
-                  },
-                  "PVWA"
-               ]
-            },
-            "InstanceType": {
-               "Ref": "PVWAInstanceType"
-            },
-            "UserData": {
-               "Fn::Base64": {
-                  "Fn::Join": [
-                     "", [
-                        "<script>\n",
-                        "cfn-init.exe -v -s ",
-                        {
-                           "Ref": "AWS::StackId"
-                        },
-                        " -r PVWAMachine",
-                        " --region ",
-                        {
-                           "Ref": "AWS::Region"
-                        },
-                        "\n",
-                        "cfn-signal.exe -e %ERRORLEVEL% ",
-                        "  --stack ",
-                        {
-                           "Ref": "AWS::StackId"
-                        },
-                        "  --resource PVWAMachine",
-                        "  --region ",
-                        {
-                           "Ref": "AWS::Region"
-                        },
-                        "\n",
-                        "</script>"
-                     ]
-                  ]
-               }
-            },
-            "KeyName": {
-               "Ref": "KeyName"
-            },
-            "IamInstanceProfile": {
-               "Ref": "ComponentInstanceProfile"
-            }
-         },
-         "Metadata": {
-            "AWS::CloudFormation::Init": {
-               "config": {
-                  "files": {
-                     "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json": {
-                        "content": {
-                           "Fn::Join": [
-                              "", [
-                                 "{",
-                                 "  \"IsEnabled\" : true,",
-                                 "  \"EngineConfiguration\" : {",
-                                 "    \"PollInterval\" : \"00:00:05\",",
-                                 "    \"Components\" : [",
-                                 "    {",
-                                 "      \"Id\" : \"EC2ConfigLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"LogDirectoryPath\": \"C:\\\\Program Files\\\\Amazon\\\\Ec2ConfigService\\\\Logs\",",
-                                 "        \"TimestampFormat\": \"yyyy-MM-ddTHH:mm:ss.fffZ:\",",
-                                 "        \"Encoding\": \"ASCII\",",
-                                 "        \"Filter\": \"EC2ConfigLog.txt\",",
-                                 "        \"CultureName\": \"en-US\",",
-                                 "        \"TimeZoneKind\": \"UTC\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CfnInitLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
-                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
-                                 "        \"Encoding\": \"ASCII\",",
-                                 "        \"Filter\": \"cfn-init.log\",",
-                                 "        \"CultureName\": \"en-US\",",
-                                 "        \"TimeZoneKind\": \"Local\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CfnInitCmdLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
-                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
-                                 "        \"Encoding\": \"ASCII\",",
-                                 "        \"Filter\": \"cfn-init-cmd.log\",",
-                                 "        \"CultureName\": \"en-US\",",
-                                 "        \"TimeZoneKind\": \"Local\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CfnWireLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"LogDirectoryPath\": \"C:\\\\cfn\\\\log\",",
-                                 "        \"TimestampFormat\": \"yyyy-MM-dd HH:mm:ss,fff\",",
-                                 "        \"Encoding\": \"ASCII\",",
-                                 "        \"Filter\": \"cfn-wire.log\",",
-                                 "        \"CultureName\": \"en-US\",",
-                                 "        \"TimeZoneKind\": \"Local\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CloudWatchEC2ConfigLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"AccessKey\": \"\",",
-                                 "        \"SecretKey\": \"\",",
-                                 {
-                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
-                                 },
-                                 {
-                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
-                                 },
-                                 "        \"LogStream\": \"{instance_id}/EC2ConfigLog\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CloudWatchCfnInitLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"AccessKey\": \"\",",
-                                 "        \"SecretKey\": \"\",",
-                                 {
-                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
-                                 },
-                                 {
-                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
-                                 },
-                                 "        \"LogStream\": \"{instance_id}/CfnInitLog\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CloudWatchCfnInitCmdLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"AccessKey\": \"\",",
-                                 "        \"SecretKey\": \"\",",
-                                 {
-                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
-                                 },
-                                 {
-                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
-                                 },
-                                 "        \"LogStream\": \"{instance_id}/CfnInitCmdLog\"",
-                                 "      }",
-                                 "    },",
-                                 "    {",
-                                 "      \"Id\": \"CloudWatchCfnWireLog\",",
-                                 "      \"FullName\": \"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch\",",
-                                 "      \"Parameters\": {",
-                                 "        \"AccessKey\": \"\",",
-                                 "        \"SecretKey\": \"\",",
-                                 {
-                                    "Fn::Sub": "        \"Region\": \"${AWS::Region}\","
-                                 },
-                                 {
-                                    "Fn::Sub": "        \"LogGroup\": \"${LogGroup}\","
-                                 },
-                                 "        \"LogStream\": \"{instance_id}/CfnWireLog\"",
-                                 "      }",
-                                 "    }],",
-                                 "    \"Flows\": {",
-                                 "      \"Flows\": [",
-                                 "        \"EC2ConfigLog,CloudWatchEC2ConfigLog\",",
-                                 "        \"CfnInitLog,CloudWatchCfnInitLog\",",
-                                 "        \"CfnInitCmdLog,CloudWatchCfnInitCmdLog\",",
-                                 "        \"CfnWireLog,CloudWatchCfnWireLog\"",
-                                 "      ]",
-                                 "    }",
-                                 "  }",
-                                 "}"
-                              ]
-                           ]
-                        }
-                     },
-                     "C:\\deploy.py": {
-                        "content": {
-                           "Fn::Join": [
-                              "", [
-                                 "import boto3\n",
-                                 "import sys\n",
-                                 "import subprocess\n",
-                                 "\n",
-                                 "def fetchPassword(name):\n",
-                                 "\tssmClient = boto3.client('ssm', region_name='",
-                                 {
-                                    "Ref": "AWS::Region"
-                                 },
-                                 "')\n",
-                                 "\tobjectResponse = ssmClient.get_parameter(\n",
-                                 "\t\tName = name,\n",
-                                 "\t\tWithDecryption = True\n",
-                                 "\t)\n",
-                                 "\treturn objectResponse['Parameter']['Value']\n",
-                                 "\n",
-                                 "adminp = fetchPassword('",
-                                 {
-                                    "Fn::GetAtt": [
-                                       "StoreAdminPassword",
-                                       "SsmId"
-                                    ]
-                                 },
-                                 "')\n",
-                                 "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PVWA',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
-                                 {
-                                    "Fn::GetAtt": [
-                                       "VaultMachine",
-                                       "PrivateIp"
-                                    ]
-                                 },
-                                 ",",
-                                 {
-                                    "Fn::GetAtt": [
-                                       "VaultDRMachine",
-                                       "PrivateIp"
-                                    ]
-                                 },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
-                                 "adminp",
-                                 "]\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                              ]
-                           ]
-                        }
-                     }
-                  },
-                  "services": {
-                     "windows": {
-                        "AmazonSSMAgent": {
-                           "enabled": "true",
-                           "ensureRunning": "true",
-                           "files": [
-                              "C:\\Program Files\\Amazon\\SSM\\Plugins\\awsCloudWatch\\AWS.EC2.Windows.CloudWatch.json"
-                           ]
-                        }
-                     }
-                  },
-                  "commands": {
-                     "01-restartSSM": {
-                        "command": "powershell.exe -Command \"Restart-Service AmazonSSMAgent\"",
-                        "waitAfterCompletion": "30",
-                        "ignoreErrors": "true"
-                     },
-                     "02-deploy": {
-                        "command": "C:\\Python27\\python.exe C:\\deploy.py",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "03-startAppPool": {
-                        "command": "powershell -command \"& {&'Import-Module' WebAdministration}\"; \"& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}\"; \"& {&'Set-ItemProperty' -Path IIS:\\AppPools\\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}\"",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "04-CSTserviceConfig": {
-                        "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "05-CSTserviceStart": {
-                        "command": "sc start \"CyberArk Scheduled Tasks\"",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "99-SignalCompletion": {
-                        "command": {
-                           "Fn::Join": [
-                              "", [
-                                 "cfn-signal.exe -e %ERRORLEVEL% ",
-                                 "         --stack ",
-                                 {
-                                    "Ref": "AWS::StackId"
-                                 },
-                                 "         --resource PVWAMachine ",
-                                 "         --region ",
-                                 {
-                                    "Ref": "AWS::Region"
-                                 }
-                              ]
-                           ]
-                        }
-                     }
-                  }
-               }
-            }
-         },
-         "DependsOn": [
-            "CPMMachine"
+            "PVWAMachine"
          ],
          "CreationPolicy": {
             "ResourceSignal": {
@@ -2264,7 +2259,7 @@
             }
          },
          "DependsOn": [
-            "PVWAMachine"
+            "CPMMachine"
          ],
          "CreationPolicy": {
             "ResourceSignal": {
@@ -2497,7 +2492,7 @@
                   },
                   "services": {
                      "sysvinit": {
-                        "awslogs": {
+                        "awslogsd": {
                            "enabled": "true",
                            "ensureRunning": "true",
                            "files": [
@@ -2588,7 +2583,6 @@
          "DependsOn": [
             "PSMMachine"
          ],
-         "Condition": "",
          "CreationPolicy": {
             "ResourceSignal": {
                "Timeout": "PT10M"
@@ -2871,6 +2865,10 @@
          "Type": "AWS::EC2::Subnet::Id",
          "Description": "Select the Subnet Id where the PVWA instance will reside."
       },
+      "PVWAHostName":{
+         "Type":"String",
+         "Description":"IP or FQDN of PVWA server"
+      },
       "PSMInstanceName": {
          "Type": "String",
          "Description": "Enter a name for the PSM instance.",
@@ -3021,7 +3019,8 @@
                   "PVWAInstanceName",
                   "PVWAInstanceType",
                   "PVWAInstanceSecurityGroups",
-                  "PVWAInstanceSubnetId"
+                  "PVWAInstanceSubnetId",
+                  "PVWAHostName"
                ]
             },
             {
@@ -3120,6 +3119,9 @@
             "PVWAInstanceSubnetId": {
                "default": "PVWA Instance Subnet Id"
             },
+            "PVWAHostName":{
+               "default":"PVWA FQDN (Optional)"
+            },
             "PSMInstanceName": {
                "default": "PSM Instance Name"
             },
@@ -3150,120 +3152,105 @@
    "Mappings": {
       "RegionMap": {
          "us-east-1": {
-            "Vault": "ami-0bdb328b095d92cb3",
-            "Components": "ami-0eb577132525b57f4",
-            "CPM": "ami-0ad1c31ced398b934",
-            "PVWA": "ami-02fce154ef8016de3",
-            "PSM": "ami-080d06894e92eea12",
-            "PSMP": "ami-06f817f655ef715df"
+            "Vault": "ami-018dcc30a5b6d0974",
+            "CPM": "ami-07646c6185679e5d5",
+            "PVWA": "ami-000f4626f01e06d93",
+            "PSM": "ami-0f53dec622cdc03c2",
+            "PSMP": "ami-0946eb0afc95a102a"
          },
          "us-east-2":{
-            "Vault":"ami-01063f01d37d1810a",
-            "Components":"ami-0ddb4752552905b4a",
-            "CPM":"ami-03bbcbcee3dcca1fa",
-            "PVWA":"ami-09fb34341d3d9d248",
-            "PSM":"ami-0b5f6d32ca91a6099",
-            "PSMP":"ami-0c835826d25a3f17a"
+            "Vault":"ami-04ecb6e7d7da6ae1a",
+            "CPM":"ami-034b278d3d9bc9312",
+            "PVWA":"ami-066c95d45a872adf7",
+            "PSM":"ami-09abf16cb5b34d8bf",
+            "PSMP":"ami-01f73800cc27a5151"
          },
          "eu-west-2": {
-            "Vault": "ami-05641511bba5a4eda",
-            "Components": "ami-0f0036b3b31c43091",
-            "CPM": "ami-04e350c48b0a8551b",
-            "PVWA": "ami-0ce278b70934a04e0",
-            "PSM": "ami-02cca49d137859437",
-            "PSMP": "ami-04350f38e73b92609"
+            "Vault": "ami-0ce0e830f7fddb65f",
+            "CPM": "ami-0d8cb6cf3bd0d3a83",
+            "PVWA": "ami-0d57d94bdabe94d24",
+            "PSM": "ami-073e2cf7e9414193f",
+            "PSMP": "ami-09f095e015b0ddbe7"
          },
          "us-west-1": {
-            "Vault": "ami-0b812b1accf252c0a",
-            "Components": "ami-04765547cfc09c8b2",
-            "CPM": "ami-0724ef8981fd9c2f4",
-            "PVWA": "ami-05e09caab5e41ea5f",
-            "PSM": "ami-042622c1f872ad13b",
-            "PSMP": "ami-09a06889a5c00ad92"
+            "Vault": "ami-04fd449619f121d21",
+            "CPM": "ami-044ab79beceab925f",
+            "PVWA": "ami-05e7a9db745c4b359",
+            "PSM": "ami-04eb7094f1a37eac6",
+            "PSMP": "ami-0493e7e583195438d"
          },
          "us-west-2": {
-            "Vault": "ami-0f04898678b73bd77",
-            "Components": "ami-0954cba950ceeece4",
-            "CPM": "ami-0a265ee8d9c6acfce",
-            "PVWA": "ami-0b3e5dbfb96c72c78",
-            "PSM": "ami-07155e5e56a106f34",
-            "PSMP": "ami-0b38eb39bd5bcc747"
+            "Vault": "ami-0482128ff214efa3c",
+            "CPM": "ami-04c788e6c4f10cedc",
+            "PVWA": "ami-01dc049920d5a3037",
+            "PSM": "ami-03eba5301a0b5aaae",
+            "PSMP": "ami-056082a2a9489e6cf"
          },
          "ca-central-1": {
-            "Vault": "ami-056d61f31b74d44c4",
-            "Components": "ami-0fcb8e570b9edc50a",
-            "CPM": "ami-00887d0a8edaf992f",
-            "PVWA": "ami-0c5d76ef118364a2c",
-            "PSM": "ami-04208307d1837a58c",
-            "PSMP": "ami-0192613afdebf692e"
+            "Vault": "ami-0f1c14a1e26c23d90",
+            "CPM": "ami-098de3eef3905577b",
+            "PVWA": "ami-0fdc699dfae652962",
+            "PSM": "ami-0fb1edb587bd1e741",
+            "PSMP": "ami-08675faf83e6ce39f"
          },
          "eu-west-1": {
-            "Vault": "ami-0525cdc51289cd9b5",
-            "Components": "ami-043d7490a3e00e76f",
-            "CPM": "ami-0a0da01db3459b7a9",
-            "PVWA": "ami-0bf59131d45da4a78",
-            "PSM": "ami-028df89fde61999c5",
-            "PSMP": "ami-0bbcf2e7738e2ea42"
+            "Vault": "ami-051d1f50baad27563",
+            "CPM": "ami-0e27c2bdcf84a03b9",
+            "PVWA": "ami-08150b4bb4367c392",
+            "PSM": "ami-0110c69be4954b393",
+            "PSMP": "ami-0e2b35870f3ecad74"
          },
          "eu-central-1": {
-            "Vault": "ami-05891be2c8d6ead9e",
-            "Components": "ami-0a06f3d135fde3b1d",
-            "CPM": "ami-04f543e022ff41a5c",
-            "PVWA": "ami-03747a53a4cb95e70",
-            "PSM": "ami-06d5a0718887134cb",
-            "PSMP": "ami-0245f08e3f5ddd962"
+            "Vault": "ami-0035ee5dd5c015b7e",
+            "CPM": "ami-0628403c07b77590f",
+            "PVWA": "ami-0a3e1be676ef44e48",
+            "PSM": "ami-0bab53dd300069d35",
+            "PSMP": "ami-01d74946249f41943"
          },
          "ap-southeast-1": {
-            "Vault": "ami-0f558cec97310a0b3",
-            "Components": "ami-0f54d5e2ca49148ae",
-            "CPM": "ami-07872ad14eab9b41e",
-            "PVWA": "ami-07db3a925460be68c",
-            "PSM": "ami-06fa09d6bf21cebd2",
-            "PSMP": "ami-032a30f70453ed6e2"
+            "Vault": "ami-031adce649324e09a",
+            "CPM": "ami-077e67c7bdd798675",
+            "PVWA": "ami-0b6c3c9c99e438862",
+            "PSM": "ami-0cf0219e12531d236",
+            "PSMP": "ami-01f1f464a17f7411d"
          },
          "ap-southeast-2": {
-            "Vault": "ami-08410f92b6f409946",
-            "Components": "ami-0324c53516d635296",
-            "CPM": "ami-0c82e582ee7fc1af5",
-            "PVWA": "ami-01badf83a378dd33f",
-            "PSM": "ami-01b2c651deff4c465",
-            "PSMP": "ami-01996d508cc3ad01e"
+            "Vault": "ami-0fb200c807bd5318f",
+            "CPM": "ami-0bb5d2951e58984c8",
+            "PVWA": "ami-050886d6a5a2f9c38",
+            "PSM": "ami-0f3a0d3c3ebc1f8b3",
+            "PSMP": "ami-04c019857dc357764"
          },
          "ap-northeast-2": {
-            "Vault": "ami-087ef4166adfaad09",
-            "Components": "ami-08192d9e5f3e6e237",
-            "CPM": "ami-04f3c43485e112b97",
-            "PVWA": "ami-0b0ac217aed80ba09",
-            "PSM": "ami-072bfa4eb24ea5834",
-            "PSMP": "ami-0e75ea356c747d9d8"
+            "Vault": "ami-0032c611dd75ecb35",
+            "CPM": "ami-0d33f439e18508b02",
+            "PVWA": "ami-02ae076b22524e2d4",
+            "PSM": "ami-029ee37bdfe5dc3c5",
+            "PSMP": "ami-0b168c85880d2b143"
          },
          "ap-northeast-1": {
-            "Vault": "ami-010ee2907f19b7693",
-            "Components": "ami-05c253a5445c1ac71",
-            "CPM": "ami-0ec3a7e6d161e03b2",
-            "PVWA": "ami-08f7e6570bbcb29a4",
-            "PSM": "ami-0cb997b32b044327d",
-            "PSMP": "ami-036f7e1f1ebe2ade7"
+            "Vault": "ami-0b0fd33a938a63b77",
+            "CPM": "ami-0fa03acc103baa8aa",
+            "PVWA": "ami-0b95329044ffe5205",
+            "PSM": "ami-033905bd5bbf5e711",
+            "PSMP": "ami-0053591c0cd12b08a"
          },
          "ap-south-1": {
-            "Vault": "ami-00a814931062df643",
-            "Components": "ami-07dfd1732772664ce",
-            "CPM": "ami-06e29819708ce6620",
-            "PVWA": "ami-0742f8c982c43ec65",
-            "PSM": "ami-0f586529c96a69e2d",
-            "PSMP": "ami-0024fdaf90b193d5a"
+            "Vault": "ami-056e46133acadbc37",
+            "CPM": "ami-015074a1966de6a3c",
+            "PVWA": "ami-0e211ed39f401cb44",
+            "PSM": "ami-08bce052d7d1effb8",
+            "PSMP": "ami-0ddf98873c52bc4de"
          },
          "sa-east-1": {
-            "Vault": "ami-0c0c4d18add1e27ca",
-            "Components": "ami-0b611f7a9086fb604",
-            "CPM": "ami-0857e40efb6f80bad",
-            "PVWA": "ami-0cfafc55956df4498",
-            "PSM": "ami-054b1dc1fb294ec0e",
-            "PSMP": "ami-09374fa8a640ae568"
+            "Vault": "ami-093c3ca173bc1290c",
+            "CPM": "ami-0b778d1037294a539",
+            "PVWA": "ami-086d821361c914e90",
+            "PSM": "ami-008f6fc3bd823cf0a",
+            "PSMP": "ami-0057b29abef2b981b"
          },
          "us-gov-west-1": {
             "Vault": "ami-73482912",
-            "Components": "ami-a94425c8",
             "CPM": "ami-835b3ae2",
             "PVWA": "ami-4d5f3e2c",
             "PSM": "ami-e4a0c185",

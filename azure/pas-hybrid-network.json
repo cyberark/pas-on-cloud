@@ -199,13 +199,13 @@
                         }
                     },
                     {
-                        "name": "AllowStorageServiceOut",
+                        "name": "AllowServicesOut",
                         "properties": {
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "443",
                             "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
-                            "destinationAddressPrefix": "Storage",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 140,
                             "direction": "Outbound",
@@ -336,13 +336,13 @@
                         }
                     },
                     {
-                        "name": "AllowStorageServiceOut",
+                        "name": "AllowServicesOut",
                         "properties": {
                             "protocol": "*",
                             "sourcePortRange": "*",
                             "destinationPortRange": "443",
                             "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
-                            "destinationAddressPrefix": "Storage",
+                            "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 110,
                             "direction": "Outbound",
@@ -462,6 +462,7 @@
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
             ]
         }
