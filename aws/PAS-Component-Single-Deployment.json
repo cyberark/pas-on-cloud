@@ -2142,120 +2142,90 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-018dcc30a5b6d0974",
-            "Components":"ami-045ac774aa3e10c5f",
             "CPM":"ami-07646c6185679e5d5",
             "PVWA":"ami-000f4626f01e06d93",
             "PSM":"ami-0f53dec622cdc03c2",
             "PSMP":"ami-0946eb0afc95a102a"
          },
          "us-east-2":{
-            "Vault":"ami-04ecb6e7d7da6ae1a",
-            "Components":"ami-04393fd84b606f08c",
             "CPM":"ami-034b278d3d9bc9312",
             "PVWA":"ami-066c95d45a872adf7",
             "PSM":"ami-09abf16cb5b34d8bf",
             "PSMP":"ami-01f73800cc27a5151"
          },
          "eu-west-2":{
-            "Vault":"ami-0ce0e830f7fddb65f",
-            "Components":"ami-0e6d457e0c82e4e0f",
             "CPM":"ami-0d8cb6cf3bd0d3a83",
             "PVWA":"ami-0d57d94bdabe94d24",
             "PSM":"ami-073e2cf7e9414193f",
             "PSMP":"ami-09f095e015b0ddbe7"
          },
          "us-west-1":{
-            "Vault":"ami-04fd449619f121d21",
-            "Components":"ami-008eccda5fd564f2d",
             "CPM":"ami-044ab79beceab925f",
             "PVWA":"ami-05e7a9db745c4b359",
             "PSM":"ami-04eb7094f1a37eac6",
             "PSMP":"ami-0493e7e583195438d"
          },
          "us-west-2":{
-            "Vault":"ami-0482128ff214efa3c",
-            "Components":"ami-0aae181239421ece6",
             "CPM":"ami-04c788e6c4f10cedc",
             "PVWA":"ami-01dc049920d5a3037",
             "PSM":"ami-03eba5301a0b5aaae",
             "PSMP":"ami-056082a2a9489e6cf"
          },
          "ca-central-1":{
-            "Vault":"ami-0f1c14a1e26c23d90",
-            "Components":"ami-0a7ca706d28bf5cf6",
             "CPM":"ami-098de3eef3905577b",
             "PVWA":"ami-0fdc699dfae652962",
             "PSM":"ami-0fb1edb587bd1e741",
             "PSMP":"ami-08675faf83e6ce39f"
          },
          "eu-west-1":{
-            "Vault":"ami-051d1f50baad27563",
-            "Components":"ami-05bd23dc71f83cd9f",
             "CPM":"ami-0e27c2bdcf84a03b9",
             "PVWA":"ami-08150b4bb4367c392",
             "PSM":"ami-0110c69be4954b393",
             "PSMP":"ami-0e2b35870f3ecad74"
          },
          "eu-central-1":{
-            "Vault":"ami-0035ee5dd5c015b7e",
-            "Components":"ami-0aab0273ca8e4d0fc",
             "CPM":"ami-0628403c07b77590f",
             "PVWA":"ami-0a3e1be676ef44e48",
             "PSM":"ami-0bab53dd300069d35",
             "PSMP":"ami-01d74946249f41943"
          },
          "ap-southeast-1":{
-            "Vault":"ami-031adce649324e09a",
-            "Components":"ami-07171740671e54428",
             "CPM":"ami-077e67c7bdd798675",
             "PVWA":"ami-0b6c3c9c99e438862",
             "PSM":"ami-0cf0219e12531d236",
             "PSMP":"ami-01f1f464a17f7411d"
          },
          "ap-southeast-2":{
-            "Vault":"ami-0fb200c807bd5318f",
-            "Components":"ami-042707735c10431eb",
             "CPM":"ami-0bb5d2951e58984c8",
             "PVWA":"ami-050886d6a5a2f9c38",
             "PSM":"ami-0f3a0d3c3ebc1f8b3",
             "PSMP":"ami-04c019857dc357764"
          },
          "ap-northeast-2":{
-            "Vault":"ami-0032c611dd75ecb35",
-            "Components":"ami-014b7d22f3ea64e9b",
             "CPM":"ami-0d33f439e18508b02",
             "PVWA":"ami-02ae076b22524e2d4",
             "PSM":"ami-029ee37bdfe5dc3c5",
             "PSMP":"ami-0b168c85880d2b143"
          },
          "ap-northeast-1":{
-            "Vault":"ami-0b0fd33a938a63b77",
-            "Components":"ami-0b13839c1f2bba3ef",
             "CPM":"ami-0fa03acc103baa8aa",
             "PVWA":"ami-0b95329044ffe5205",
             "PSM":"ami-033905bd5bbf5e711",
             "PSMP":"ami-0053591c0cd12b08a"
          },
          "ap-south-1":{
-            "Vault":"ami-056e46133acadbc37",
-            "Components":"ami-01fee6c8f11d04b21",
             "CPM":"ami-015074a1966de6a3c",
             "PVWA":"ami-0e211ed39f401cb44",
             "PSM":"ami-08bce052d7d1effb8",
             "PSMP":"ami-0ddf98873c52bc4de"
          },
          "sa-east-1":{
-            "Vault":"ami-093c3ca173bc1290c",
-            "Components":"ami-090524bb9bd3c0cc2",
             "CPM":"ami-0b778d1037294a539",
             "PVWA":"ami-086d821361c914e90",
             "PSM":"ami-008f6fc3bd823cf0a",
             "PSMP":"ami-0057b29abef2b981b"
          },
          "us-gov-west-1": {
-            "Vault": "ami-73482912",
-            "Components": "ami-a94425c8",
             "CPM": "ami-835b3ae2",
             "PVWA": "ami-4d5f3e2c",
             "PSM": "ami-e4a0c185",
