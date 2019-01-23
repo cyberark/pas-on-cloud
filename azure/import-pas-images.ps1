@@ -22,7 +22,7 @@ PARAM(
 )
  
 #Set variables
-$release = "v10.6"
+$release = "v10.7"
 $storageName = "cyberarkimages"
 $containerName = "cyberarkimages"
 $cpmDestBlob = "pas-cpm-$release.vhd"
