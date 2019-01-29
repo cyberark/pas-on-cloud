@@ -561,7 +561,7 @@
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "*",
-              "destinationPortRange": "1858",
+              "destinationPortRange": "443",
               "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
               "destinationAddressPrefix": "[parameters('Web Subnet CIDR')]",
               "access": "Allow",
