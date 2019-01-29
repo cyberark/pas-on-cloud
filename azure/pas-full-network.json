@@ -721,6 +721,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
       ]
     },
@@ -770,7 +771,8 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Components_Subnet_name'))]"
       ],
       "comments": "This is the peering from Vault VNET to Components VNET"
     },
@@ -781,7 +783,9 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Components_Subnet_name'))]"
+
       ],
       "comments": "This is the peering from Components VNET to Vault VNET",
       "properties": {
@@ -840,8 +844,10 @@
       "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('virtualNetworkPeerings_Components_VaultDR_Peering_name'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Components_Subnet_name'))]"
+
       ],
       "comments": "This is the peering from Components VNET to VaultDR VNET",
       "properties": {
@@ -860,8 +866,10 @@
       "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_VaultDR_Components_Peering_name'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Web_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Components_Vnet_name'), variables('subnets_Components_Subnet_name'))]"
+
       ],
       "comments": "This is the peering from VaultDR VNET to Components VNET",
       "properties": {
