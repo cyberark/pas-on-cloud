@@ -1,0 +1,1056 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Vault VNET CIDR": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/24",
+            "metadata": {
+                "description": "IPv4 address range for the Vault VNET"
+            }
+        },
+		"Vault Main Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.0.1.0/28",
+            "metadata": {
+                "description": "IPv4 address range for the main Vault subnet"
+            }
+        },
+		"Vault DR VNET CIDR": {
+            "type": "string",
+            "defaultValue": "10.0.2.0/24",
+            "metadata": {
+                "description": "IPv4 address range for the Vault VNET"
+            }
+        },
+        "Vault DR Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.0.2.0/28",
+            "metadata": {
+                "description": "IPv4 address range for the Vault DR subnet"
+            }
+        },
+        "Components VNET CIDR": {
+            "type": "string",
+            "defaultValue": "10.10.0.0/16",
+            "metadata": {
+                "description": "IPv4 address range for the Components VNET"
+            }
+        },
+        "Web Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.10.1.0/26",
+            "metadata": {
+                "description": "IPv4 address range for the first private Components subnet"
+            }
+        },
+		"Components Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.10.2.0/26",
+            "metadata": {
+                "description": "IPv4 address range for the second private Components subnet"
+            }
+        },
+        "Components DR VNET CIDR": {
+            "type": "string",
+            "defaultValue": "10.100.0.0/16",
+            "metadata": {
+                "description": "IPv4 address range for the Components DR VNET"
+            }
+        },
+		"Web DR Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.100.1.0/24",
+            "metadata": {
+                "description": "IPv4 address range for the first private Components DR subnet"
+            }
+        },
+        "Components DR Subnet CIDR": {
+            "type": "string",
+            "defaultValue": "10.100.2.0/24",
+            "metadata": {
+                "description": "IPv4 address range for the second private Components DR subnet"
+            }
+        },
+        "User Access CIDR": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Allowed IPv4 address range for user access to CyberArk instances"
+            }
+        },
+        "Administrative Access CIDR": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Allowed IPv4 address range for Remote Desktop administrative access to CyberArk instances"
+            }
+        }
+    },
+    "variables": {
+        "virtualNetworks_Vault_Vnet_name": "Vault-Vnet",
+        "subnets_Vault_Subnet_name": "Vault-Subnet",
+        "networkSecurityGroups_NSG_Vault_name": "NSG-Vault",
+
+        "virtualNetworks_Vault_DR_Vnet_name": "Vault-DR-Vnet",
+        "subnets_Vault_DR_Subnet_name": "Vault-DR-Subnet",
+
+        "virtualNetworks_Components_Vnet_name": "Components-Vnet",
+        "subnets_Components_Subnet_name": "Components-Subnet",
+        "networkSecurityGroups_NSG_Components_name": "NSG-Components",
+        "subnets_Web_Subnet_name": "Web-Subnet",
+        "networkSecurityGroups_NSG_Web_name": "NSG-Web",
+
+        "virtualNetworks_Components_DR_Vnet_name": "Components-DR-Vnet",
+        "subnets_Components_DR_Subnet_name": "Components-DR-Subnet",
+        "subnets_Web_DR_Subnet_name": "Web-DR-Subnet",
+
+        "virtualNetworkPeerings_Vault_Components_Peering_name": "Vault-Components-Peering",
+        "virtualNetworkPeerings_Components_Vault_Peering_name": "Components-Vault-Peering",
+        "virtualNetworkPeerings_Vault_VaultDR_Peering_name": "Vault-VaultDR-Peering",
+		"virtualNetworkPeerings_ComponentsDR_VaultDR_Peering_name": "ComponentsDR-VaultDR-Peering",
+        "virtualNetworkPeerings_VaultDR_ComponentsDR_Peering_name": "VaultDR-ComponentsDR-Peering",
+
+        "LoadBalncerName": "PVWA-LB",
+        "publicIPAddressName": "PVWA-LB-PIP",
+        "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+        "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('LoadBalncerName'))]",
+        "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+        "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/BackendPool1')]",
+        "lbProbeID": "[concat(variables('lbID'),'/probes/tcpProbe')]",
+        "dnsNameforLBIP": "[toLower(concat('pvwalb', uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "publicIPAllocationMethod": "Static",
+              "dnsSettings": {
+                "domainNameLabel": "[variables('dnsNameforLBIP')]"
+              }
+            }
+          },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "name": "[variables('LoadBalncerName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
+            ],
+            "properties": {
+              "frontendIPConfigurations": [
+                {
+                  "name": "LoadBalancerFrontEnd",
+                  "properties": {
+                    "publicIPAddress": {
+                      "id": "[variables('publicIPAddressID')]"
+                    }
+                  }
+                }
+              ],
+              "backendAddressPools": [
+                {
+                  "name": "BackendPool1"
+                }
+              ],
+              "inboundNatRules": [
+              ],
+              "loadBalancingRules": [
+                {
+                  "name": "HTTPS-Rule",
+                  "properties": {
+                    "frontendIPConfiguration": {
+                      "id": "[variables('frontEndIPConfigID')]"
+                    },
+                    "backendAddressPool": {
+                      "id": "[variables('lbPoolID')]"
+                    },
+                    "protocol": "tcp",
+                    "frontendPort": 443,
+                    "backendPort": 443,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "probe": {
+                      "id": "[variables('lbProbeID')]"
+                    }
+                  }
+                }
+              ],
+              "probes": [
+                {
+                  "name": "tcpProbe",
+                  "properties": {
+                    "protocol": "Tcp",
+                    "port": 443,
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 2
+                  }
+                }
+              ]
+            }
+          },
+        {
+            "comments": "Network Security group for secondary components subnet",
+			"type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_NSG_Components_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "AllowRDPfromRDPGateway",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllIn",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "Allow1858VaultSubnetOut",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllOut",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ],
+                "defaultSecurityRules": [
+                    {
+                        "name": "DenyAllInBound",
+                        "properties": {
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllOutBound",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Vault Network Security group",
+			"type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_NSG_Vault_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Allow1858ComponentSubIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Components Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "Allow1858WebSubIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "Allow1858VaultDRIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Vault DR Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "AllowRDPfromRDPGateway",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllIn",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "Allow1858VaultDROut",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault DR Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllOut",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ],
+                "defaultSecurityRules": [
+                    {
+                        "name": "DenyAllInBound",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllOutBound",
+                        "properties": {
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Web Components Security Group - User facing",
+			"type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroups_NSG_Web_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "AllowHttpsIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "sourceAddressPrefix": "[parameters('User Access CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Web Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowSshIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[parameters('User Access CIDR')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowRdpIn",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[parameters('User Access CIDR')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "AllowRDPfromRDPGateway",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 140,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllIn",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowSshOut",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "AllowRdpOut",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "Allow1858VaultOut",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "1858",
+                            "sourceAddressPrefix": "[parameters('Web Subnet CIDR')]",
+                            "destinationAddressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "access": "Allow",
+                            "priority": 130,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+					{
+                        "name": "DenyAllOut",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 4096,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ],
+                "defaultSecurityRules": [
+                    {
+                        "name": "DenyAllInBound",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllOutBound",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworks_Components_DR_Vnet_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('Components DR VNET CIDR')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Components-DR-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Components DR Subnet CIDR')]",
+                            "serviceEndpoints": []
+                        }
+                    },
+                    {
+                        "name": "Web-DR-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Web DR Subnet CIDR')]",
+                            "serviceEndpoints": []
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworks_Components_Vnet_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('Components VNET CIDR')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Web-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Web Subnet CIDR')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
+                            },
+                            "serviceEndpoints": []
+                        }
+                    },
+                    {
+                        "name": "Components-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Components Subnet CIDR')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+                            },
+                            "serviceEndpoints": []
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [
+                    {
+                        "name": "Components-Vault-Peering",
+                        "properties": {
+                            "remoteVirtualNetwork": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]"
+                            },
+                            "allowVirtualNetworkAccess": true,
+                            "allowForwardedTraffic": false,
+                            "allowGatewayTransit": false,
+                            "useRemoteGateways": false,
+                            "remoteAddressSpace": {
+                                "addressPrefixes": [
+                                    "[parameters('Vault VNET CIDR')]"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworks_Vault_DR_Vnet_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('Vault DR VNET CIDR')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Vault-DR-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Vault DR Subnet CIDR')]"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworks_Vault_Vnet_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('Vault VNET CIDR')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Vault-Subnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]"
+                            },
+                            "serviceEndpoints": []
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_DR_Vnet_name'), '/', variables('subnets_Components_DR_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "[parameters('Components DR Subnet CIDR')]",
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_DR_Vnet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_DR_Vnet_name'), '/', variables('subnets_Web_DR_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Web DR Subnet CIDR')]",
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_DR_Vnet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('subnets_Web_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Web Subnet CIDR')]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
+                },
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Web_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('subnets_Components_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Components Subnet CIDR')]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+                },
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Components_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('subnets_Vault_DR_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Vault DR Subnet CIDR')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(variables('virtualNetworks_Vault_Vnet_name'), '/', variables('subnets_Vault_Subnet_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "addressPrefix": "[parameters('Vault Main Subnet CIDR')]",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]"
+                },
+                "serviceEndpoints": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Vault_Vnet_name'), '/', variables('virtualNetworkPeerings_Vault_Components_Peering_name'))]",
+            "apiVersion": "2018-02-01",
+            "properties": {
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+                },
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from Vault VNET to Components VNET"
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Components_Vnet_name'), '/', variables('virtualNetworkPeerings_Components_Vault_Peering_name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from Components VNET to Vault VNET",
+            "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Vault_Vnet_name'), '/', variables('virtualNetworkPeerings_Vault_VaultDR_Peering_name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from Vault VNET to VaultDR VNET",
+            "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_Vault_VaultDR_Peering_name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from VaultDR VNET to Vault VNET",
+            "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]"
+                }
+            }
+        },
+		{
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Components_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_ComponentsDR_VaultDR_Peering_name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_DR_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from ComponentsDR VNET to VaultDR VNET",
+            "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_VaultDR_ComponentsDR_Peering_name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_DR_Vnet_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+            ],
+            "comments": "This is the peering from VaultDR VNET to ComponentsDR VNET",
+            "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Components_DR_Vnet_name'))]"
+                }
+            }
+        }
+    ]
+}
