@@ -1,0 +1,306 @@
+{
+    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "License Agreement": {
+            "defaultValue": "Decline",
+            "allowedValues": [
+                "Accept",
+                "Decline"
+            ],
+            "maxLength": 6,
+            "type": "String",
+            "metadata": {
+                "description": "I have read and agree to the Terms and Conditions."
+            }
+        },
+		"Vault Files Storage": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the name of the storage containing the license and recovery public key."
+            }
+        },
+		"Storage Container": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the name of the container containing the license and recovery public key blobs."
+            }
+        },
+		"Storage Account Key": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Account Key of the storage."
+            }
+        },
+		"License File": {
+            "defaultValue": "license.xml",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Account Key of the storage."
+            }
+        },
+		"Recovery Public Key": {
+            "defaultValue": "recpub.key",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Account Key of the storage."
+            }
+        },
+        "Key Vault Name": {
+            "defaultValue": "MyAKV",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Azure Key Vault Name."
+            }
+        },
+        "Vault Master User": {
+            "defaultValue": "Administrator",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Master Vault user."
+            }
+        },
+        "Vault Master Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter a password for the Master Administrator user."
+            }
+        },
+        "Vault Admin User": {
+            "defaultValue": "Administrator",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Administrator Vault user."
+            }
+        },
+        "Vault Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter a password for the Vault Administrator user."
+            }
+        },
+        "Vault VM Host Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the host name for the PAS Vault VM."
+            }
+        },
+        "Vault VM Size": {
+            "defaultValue": "Standard_D2s_v3",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the desired VM Size"
+            }
+        },
+        "Vault VM Admin User": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Vault VM Administrator user."
+            }
+        },
+        "Vault VM Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter Vault VM Administrator password."
+            }
+        },
+        "ImageID": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Vault Image ID."
+            }
+        },
+        "Vault AvailablitySet Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Availability Set for the Vault VM , If doesn’t exist it will be created"
+            }
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', 'Vault-Vnet')]",
+        "subnetRefVault": "[concat(variables('vnetId'), '/subnets/','Vault-Subnet')]",
+        "networkInterfaceName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "availabilitySetPlatformFaultDomainCount": 3,
+        "availabilitySetPlatformUpdateDomainCount": 5,
+        "publicIpAddressName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "vaultName": "[parameters('Key Vault Name')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "GuidGenerator",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/davidjrh/azurerm-newguid/master/NewGuid.json",
+                    "contentVersion": "1.0.0.0"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('vaultName')]",
+            "apiVersion": "2015-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.tenantId]",
+                "accessPolicies": [
+                    {
+                        "tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.tenantId]",
+                        "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.principalId]",
+                        "permissions": {
+                            "keys": [
+                                "all"
+                            ],
+                            "secrets": [
+                                "all"
+                            ]
+                        }
+                    }
+                ],
+                "sku": {
+                    "family": "A",
+                    "name": "Standard"
+                }
+            },
+            "resources": [
+                {
+                    "type": "secrets",
+                    "name": "mySecret",
+                    "apiVersion": "2015-06-01",
+                    "properties": {
+                        "value": "Secrets secrets are no fun, because they might hurt someone."
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
+                    ]
+                }
+            ],
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('Vault VM Host Name'),'/ManagedIdentityExtensionForWindows')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publisher": "Microsoft.ManagedIdentity",
+                "type": "ManagedIdentityExtensionForWindows",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "port": 50342
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('Vault VM Host Name')]",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('Vault VM Host Name')]",
+                    "adminUsername": "[parameters('Vault VM Admin User')]",
+                    "adminPassword": "[parameters('Vault VM Admin Password')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('Vault VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('ImageID')]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Vault AvailablitySet Name'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+                "[concat('Microsoft.Compute/availabilitySets/', parameters('Vault AvailablitySet Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('Vault VM Host Name'),'/', 'customscript')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "activate-vault"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": []
+                },
+                "protectedSettings": {
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Vault Admin Password'), ' -MasterPass ', parameters('Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Vault Admin Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Files Storage'), ' -ContainerName ', parameters('Storage Container'), ' -StorageAccountKey ', parameters ('Storage Account Key'), ' -VKMName ', parameters ('Key Vault Name'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]",
+                "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[parameters('Vault AvailablitySet Name')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
+                "managed": true
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRefVault')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
