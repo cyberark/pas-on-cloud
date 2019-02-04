@@ -27,7 +27,7 @@
             }
         },
 		"Vault Storage Account Access Key": {
-            "type": "String",
+            "type": "SecureString",
             "metadata": {
                 "description": "Enter the access key of the storage account that contains the license and public key."
             }
@@ -47,7 +47,7 @@
             }
         },
         "Key Vault Name": {
-            "defaultValue": "MyAKV",
+            "defaultValue": "CyberArkVaultAKV",
             "type": "String",
             "metadata": {
                 "description": "Enter the name of the Key Vault , verify it does not already exist"
