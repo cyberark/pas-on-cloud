@@ -783,11 +783,13 @@
                                  "licensef,",
                                  "'/AcceptEULA',",
                                  "'yes',",
-                                 "'/KMSRegion','",
+                                 "'/CloudRegion','",
                                  {
                                     "Ref":"AWS::Region"
                                  },
-                                 "']))\n"
+                                 "','/CloudVendor',",
+                                 "'AWS'",
+                                 "]))\n"
                               ]
                            ]
                         }
