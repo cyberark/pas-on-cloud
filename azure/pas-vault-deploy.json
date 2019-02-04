@@ -14,43 +14,43 @@
                 "description": "I have read and agree to the Terms and Conditions."
             }
         },
-		"Vault Files Storage": {
+		"Vault Storage Account Name": {
             "type": "String",
             "metadata": {
-                "description": "Enter the name of the storage containing the license and recovery public key."
+                "description": "Enter the name of the storage account that contains the license and public key."
             }
         },
-		"Storage Container": {
+		"Storage Container Name": {
             "type": "String",
             "metadata": {
-                "description": "Enter the name of the container containing the license and recovery public key blobs."
+                "description": "Enter the name of the container in the Vault storage account that contains the license and public key."
             }
         },
-		"Storage Account Key": {
+		"Vault Storage Account Access Key": {
             "type": "String",
             "metadata": {
-                "description": "Enter the Account Key of the storage."
+                "description": "Enter the access key of the storage account that contains the license and public key."
             }
         },
 		"License File": {
             "defaultValue": "license.xml",
             "type": "String",
             "metadata": {
-                "description": "Enter the Account Key of the storage."
+                "description": "Enter the name of the license file in the container. Note: This field is case sensitive"
             }
         },
 		"Recovery Public Key": {
             "defaultValue": "recpub.key",
             "type": "String",
             "metadata": {
-                "description": "Enter the Account Key of the storage."
+                "description": "Enter the name of the public key file in the container. Note: This field is case sensitive"
             }
         },
         "Key Vault Name": {
             "defaultValue": "MyAKV",
             "type": "String",
             "metadata": {
-                "description": "Enter the Azure Key Vault Name."
+                "description": "Enter the name of the Key Vault , verify it does not already exist"
             }
         },
         "Vault Master User": {
