@@ -121,8 +121,7 @@
         "networkInterfaceName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "availabilitySetPlatformFaultDomainCount": 3,
         "availabilitySetPlatformUpdateDomainCount": 5,
-        "publicIpAddressName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "vaultName": "[parameters('Key Vault Name')]"
+        "publicIpAddressName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
         {
