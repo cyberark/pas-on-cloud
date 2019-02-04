@@ -165,19 +165,6 @@
                     "name": "Standard"
                 }
             },
-            "resources": [
-                {
-                    "type": "secrets",
-                    "name": "mySecret",
-                    "apiVersion": "2015-06-01",
-                    "properties": {
-                        "value": "Secrets secrets are no fun, because they might hurt someone."
-                    },
-                    "dependsOn": [
-                        "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
-                    ]
-                }
-            ],
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]"
             ]
