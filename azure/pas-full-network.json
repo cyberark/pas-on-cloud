@@ -202,6 +202,26 @@
             }
           },
           {
+            "name": "AllowStorageVaultDROut",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "",
+              "destinationAddressPrefix": "Storage",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [
+                "[parameters('Vault Main Subnet CIDR')]",
+                "[parameters('Vault DR Subnet CIDR')]"
+              ],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
             "name": "DenyAllOut",
             "properties": {
               "provisioningState": "Succeeded",
