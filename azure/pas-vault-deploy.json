@@ -148,7 +148,7 @@
                 ],
                 "sku": {
                     "family": "A",
-                    "name": "Standard"
+                    "name": "Premium"
                 }
             },
             "dependsOn": [
