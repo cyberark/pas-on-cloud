@@ -222,6 +222,26 @@
             }
           },
           {
+            "name": "AllowKeyVaultDROut",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "",
+              "destinationAddressPrefix": "AzureKeyVault",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [
+                "[parameters('Vault Main Subnet CIDR')]",
+                "[parameters('Vault DR Subnet CIDR')]"
+              ],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
             "name": "DenyAllOut",
             "properties": {
               "provisioningState": "Succeeded",
