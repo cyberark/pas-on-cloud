@@ -80,9 +80,9 @@
     "virtualNetworkPeerings_Vault_Components_Peering_name": "Vault-Components-Peering",
     "virtualNetworkPeerings_Components_Vault_Peering_name": "Components-Vault-Peering",
     "virtualNetworkPeerings_Vault_VaultDR_Peering_name": "Vault-VaultDR-Peering",
+    "virtualNetworkPeerings_VaultDR_Vault_Peering_name": "VaultDR-Vault-Peering",
     "virtualNetworkPeerings_VaultDR_Components_Peering_name": "VaultDR-Components-Peering",
-    "virtualNetworkPeerings_Components_VaultDR_Peering_name": "Components-VaultDR-Peering",
-    "virtualNetworkPeerings_VaultDR_Vault_Peering_name": "VaultDR-Vault-Peering"
+    "virtualNetworkPeerings_Components_VaultDR_Peering_name": "Components-VaultDR-Peering"
   },
   "resources": [
     {
@@ -211,6 +211,26 @@
               "destinationAddressPrefix": "Storage",
               "access": "Allow",
               "priority": 110,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [
+                "[parameters('Vault Main Subnet CIDR')]",
+                "[parameters('Vault DR Subnet CIDR')]"
+              ],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowKeyVaultDROut",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "",
+              "destinationAddressPrefix": "AzureKeyVault",
+              "access": "Allow",
+              "priority": 120,
               "direction": "Outbound",
               "sourcePortRanges": [],
               "destinationPortRanges": [],
@@ -825,7 +845,9 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Vault_Vnet_name'), variables('subnets_Vault_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Vault_DR_Vnet_name'), variables('subnets_Vault_DR_Subnet_name'))]"
       ],
       "comments": "This is the peering from Vault VNET to VaultDR VNET",
       "properties": {
@@ -841,11 +863,13 @@
     {
       "apiVersion": "2018-02-01",
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-      "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_Vault_VaultDR_Peering_name'))]",
+      "name": "[concat(variables('virtualNetworks_Vault_DR_Vnet_name'), '/', variables('virtualNetworkPeerings_VaultDR_Vault_Peering_name'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Vault_Vnet_name'), variables('subnets_Vault_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Vault_DR_Vnet_name'), variables('subnets_Vault_DR_Subnet_name'))]"
       ],
       "comments": "This is the peering from VaultDR VNET to Vault VNET",
       "properties": {
