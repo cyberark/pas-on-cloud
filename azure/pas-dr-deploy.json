@@ -235,7 +235,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Vault DR Admin Password'), ' -MasterPass ', parameters('Vault DR Master Password'), ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Vault Private IP'), ' -DRPassword ', parameters('Vault DR Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Storage Container Name'), ' -StorageAccountKey ', parameters ('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Vault DR Administrator Password'), ' -MasterPass ', parameters('Vault DR Master Password'), ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Vault Private IP'), ' -DRPassword ', parameters('Vault DR Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Storage Container Name'), ' -StorageAccountKey ', parameters ('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'))]"
                 }
             },
             "dependsOn": [
