@@ -164,8 +164,9 @@
                         "tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Host Name')), '2017-03-30', 'Full').identity.tenantId]",
                         "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Host Name')), '2017-03-30', 'Full').identity.principalId]",
                         "permissions": {
-                            "certificates": ["all"],
-                            "storage": ["all"]
+                            "keys": [
+                                "create","wrapKey","unwrapKey"
+                            ]
                         }
                     }
                 ]

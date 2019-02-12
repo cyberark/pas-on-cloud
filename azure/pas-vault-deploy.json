@@ -138,10 +138,7 @@
                         "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.principalId]",
                         "permissions": {
                             "keys": [
-                                "all"
-                            ],
-                            "secrets": [
-                                "all"
+                                "create","wrapKey","unwrapKey"
                             ]
                         }
                     }
