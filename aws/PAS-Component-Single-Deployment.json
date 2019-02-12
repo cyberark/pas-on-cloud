@@ -1404,41 +1404,17 @@
                         "waitAfterCompletion":"30",
                         "ignoreErrors":"true"
                      },
-                     "02-addAdminToMasterGroup":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
-                                 "powershell.exe -command \"& 'C:\\Cyberark\\Components Registration\\add_admin_to_psmmaster.ps1' -username ",
-                                 {
-                                    "Ref":"VaultAdminUser"
-                                 },
-                                 " -password ",
-                                 {
-                                    "Ref":"VaultAdminPassword"
-                                 },
-                                 " -pvwaIp ",
-                                 {
-                                    "Ref": "PVWAHostName"
-                                 },
-                                 "\""
-                              ]
-                           ]
-                        },
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "03-deploy":{
+                     "02-deploy":{
                         "command":"C:\\Python27\\python.exe C:\\deploy.py",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "04-PSMserviceConfig":{
+                     "03-PSMserviceConfig":{
                         "command":"sc config \"Cyber-Ark Privileged Session Manager\" start=auto",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "05-ChangeHostName":{
+                     "04-ChangeHostName":{
                         "command":{
                            "Fn::Join":[
                               "",
