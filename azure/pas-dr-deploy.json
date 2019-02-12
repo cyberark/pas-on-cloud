@@ -273,5 +273,15 @@
                 ]
             }
         }
-    ]
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "String",
+            "value": "[parameters('Vault DR VM Admin User')]"
+        },
+        "networkInterface": {
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "type": "object"
+        }
+    }
 }
