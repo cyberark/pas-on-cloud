@@ -104,8 +104,10 @@
         }
     },
     "variables": {
-        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', 'Vault-Vnet')]",
-        "subnetRefVault": "[concat(variables('vnetId'), '/subnets/','Vault-Subnet')]",
+        "vnetIdVault": "[resourceId('Microsoft.Network/virtualNetworks', 'Vault-Vnet')]",
+        "vnetIdVaultDR": "[resourceId('Microsoft.Network/virtualNetworks', 'Vault-DR-Vnet')]",
+        "subnetRefVault": "[concat(variables('vnetIdVault'), '/subnets/','Vault-Subnet')]",
+        "subnetRefVaultDR": "[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-DR-Subnet')]",
         "networkInterfaceName": "[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "availabilitySetPlatformFaultDomainCount": 3,
         "availabilitySetPlatformUpdateDomainCount": 5,
@@ -146,6 +148,18 @@
                 "sku": {
                     "family": "A",
                     "name": "Premium"
+                },
+                "networkAcls": {
+                  "bypass": "None",
+                  "defaultAction": "Deny",
+                  "virtualNetworkRules": [
+                    {
+                      "id": "[variables('subnetRefVault')]"
+                    },
+                    {
+                      "id": "[variables('subnetRefVaultDR')]"
+                    }
+                  ]
                 }
             },
             "dependsOn": [

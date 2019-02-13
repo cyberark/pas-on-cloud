@@ -774,7 +774,15 @@
         "networkSecurityGroup": {
           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]"
         },
-        "serviceEndpoints": []
+        "serviceEndpoints": [
+            {
+                "provisioningState": "Succeeded",
+                "service": "Microsoft.KeyVault",
+                "locations": [
+                    "*"
+                ]
+            }
+        ]
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_Vnet_name'))]",
@@ -789,7 +797,16 @@
         "addressPrefix": "[parameters('Vault DR Subnet CIDR')]",
         "networkSecurityGroup": {
           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroups_NSG_Vault_name'))]"
-        }
+        },
+        "serviceEndpoints": [
+            {
+                "provisioningState": "Succeeded",
+                "service": "Microsoft.KeyVault",
+                "locations": [
+                    "*"
+                ]
+            }
+        ]
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Vault_DR_Vnet_name'))]",
