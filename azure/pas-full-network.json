@@ -140,26 +140,6 @@
             }
           },
           {
-            "name": "AllowRDPAdministrativeAccessIn",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "3389",
-              "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
-              "destinationAddressPrefix": "",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": [
-                "[parameters('Vault Main Subnet CIDR')]",
-                "[parameters('Vault DR Subnet CIDR')]"
-              ]
-            }
-          },
-          {
             "name": "DenyAllIn",
             "properties": {
               "provisioningState": "Succeeded",
