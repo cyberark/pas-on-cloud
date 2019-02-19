@@ -729,11 +729,13 @@
                                  "licensef,",
                                  "'/AcceptEULA',",
                                  "'yes',",
-                                 "'/KMSRegion','",
+                                 "'/CloudRegion','",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
-                                 "']))\n"
+                                 "','/CloudVendor',",
+                                 "'AWS'",
+                                 "]))\n"
                               ]
                            ]
                         }
@@ -1110,11 +1112,13 @@
                                  "licensef,",
                                  "'/AcceptEULA',",
                                  "'yes',",
-                                 "'/KMSRegion','",
+                                 "'/CloudRegion','",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
-                                 "']))\n"
+                                 "','/CloudVendor',",
+                                 "'AWS'",
+                                 "]))\n"
                               ]
                            ]
                         }
