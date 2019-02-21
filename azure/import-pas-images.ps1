@@ -83,7 +83,7 @@ Try
     $pvwablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $pvwaDestBlob)
     $psmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmDestBlob)
     $psmpblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
-    $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
+    $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $vaultDestBlob)
      
      
     #Create Cpm Image from blob
