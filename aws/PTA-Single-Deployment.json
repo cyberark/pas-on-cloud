@@ -678,36 +678,62 @@
                         }
                     },
                     "install_pta":{
-                          "files":{
-                             "/root/CD-Image/changeRootPWD":{
-                                "content":{
+                        "commands": {
+                            "01-setenvironmentvariables_vaultip": {
+                                "command":{
                                    "Fn::Join":[
                                       "",
                                       [
-                                         "#!/bin/bash -e\n",
-                                         "temppassword=`aws ssm get-parameter --name ",
+                                         "sudo export vault_ip=",
                                          {
-                                            "Fn::GetAtt":[
-                                               "StoreAdminPassword",
-                                               "SsmId"
-                                            ]
-                                         },
-                                         " --region=",
-                                         {
-                                            "Ref":"AWS::Region"
-                                         },
-                                         " --with-decryption --output text --query Parameter.Value`\n",
-                                         "echo Object successfully retrieved from ssm.\n",
-
-                                         "echo -e '$temppassword\n$temppassword' | sudo passwd",
-
-                                         " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
+                                            "Ref":"VaultPrivateIP"
+                                         }
                                       ]
                                    ]
                                 }
-                             }
-                          },
-                        "commands": {
+                            },
+                            "02-setenvironmentvariables_adminuser": {
+                                "command":{
+                                   "Fn::Join":[
+                                      "",
+                                      [
+                                         "sudo export vault_adminUser=",
+                                         {
+                                            "Ref":"VaultAdminUser"
+                                         }
+                                      ]
+                                   ]
+                                }
+                            },
+                            "03-setenvironmentvariables_adminpassword": {
+                                "command":{
+                                   "Fn::Join":[
+                                      "",
+                                      [
+                                         "sudo export vault_adminPassword=",
+                                         {
+                                            "Ref":"VaultAdminPassword"
+                                         }
+                                      ]
+                                   ]
+                                }
+                            },
+                            "04-setenvironmentvariables_pvwadns": {
+                                "command":{
+                                   "Fn::Join":[
+                                      "",
+                                      [
+                                         "sudo export pvwa_host=",
+                                         {
+                                            "Ref":"PVWAPrivateDNS"
+                                         }
+                                      ]
+                                   ]
+                                }
+                            },
+                            "05-executeptaconfiguration": {
+                                "command": "sudo python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py"
+                            },
                             "99-SignalCompletion": {
                                 "command": {"Fn::Join": [
                                     "",
@@ -1070,7 +1096,7 @@
                 "PVWA": "ami-01a3f3486b3326c0b",
                 "PSM": "ami-0e38b8a579840237e",
                 "PSMP": "ami-04ccb81bb661e9db7",
-                "PTA": "ami-04ccb81bb661e9db7"
+                "PTA": "ami-0c12440a4130b87f9"
             },
             "us-gov-west-1": {
                 "Vault": "ami-815ac4e0",
