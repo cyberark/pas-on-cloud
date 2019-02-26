@@ -733,8 +733,7 @@
             },
             "Condition": "EULACondition",
             "DependsOn": [
-                "StoreAdminPassword",
-                "StorePTAPassword"
+                "StoreAdminPassword"
             ],
             "CreationPolicy": {
                 "ResourceSignal": {
