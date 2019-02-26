@@ -698,9 +698,9 @@
                                          },
                                          " --with-decryption --output text --query Parameter.Value`\n",
                                          "echo Object successfully retrieved from ssm.\n",
-                                         
+
                                          "echo -e '$temppassword\n$temppassword' | sudo passwd",
-                                         
+
                                          " $(curl http://169.254.169.254/latest/meta-data/instance-id) y\n"
                                       ]
                                    ]
@@ -788,18 +788,6 @@
             "Description":"Enter the path of the license file within the bucket.",
             "Default":"license.xml"
         },
-        "PTARootPassword": {
-            "Type": "String",
-            "Description": "Enter a password for root account of PTA instance.",
-            "NoEcho": true,
-            "MinLength": 8
-        },
-        "RetypeRootPassword": {
-            "Type":"String",
-            "Description":"Retype the password for the Root user.",
-            "NoEcho":true,
-            "MinLength":8
-        },
         "VaultPrivateIP": {
             "Type": "String",
             "Description": "Enter the IP of the Vault instance."
@@ -823,23 +811,6 @@
         "PVWAPrivateDNS": {
             "Type": "String",
             "Description": "Enter the private DNS of the PVWA instance."
-        },
-        "PVWAPort": {
-            "Type": "String",
-            "Description": "Enter the Port of the PVWA instance"
-        },
-        "PVWAConnectionMethod": {
-            "Type": "String",
-            "Description": "Select the Port of the PVWA instance.",
-            "AllowedValues": [
-                "Http",
-                "Https"
-            ],
-            "Default": "Https"
-        },
-        "PVWAApplicationContext": {
-            "Type": "String",
-            "Description": "Enter the Application Context of the PVWA instance"
         },
         "PTAInstanceType": {
             "Type": "String",
@@ -916,7 +887,8 @@
                         "VaultPrivateIP",
                         "DRPrivateIP",
                         "VaultAdminUser",
-                        "VaultAdminPassword"
+                        "VaultAdminPassword",
+                        "PVWAPrivateDNS"
                     ]
                 },
                 {
@@ -926,22 +898,9 @@
                     "Parameters": [
                         "PTALicenseBucket",
                         "LicenseFile",
-                        "PTARootPassword",
-                        "RetypeRootPassword",
                         "PTAInstanceType",
                         "PTAInstanceSecurityGroups",
                         "PTAInstanceSubnetId"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "PVWA configuration"
-                    },
-                    "Parameters": [
-                        "PVWAPrivateDNS",
-                        "PVWAPort",
-                        "PVWAConnectionMethod",
-                        "PVWAApplicationContext"
                     ]
                 }
             ],
@@ -964,17 +923,14 @@
                 "VaultAdminPassword": {
                     "default": "Vault Admin Password"
                 },
+                "PVWAPrivateDNS": {
+                    "default": "PVWA Instance private DNS"
+                },
                 "PTALicenseBucket": {
                     "default": "PTA License Bucket"
                 },
                 "LicenseFile": {
                     "default": "License File"
-                },
-                "PTARootPassword": {
-                    "default": "PTA Root Password"
-                },
-                "RetypeRootPassword":{
-                    "default":"Retype Root Password"
                 },
                 "PTAInstanceType": {
                     "default": "PTA Instance Type"
@@ -984,18 +940,6 @@
                 },
                 "PTAInstanceSubnetId": {
                     "default": "PTA Instance Subnet Id"
-                },
-                "PVWAPrivateDNS": {
-                    "default": "PVWA Instance private DNS"
-                },
-                "PVWAPort": {
-                    "default": "PVWA Instance Port"
-                },
-                "PVWAConnectionMethod": {
-                    "default": "PVWA Instance Connection Method"
-                },
-                "PVWAApplicationContext": {
-                    "default": "PVWA Instance Application Context"
                 }
             }
         }
