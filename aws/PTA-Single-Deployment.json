@@ -315,25 +315,6 @@
             "StorePasswordLambda"
          ]
       },
-      "StorePTAPassword":{
-         "Type":"AWS::CloudFormation::CustomResource",
-         "Properties":{
-            "ServiceToken":{
-               "Fn::GetAtt":[
-                  "StorePasswordLambda",
-                  "Arn"
-               ]
-            },
-            "Password":{
-               "Ref":"PTARootPassword"
-            }
-         },
-         "Condition":"EULACondition",
-         "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
-         ]
-      },
       "CleanAdminPassword":{
          "Type":"AWS::CloudFormation::CustomResource",
          "Version":"1.0",
@@ -873,25 +854,6 @@
                 }
             ]
         }
-    },
-    "Rules":{
-      "PasswordConfirmation":{
-         "Assertions":[
-            {
-               "Assert":{
-                  "Fn::Equals":[
-                     {
-                        "Ref":"PTARootPassword"
-                     },
-                     {
-                        "Ref":"RetypeRootPassword"
-                     }
-                  ]
-               },
-               "AssertDescription":"The password confirmation does not match."
-            }
-         ]
-      }
     },
     "Metadata": {
         "AWS::CloudFormation::Interface": {
