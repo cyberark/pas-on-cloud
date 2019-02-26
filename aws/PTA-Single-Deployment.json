@@ -712,7 +712,7 @@
                                    ]
                                 }
                             },
-                            "05-executeptaconfiguration": {
+                            "05-executeptaconfigurationscript": {
                                 "command": "sudo python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py"
                             },
                             "99-SignalCompletion": {
