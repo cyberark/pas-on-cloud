@@ -1692,7 +1692,7 @@
                   },
                   "services":{
                      "sysvinit":{
-                        "awslogsd":{
+                        "awslogs":{
                            "enabled":"true",
                            "ensureRunning":"true",
                            "files":[
