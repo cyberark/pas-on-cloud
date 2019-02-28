@@ -2130,10 +2130,10 @@
             "PSMP":"ami-01f73800cc27a5151"
          },
          "eu-west-2":{
-            "CPM":"ami-0d8cb6cf3bd0d3a83",
-            "PVWA":"ami-0d57d94bdabe94d24",
-            "PSM":"ami-073e2cf7e9414193f",
-            "PSMP":"ami-09f095e015b0ddbe7"
+            "CPM":"ami-0a070b1fe3f976ce5",
+            "PVWA":"ami-01a157808a46bd221",
+            "PSM":"ami-0534718f417ae5dac",
+            "PSMP":"ami-06ff76a43e0f1e659"
          },
          "us-west-1":{
             "CPM":"ami-044ab79beceab925f",
