@@ -1216,9 +1216,6 @@
                }
             }
          },
-         "DependsOn":[
-            "VaultMachine"
-         ],
          "CreationPolicy":{
             "ResourceSignal":{
                "Timeout":"PT15M"
@@ -1947,9 +1944,6 @@
                }
             }
          },
-         "DependsOn":[
-            "VaultDRMachine"
-         ],
          "CreationPolicy":{
             "ResourceSignal":{
                "Timeout":"PT20M"
