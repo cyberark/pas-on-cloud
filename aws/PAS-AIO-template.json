@@ -1788,8 +1788,8 @@
             "Components":"ami-0ddb4752552905b4a"
          },
          "eu-west-2":{
-            "Vault":"ami-05641511bba5a4eda",
-            "Components":"ami-0f0036b3b31c43091"
+            "Vault":"ami-0b57d5d528387343f",
+            "Components":"ami-041182c426b4f0bb8"
          },
          "us-west-1":{
             "Vault":"ami-0b812b1accf252c0a",
