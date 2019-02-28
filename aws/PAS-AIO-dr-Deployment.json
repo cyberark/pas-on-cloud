@@ -452,7 +452,7 @@
          },
          "Condition": "EULACondition",
          "DependsOn": [
-            "LambdaDeployRole
+            "LambdaDeployRole"
          ]
       },
       "VaultMachine":{
