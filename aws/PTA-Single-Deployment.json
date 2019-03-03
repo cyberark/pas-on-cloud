@@ -1057,7 +1057,7 @@
                 "PVWA": "ami-01a3f3486b3326c0b",
                 "PSM": "ami-0e38b8a579840237e",
                 "PSMP": "ami-04ccb81bb661e9db7",
-                "PTA": "ami-0c12440a4130b87f9"
+                "PTA": "ami-080d7bac341457040"
             },
             "us-gov-west-1": {
                 "Vault": "ami-815ac4e0",
