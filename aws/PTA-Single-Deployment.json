@@ -673,12 +673,12 @@
                            ]
                         }
                      },
-                     "05-setenvironmentvariables_timezone":{
+                     "05-setenvironmentvariables_vaulttimezone":{
                         "command":{
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export timezone=",
+                                 "sudo export vault_timezone=",
                                  {
                                     "Ref":"VaultTimeZone"
                                  }
@@ -702,16 +702,29 @@
                            ]
                         }
                      },
-                     "06-copylicensefrombucket":{
+                     "08-setenvironmentvariables_timezone":{
+                        "command":{
+                           "Fn::Join":[
+                              "",
+                              [
+                                 "sudo export timezone=",
+                                 {
+                                    "Ref":"PTAServerTimeZone"
+                                 }
+                              ]
+                           ]
+                        }
+                     },
+                     "09-copylicensefrombucket":{
                         "command":"sudo python /tmp/deploy.py"
                      },
-                     "07-addowner":{
+                     "10-addowner":{
                         "command":"sudo chown tomcat:pta_server /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "08-setpermissions":{
+                     "11-setpermissions":{
                         "command":"sudo /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "09-executeptaconfigurationscript":{
+                     "12-executeptaconfigurationscript":{
                         "command":"sudo python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py"
                      },
                      "99-SignalCompletion":{
@@ -800,6 +813,10 @@
          "Description":"Enter the path of the license file within the bucket.",
          "Default":"license.xml"
       },
+      "PTAServerTimeZone":{
+         "Type":"String",
+         "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
+      },
       "VaultPrivateIP":{
          "Type":"String",
          "Description":"Enter the IP of the Vault instance."
@@ -810,8 +827,8 @@
       },
       "VaultTimeZone":{
          "Type":"String",
-         "Description":"Enter the Vault time zone. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
-      }
+         "Description":"Enter the time zone of the Vault Server."
+      },
       "VaultAdminUser":{
          "Type":"String",
          "Description":"Enter the Vault Administrator user.",
@@ -896,6 +913,7 @@
                "Parameters":[
                   "PTALicenseBucket",
                   "LicenseFile",
+                  "PTAServerTimeZone",
                   "PTAInstanceType",
                   "PTAInstanceSecurityGroups",
                   "PTAInstanceSubnetId"
@@ -917,7 +935,7 @@
             },
             "VaultTimeZone":{
                "default":"Vault Time Zones"
-            }
+            },
             "VaultAdminUser":{
                "default":"Vault Admin User"
             },
@@ -932,6 +950,9 @@
             },
             "LicenseFile":{
                "default":"License File"
+            },
+            "PTAServerTimeZone":{
+               "default":"PTA Server Time Zone"
             },
             "PTAInstanceType":{
                "default":"PTA Instance Type"
