@@ -626,7 +626,7 @@
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export vault_ip=",
+                                 "export vault_ip=",
                                  {
                                     "Ref":"VaultPrivateIP"
                                  }
@@ -673,10 +673,45 @@
                            ]
                         }
                      },
-                     "05-copylicensefrombucket":{
+                     "05-setenvironmentvariables_timezone":{
+                        "command":{
+                           "Fn::Join":[
+                              "",
+                              [
+                                 "sudo export timezone=",
+                                 {
+                                    "Ref":"VaultTimeZone"
+                                 }
+                              ]
+                           ]
+                        }
+                     },
+                     "06-setenvironmentvariables_vaultport":{
+                        "command": "sudo export vault_port=1858"
+                     },
+                     "07-setenvironmentvariables_drip":{
+                        "command":{
+                           "Fn::Join":[
+                              "",
+                              [
+                                 "sudo export vault_ipsDR=",
+                                 {
+                                    "Ref":"DRPrivateIP"
+                                 }
+                              ]
+                           ]
+                        }
+                     },
+                     "06-copylicensefrombucket":{
                         "command":"sudo python /tmp/deploy.py"
                      },
-                     "06-executeptaconfigurationscript":{
+                     "07-addowner":{
+                        "command":"sudo chown tomcat:pta_server /opt/tomcat/diamond-resources/license.xml"
+                     },
+                     "08-setpermissions":{
+                        "command":"sudo /opt/tomcat/diamond-resources/license.xml"
+                     },
+                     "09-executeptaconfigurationscript":{
                         "command":"sudo python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py"
                      },
                      "99-SignalCompletion":{
@@ -771,8 +806,12 @@
       },
       "DRPrivateIP":{
          "Type":"String",
-         "Description":"Enter the IP of the Vault DR instance. (Optional)"
+         "Description":"Enter the IPs of the Vault DR instances, separated by comma (,). (Optional). "
       },
+      "VaultTimeZone":{
+         "Type":"String",
+         "Description":"Enter the Vault time zone. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
+      }
       "VaultAdminUser":{
          "Type":"String",
          "Description":"Enter the Vault Administrator user.",
@@ -844,6 +883,7 @@
                "Parameters":[
                   "VaultPrivateIP",
                   "DRPrivateIP",
+                  "VaultTimeZone",
                   "VaultAdminUser",
                   "VaultAdminPassword",
                   "PVWAPrivateDNS"
@@ -875,6 +915,9 @@
             "DRPrivateIP":{
                "default":"Vault DR Private IP"
             },
+            "VaultTimeZone":{
+               "default":"Vault Time Zones"
+            }
             "VaultAdminUser":{
                "default":"Vault Admin User"
             },
@@ -1028,7 +1071,7 @@
             "PVWA":"ami-01a3f3486b3326c0b",
             "PSM":"ami-0e38b8a579840237e",
             "PSMP":"ami-04ccb81bb661e9db7",
-            "PTA":"ami-0e5bf60d2559e2dca"
+            "PTA":"ami-07a90b5f5e0343929"
          },
          "us-gov-west-1":{
             "Vault":"ami-815ac4e0",
