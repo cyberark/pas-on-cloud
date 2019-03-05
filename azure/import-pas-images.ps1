@@ -18,17 +18,22 @@ PARAM(
     # Supplied by CyberArk PSMP AccessSAS
     [Parameter(Mandatory = $true)]
     [String]
-    $PsmpAccessSAS
+    $PsmpAccessSAS,
+    # Supplied by CyberArk Vault/VaultDR AccessSAS
+    [Parameter(Mandatory = $true)]
+    [String]
+    $VaultAccessSAS
 )
  
 #Set variables
-$release = "v10.6"
+$release = "v10.8"
 $storageName = "cyberarkimages"
 $containerName = "cyberarkimages"
 $cpmDestBlob = "pas-cpm-$release.vhd"
 $pvwaDestBlob = "pas-pvwa-$release.vhd"
 $psmDestBlob = "pas-psm-$release.vhd"
 $psmpDestBlob = "pas-psmp-$release.vhd"
+$vaultDestBlob = "pas-vault-$release.vhd"
 $resourceGroupName = "Cyberark-Images"
 
 Try
@@ -61,6 +66,9 @@ Try
       
     #Start copy psmp
     Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob
+    
+    #Start copy vault
+    Start-AzureStorageBlobCopy -AbsoluteUri $VaultAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $vaultDestBlob
      
      
     #Wait for vhd to be fully copied (~40 minutes)
@@ -68,12 +76,14 @@ Try
     Get-AzureStorageBlobCopyState -Blob $pvwaDestBlob -Container $containerName -Context $destContext -WaitForComplete
     Get-AzureStorageBlobCopyState -Blob $psmDestBlob -Container $containerName -Context $destContext -WaitForComplete
     Get-AzureStorageBlobCopyState -Blob $psmpDestBlob -Container $containerName -Context $destContext -WaitForComplete
+    Get-AzureStorageBlobCopyState -Blob $vaultDestBlob -Container $containerName -Context $destContext -WaitForComplete
      
      
     $cpmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $cpmDestBlob)
     $pvwablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $pvwaDestBlob)
     $psmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmDestBlob)
     $psmpblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
+    $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $vaultDestBlob)
      
      
     #Create Cpm Image from blob
@@ -102,6 +112,13 @@ Try
     $imageName = "PAS-PSMP-$release"
     $imageConfig = New-AzureRmImageConfig -Location $location
     $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmpblobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    
+    #Create Vault Image from blob
+    $vmOSType = "Windows"
+    $imageName = "PAS-Vault-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $vaultblobUri
     $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
 }
 Catch
