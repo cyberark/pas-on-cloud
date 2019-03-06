@@ -667,6 +667,34 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
+        "VaultSGEgress4": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "VaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
+            }
+        },
+        "VaultSGEgress5": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "VaultSG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
+            }
+        },
         "CPMSGIngress1": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -903,6 +931,452 @@
                 "FromPort": 443,
                 "ToPort": 443,
                 "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PVWASGEgress3": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8443,
+                "ToPort": 8443,
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PTASG"
+                }
+            }
+        },
+        "PTASGIngress1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGIngress11": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGIngress2": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGIngress3": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8080,
+                "ToPort": 8080,
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGIngress4": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8443,
+                "ToPort": 8443,
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGIngress5": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 67,
+                "ToPort": 68,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress6": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 27017,
+                "ToPort": 27017,
+                "SourceSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
+            }
+        },
+        "PTASGIngress7": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 6514,
+                "ToPort": 6514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress8": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 7514,
+                "ToPort": 7514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress9": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "SourceSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
+            }
+        },
+        "PTASGIngress12": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "CidrIp": {
+                    "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PTASGInress11": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "SourceSecurityGroupId": {
+                    "Ref": "VaultSG"
+                }
+            }
+        },
+        "PTASGIngress13": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "SourceSecurityGroupId": {
+                    "Ref": "VaultSG"
+                }
+            }
+        },
+        "PTASGIngress14": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 11514,
+                "ToPort": 11514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress15": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 11514,
+                "ToPort": 11514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGIngress16": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGIngress17": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8080,
+                "ToPort": 8080,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGIngress18": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 8443,
+                "ToPort": 8443,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "PTASGEgress1": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress2": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress3": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 514,
+                "ToPort": 514,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress4": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PVWASG"
+                }
+            }
+        },
+        "PTASGEgress5": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 53,
+                "ToPort": 53,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress6": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 123,
+                "ToPort": 123,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress7": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 27017,
+                "ToPort": 27017,
+                "DestinationSecurityGroupId": {
+                    "Ref" : "PTASG"
+                }
+            }
+        },
+        "PTASGEgress8": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 25,
+                "ToPort": 25,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress9": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 587,
+                "ToPort": 587,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress10": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 389,
+                "ToPort": 389,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress11": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 636,
+                "ToPort": 636,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress12": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 3268,
+                "ToPort": 3269,
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "PTASGEgress13": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 1858,
+                "ToPort": 1858,
+                "CidrIp": {
+                    "Ref": "VaultVPCCIDR"
+                }
+            }
+        },
+        "PTASGEgress14": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "udp",
+                "FromPort": 1858,
+                "ToPort": 1858,
+                "CidrIp": {
+                    "Ref": "VaultVPCCIDR"
+                }
+            }
+        },
+        "PTASGEgress15": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PTASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 22,
+                "ToPort": 22,
+                "DestinationSecurityGroupId": {
+                    "Ref": "PTASG"
+                }
             }
         },
         "PrivateLinkVaultSGIngress1": {
