@@ -667,20 +667,6 @@
                 "CidrIp": "0.0.0.0/0"
             }
         },
-        "VaultSGEgress4": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "VaultSG"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": 514,
-                "ToPort": 514,
-                "DestinationSecurityGroupId": {
-                    "Ref": "PTASG"
-                }
-            }
-        },
         "VaultSGEgress5": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
