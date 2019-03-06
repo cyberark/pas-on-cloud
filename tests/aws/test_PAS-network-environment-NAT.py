@@ -47,18 +47,25 @@ class TestPASNetworkEnvironmentNatTemplate():
       assert len(self.resources) == 16
 
   def test_PASNetworkEnvironmentNat_SecurityGroups(self, region):
-      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG'}
+      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG', 'PTASG'}
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
 
   def test_PASNetworkEnvironmentNat_SecurityGroupsEgress(self):
       expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
                       'PSMSSHSGEgress1', 'PSMSSHSGEgress2', 'PSMSSHSGEgress3', 'PVWASGEgress1', 'PVWASGEgress2',
-                      'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3'}
+                      'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
+                      'PTASGEgress4', 'PTASGEgress5', 'PTASGEgress6', 'PVWASGEgress7', 'PTASGEgress8', 'PTASGEgress9',
+                      'PTASGEgress10', 'PTASGEgress11', 'PTASGEgress12', 'PTASGEgress13','PTASGEgress14', 'PTASGEgress15', 'PTASGEgress5'
+}
       assert set(self.resources['AWS::EC2::SecurityGroupEgress']) == expected_SecurityGroupsEgress
 
   def test_PASNetworkEnvironmentNat_SecurityGroupsIngress(self):
       expected_SecurityGroupsIngress = {'CPMSGIngress1', 'PSMSGIngress1', 'PSMSGIngress2', 'PSMSSHSGIngress1', 'PSMSSHSGIngress2',
-                      'PVWASGIngress1', 'PVWASGIngress2', 'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3'}
+                      'PVWASGIngress1', 'PVWASGIngress2', 'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3', 'PTASGIngress1',
+                      'PTASGIngress11', 'PTASGIngress2','PTASGIngress3', 'PTASGIngress4','PTASGIngress5', 'PTASGIngress6',
+                      'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGInress11', 'PTASGIngress13',
+                      'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18'
+      }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
   def test_PASNetworkEnvironmentNat_SubnetNetworkAclAssociation(self):
