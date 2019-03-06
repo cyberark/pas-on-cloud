@@ -639,7 +639,7 @@
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export vault_adminUser=",
+                                 "export vault_adminUser=",
                                  {
                                     "Ref":"VaultAdminUser"
                                  }
@@ -652,7 +652,7 @@
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export vault_adminPassword=",
+                                 "export vault_adminPassword=",
                                  {
                                     "Ref":"VaultAdminPassword"
                                  }
@@ -665,7 +665,7 @@
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export pvwa_host=",
+                                 "export pvwa_host=",
                                  {
                                     "Ref":"PVWAPrivateDNS"
                                  }
@@ -678,7 +678,7 @@
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export vault_timezone=",
+                                 "export vault_timezone=",
                                  {
                                     "Ref":"VaultTimeZone"
                                  }
@@ -687,27 +687,14 @@
                         }
                      },
                      "06-setenvironmentvariables_vaultport":{
-                        "command": "sudo export vault_port=1858"
+                        "command": "export vault_port=1858"
                      },
-                     "07-setenvironmentvariables_drip":{
+                     "07-setenvironmentvariables_timezone":{
                         "command":{
                            "Fn::Join":[
                               "",
                               [
-                                 "sudo export vault_ipsDR=",
-                                 {
-                                    "Ref":"DRPrivateIP"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "08-setenvironmentvariables_timezone":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
-                                 "sudo export timezone=",
+                                 "export timezone=",
                                  {
                                     "Ref":"PTAServerTimeZone"
                                  }
@@ -715,17 +702,17 @@
                            ]
                         }
                      },
-                     "09-copylicensefrombucket":{
-                        "command":"sudo python /tmp/deploy.py"
+                     "08-copylicensefrombucket":{
+                        "command":"python /tmp/deploy.py"
                      },
-                     "10-addowner":{
+                     "09-addowner":{
                         "command":"sudo chown tomcat:pta_server /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "11-setpermissions":{
-                        "command":"sudo /opt/tomcat/diamond-resources/license.xml"
+                     "10-setpermissions":{
+                        "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "12-executeptaconfigurationscript":{
-                        "command":"sudo python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py"
+                     "11-executeptaconfigurationscript":{
+                        "command":"python /tmp/ptaAutomaticConfiguration.py aws"
                      },
                      "99-SignalCompletion":{
                         "command":{
