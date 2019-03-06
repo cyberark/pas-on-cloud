@@ -694,7 +694,12 @@
                            "Fn::If":[
                               "DRValueEmpty",
                               {
-                                 "echo DR is not defined"
+                                  "Fn::Join":[
+                                     "",
+                                     [
+                                        "echo DR is not defined"
+                                     ]
+                                  ]
                               },
                               {
                                  "Fn::Join":[
