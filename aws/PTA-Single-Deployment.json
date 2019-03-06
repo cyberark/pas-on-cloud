@@ -689,7 +689,28 @@
                      "06-setenvironmentvariables_vaultport":{
                         "command": "export vault_port=1858"
                      },
-                     "07-setenvironmentvariables_timezone":{
+                     "07-setenvironmentvariables_drip":{
+                        "command":{
+                           "Fn::If":[
+                              "DRValueEmpty",
+                              {
+                                 "echo DR is not defined"
+                              },
+                              {
+                                 "Fn::Join":[
+                                    "",
+                                    [
+                                       "export vault_ipsDR=",
+                                       {
+                                          "Ref":"DRPrivateIP"
+                                       }
+                                    ]
+                                 ]
+                              }
+                           ]
+                        }
+                     },
+                     "08-setenvironmentvariables_timezone":{
                         "command":{
                            "Fn::Join":[
                               "",
@@ -702,16 +723,16 @@
                            ]
                         }
                      },
-                     "08-copylicensefrombucket":{
+                     "09-copylicensefrombucket":{
                         "command":"python /tmp/deploy.py"
                      },
-                     "09-addowner":{
+                     "10-addowner":{
                         "command":"sudo chown tomcat:pta_server /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "10-setpermissions":{
+                     "11-setpermissions":{
                         "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
-                     "11-executeptaconfigurationscript":{
+                     "12-executeptaconfigurationscript":{
                         "command":"python /tmp/ptaAutomaticConfiguration.py aws"
                      },
                      "99-SignalCompletion":{
