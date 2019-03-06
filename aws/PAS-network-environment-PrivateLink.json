@@ -329,6 +329,21 @@
                 ]
             }
         },
+        "PTASG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security group for PTA instances",
+                "VpcId": {
+                    "Ref": "ComponentsVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PTA-SG"
+                    }
+                ]
+            }
+        },
         "PrivateLinkVaultSG": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
