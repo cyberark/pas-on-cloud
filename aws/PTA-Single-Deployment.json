@@ -738,7 +738,7 @@
                         "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
                      "12-executeptaconfigurationscript":{
-                        "command":"python /tmp/ptaAutomaticConfiguration.py aws"
+                        "command":"python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
                      },
                      "99-SignalCompletion":{
                         "command":{
