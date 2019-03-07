@@ -592,6 +592,8 @@
                               "",
                               [
                                  "import boto3\n",
+                                 "import time\n",
+                                 "time.sleep(120)\n",
                                  "\n",
                                  "def downloadFile(bucket,filePath,target):\n",
                                  "\ts3Client = boto3.client('s3', region_name='",
@@ -680,6 +682,10 @@
                      }
                   },
                   "commands":{
+                     "01-waitfortomcat":{
+                        "command":"sle"
+                     },
+                     {
                      "09-copylicensefrombucket":{
                         "command":"python /tmp/deploy.py"
                      },
