@@ -43,6 +43,22 @@ class TestPASNetworkEnvironmentNatTemplate():
                   self.resources[resource['ResourceChange']['ResourceType']] = []
               self.resources[resource['ResourceChange']['ResourceType']].append(
                   resource['ResourceChange']['LogicalResourceId'])
+
+      # in case changeset exceed number of resources, there is a need to run it again with NextToken
+      while 'NextToken' in res:
+        res = cf_client.describe_change_set(
+                  StackName= stack_name,
+                  ChangeSetName=stack_name,
+                  NextToken= res['NextToken']
+              )
+
+        for resource in res['Changes']:
+          if resource['ResourceChange']['Action'] == "Add":
+              if resource['ResourceChange']['ResourceType'] not in self.resources:
+                  self.resources[resource['ResourceChange']['ResourceType']] = []
+              self.resources[resource['ResourceChange']['ResourceType']].append(
+                  resource['ResourceChange']['LogicalResourceId'])
+
       # Validate expected number of elements
       assert len(self.resources) == 16
 
@@ -53,7 +69,7 @@ class TestPASNetworkEnvironmentNatTemplate():
   def test_PASNetworkEnvironmentNat_SecurityGroupsEgress(self):
       expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
                       'PSMSSHSGEgress1', 'PSMSSHSGEgress2', 'PSMSSHSGEgress3', 'PVWASGEgress1', 'PVWASGEgress2', 'PVWASGEgress3',
-                      'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
+                      'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'VaultSGEgress4', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
                       'PTASGEgress4', 'PTASGEgress5', 'PTASGEgress6', 'PTASGEgress7', 'PTASGEgress8', 'PTASGEgress9',
                       'PTASGEgress10', 'PTASGEgress11', 'PTASGEgress12', 'PTASGEgress13','PTASGEgress14', 'PTASGEgress15', 'PTASGEgress5'
       }
