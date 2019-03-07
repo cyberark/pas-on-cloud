@@ -656,6 +656,21 @@
                                  },
                                  "\n",
                                  "export vault_port=1858\n",
+                                 "$DRValueEmpty=", { "Fn::If": ["DRValueEmpty", "true", "false" ]}, "\n",
+                                 "if [ $DRValueEmpty = 'false' ]; then\n",
+                                 "   export vault_ipsDR=",
+                                     {
+                                        "Ref":"DRPrivateIP"
+                                     },
+                                 "fi;\n",
+                                 "echo $vault_ip\n",
+                                 "echo $vault_ipsDR\n",
+                                 "echo $vault_timezone\n",
+                                 "echo $timezone\n",
+                                 "echo $vault_port\n",
+                                 "echo $vault_adminUser\n",
+                                 "echo $vault_adminPassword\n",
+                                 "echo $pvwa_host\n",
                                  "python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
                               ]
                            ]
