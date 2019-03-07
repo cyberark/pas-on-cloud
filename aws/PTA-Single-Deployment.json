@@ -618,116 +618,60 @@
                               ]
                            ]
                         }
-                     }
-                  },
-                  "commands":{
-                     "01-setenvironmentvariables_vaultip":{
-                        "command":{
+                     },
+                     "/tmp/register.sh":{
+                        "content":{
                            "Fn::Join":[
                               "",
                               [
+                                 "#!/bin/bash\n",
                                  "export vault_ip=",
                                  {
                                     "Ref":"VaultPrivateIP"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "02-setenvironmentvariables_adminuser":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
+                                 },
+                                 "\n",
                                  "export vault_adminUser=",
                                  {
                                     "Ref":"VaultAdminUser"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "03-setenvironmentvariables_adminpassword":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
+                                 },
+                                 "\n",
                                  "export vault_adminPassword=",
                                  {
                                     "Ref":"VaultAdminPassword"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "04-setenvironmentvariables_pvwadns":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
+                                 },
+                                 "\n",
                                  "export pvwa_host=",
                                  {
                                     "Ref":"PVWAPrivateDNS"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "05-setenvironmentvariables_vaulttimezone":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
+                                 },
+                                 "\n",
                                  "export vault_timezone=",
                                  {
                                     "Ref":"VaultTimeZone"
-                                 }
-                              ]
-                           ]
-                        }
-                     },
-                     "06-setenvironmentvariables_vaultport":{
-                        "command": "export vault_port=1858"
-                     },
-                     "07-setenvironmentvariables_drip":{
-                        "command":{
-                           "Fn::If":[
-                              "DRValueEmpty",
-                              {
-                                  "Fn::Join":[
-                                     "",
-                                     [
-                                        "echo DR is not defined"
-                                     ]
-                                  ]
-                              },
-                              {
-                                 "Fn::Join":[
-                                    "",
-                                    [
-                                       "export vault_ipsDR=",
-                                       {
-                                          "Ref":"DRPrivateIP"
-                                       }
-                                    ]
-                                 ]
-                              }
-                           ]
-                        }
-                     },
-                     "08-setenvironmentvariables_timezone":{
-                        "command":{
-                           "Fn::Join":[
-                              "",
-                              [
+                                 },
+                                 "\n",
                                  "export timezone=",
                                  {
                                     "Ref":"PTAServerTimeZone"
-                                 }
+                                 },
+                                 "\n",
+                                 "export vault_port=1858\n",
+                                 "if [!DRValueEmpty]\n",
+                                 "then\n",
+                                 "    export vault_ipsDR=",
+                                 {
+                                    "Ref":"DRPrivateIP"
+                                 },
+                                 "\n",
+                                 "fi\n",
+                                 "python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
                               ]
                            ]
-                        }
-                     },
+                        },
+                        "mode": "000755"
+                     }
+                  },
+                  "commands":{
                      "09-copylicensefrombucket":{
                         "command":"python /tmp/deploy.py"
                      },
@@ -738,7 +682,7 @@
                         "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
                      "12-executeptaconfigurationscript":{
-                        "command":"python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
+                        "command":"sh /tmp/register.sh"
                      },
                      "99-SignalCompletion":{
                         "command":{
