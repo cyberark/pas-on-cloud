@@ -681,10 +681,7 @@
                         "mode": "000755"
                      }
                   },
-                  "commands":{
-                     "01-waitfortomcat":{
-                        "command":"sle"
-                     },
+                  "commands":
                      {
                      "09-copylicensefrombucket":{
                         "command":"python /tmp/deploy.py"
