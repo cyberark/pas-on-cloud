@@ -656,8 +656,7 @@
                                  },
                                  "\n",
                                  "export vault_port=1858\n",
-                                 "if !",{"Ref":"DRValueEmpty"},"\n",
-                                 "then\n",
+                                 "if [ ! -z ", { "Ref":"DRPrivateIP" }," -a ", { "Ref":"DRPrivateIP" }, " != ' ' ]; then\n",
                                  "    export vault_ipsDR=",
                                  {
                                     "Ref":"DRPrivateIP"
