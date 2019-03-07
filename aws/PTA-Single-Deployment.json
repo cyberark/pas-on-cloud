@@ -656,15 +656,14 @@
                                  },
                                  "\n",
                                  "export vault_port=1858\n",
-                                 "if [!DRValueEmpty]\n",
+                                 "if !",{"Ref":"DRValueEmpty"},"\n",
                                  "then\n",
                                  "    export vault_ipsDR=",
                                  {
                                     "Ref":"DRPrivateIP"
                                  },
                                  "\n",
-                                 "fi\n",
-                                 "python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
+                                 "fi\n"
                               ]
                            ]
                         },
@@ -682,7 +681,7 @@
                         "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
                      "12-executeptaconfigurationscript":{
-                        "command":"sh /tmp/register.sh"
+                        "command":"sudo . /tmp/register.sh"
                      },
                      "99-SignalCompletion":{
                         "command":{
