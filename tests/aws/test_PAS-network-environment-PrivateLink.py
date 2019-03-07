@@ -43,24 +43,48 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                   self.resources[resource['ResourceChange']['ResourceType']] = []
               self.resources[resource['ResourceChange']['ResourceType']].append(
                   resource['ResourceChange']['LogicalResourceId'])
+
+      # in case changeset exceed number of resources, there is a need to run it again with NextToken
+      while 'NextToken' in res:
+        res = cf_client.describe_change_set(
+                  StackName= stack_name,
+                  ChangeSetName=stack_name,
+                  NextToken= res['NextToken']
+              )
+
+        for resource in res['Changes']:
+          if resource['ResourceChange']['Action'] == "Add":
+              if resource['ResourceChange']['ResourceType'] not in self.resources:
+                  self.resources[resource['ResourceChange']['ResourceType']] = []
+              self.resources[resource['ResourceChange']['ResourceType']].append(
+                  resource['ResourceChange']['LogicalResourceId'])
+
       # Validate expected number of elements
       assert len(self.resources) == 16
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroups(self, region):
-      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkComponentsSG', 'PrivateLinkVaultSG', 'VaultSG'}
+      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkComponentsSG', 'PrivateLinkVaultSG', 'VaultSG', 'PTASG'}
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsEgress(self):
       expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
                       'PSMSSHSGEgress1', 'PSMSSHSGEgress2', 'PSMSSHSGEgress3', 'PVWASGEgress1', 'PVWASGEgress2',
-                      'PrivateLinkComponentsSGEgress1', 'PrivateLinkVaultSGEgress1', 'VaultSGEgress1', 'VaultSGEgress2',
-                      'VaultSGEgress3'}
+                      'PrivateLinkComponentsSGEgress1', 'PrivateLinkVaultSGEgress1', 'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3'
+                      'PTASGEgress14', 'PTASGEgress15', 'PTASGEgress10', 'PTASGEgress11', 'PTASGEgress12', 'PTASGEgress13',
+                      'PVWASGEgress3', 'PTASGEgress8', 'PTASGEgress9', 'PTASGEgress6', 'PTASGEgress7', 'PTASGEgress4',
+                      'PTASGEgress5','PTASGEgress2', 'PTASGEgress3', 'PTASGEgress1'
+
+                      }
       assert set(self.resources['AWS::EC2::SecurityGroupEgress']) == expected_SecurityGroupsEgress
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsIngress(self):
       expected_SecurityGroupsIngress = {'CPMSGIngress1', 'PSMSGIngress1', 'PSMSGIngress2', 'PSMSSHSGIngress1', 'PSMSSHSGIngress2',
                       'PVWASGIngress1', 'PVWASGIngress2', 'PrivateLinkComponentsSGIngress1', 'PrivateLinkVaultSGIngress1',
-                      'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3'}
+                      'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3', 'PTASGIngress11', 'PTASGIngress9', 'PTASGIngress13',
+                      'PTASGIngress12', 'PTASGIngress15', 'PTASGIngress14', 'PTASGIngress17', 'PTASGIngress16', 'PTASGIngress18',
+                      'PTASGInress11', 'PTASGIngress8', 'PTASGIngress1', 'PTASGIngress3', 'PTASGIngress2', 'PTASGIngress5',
+                      'PTASGIngress4', 'PTASGIngress7', 'PTASGIngress6'
+                      }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
   def test_PASNetworkEnvironmentPrivateLink_SubnetNetworkAclAssociation(self):
