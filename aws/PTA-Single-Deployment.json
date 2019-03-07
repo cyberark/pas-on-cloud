@@ -655,7 +655,8 @@
                                     "Ref":"PTAServerTimeZone"
                                  },
                                  "\n",
-                                 "export vault_port=1858\n"
+                                 "export vault_port=1858\n",
+                                 "python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws"
                               ]
                            ]
                         },
@@ -673,7 +674,7 @@
                         "command":"sudo chmod 550 /opt/tomcat/diamond-resources/license.xml"
                      },
                      "12-executeptaconfigurationscript":{
-                        "command":". /tmp/register.sh"
+                        "command":"sudo ./tmp/register.sh"
                      },
                      "99-SignalCompletion":{
                         "command":{
