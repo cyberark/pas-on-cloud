@@ -656,12 +656,13 @@
                                  },
                                  "\n",
                                  "export vault_port=1858\n",
-                                 "DRValueEmpty=", { "Fn::If": ["DRValueEmpty", "true", "false" ]}, "\n",
-                                 "if [ $DRValueEmpty = 'false' ]; then\n",
+                                 "DRValueEmpty=", { "Fn::If": ["DRValueEmpty", 0, 1 ]}, "\n",
+                                 "if [ $DRValueEmpty = 1 ]; then\n",
                                  "   export vault_ipsDR=",
                                      {
                                         "Ref":"DRPrivateIP"
                                      },
+                                 "\n",
                                  "fi;\n",
                                  "echo $vault_ip\n",
                                  "echo $vault_ipsDR\n",
