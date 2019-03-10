@@ -354,6 +354,14 @@
       "PTAMachine":{
          "Type":"AWS::EC2::Instance",
          "Properties":{
+            "Tags":[
+               {
+                  "Key":"Name",
+                  "Value":{
+                     "Ref":"PTAInstanceName"
+                  }
+               }
+            ],
             "SecurityGroupIds":{
                "Ref":"PTAInstanceSecurityGroups"
             },
@@ -813,6 +821,11 @@
          "Type":"String",
          "Description":"Enter the private DNS of the PVWA instance."
       },
+      "PTAInstanceName":{
+         "Type":"String",
+         "Description":"Enter a name for the PTA instance.",
+         "Default":"PTA_Component"
+      },
       "PTAInstanceType":{
          "Type":"String",
          "Description":"Select the instance type of the PTA instance.",
@@ -881,6 +894,7 @@
                "Parameters":[
                   "PTALicenseBucket",
                   "LicenseFile",
+                  "PTAInstanceName",
                   "PTAServerTimeZone",
                   "PTAInstanceType",
                   "PTAInstanceSecurityGroups",
@@ -918,6 +932,9 @@
             },
             "LicenseFile":{
                "default":"License File"
+            },
+            "PTAInstanceName":{
+               "default":"PTA Instance Name"
             },
             "PTAServerTimeZone":{
                "default":"PTA Server Time Zone"
