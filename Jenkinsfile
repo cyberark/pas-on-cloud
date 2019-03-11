@@ -34,8 +34,8 @@ pipeline {
         script {
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Full-PAS-Deployment.json", returnStdout: true)
-          // sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
-          // sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-NAT.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-PrivateLink.json", returnStdout: true)
@@ -50,8 +50,8 @@ pipeline {
           sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.json", returnStdout: true)
-          // sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json", returnStdout: true)
-          // sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-dr-Deployment.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-PrivateLink.json", returnStdout: true)
         }
