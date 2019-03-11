@@ -489,29 +489,29 @@
          }
       },
       "PVWASecretString": {
-            "Type": "AWS::CloudFormation::CustomResource",
-            "Properties": {
-                "Length": 16,
-                "ServiceToken": {
-                    "Fn::GetAtt": [
-                        "RandomStringLambdaFunction",
-                        "Arn"
-                    ]
-                }
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Properties": {
+            "Length": 16,
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "RandomStringLambdaFunction",
+                  "Arn"
+               ]
             }
-        },
+         }
+      },
       "CPMSecretString": {
-            "Type": "AWS::CloudFormation::CustomResource",
-            "Properties": {
-                "Length": 16,
-                "ServiceToken": {
-                    "Fn::GetAtt": [
-                        "RandomStringLambdaFunction",
-                        "Arn"
-                    ]
-                }
+         "Type": "AWS::CloudFormation::CustomResource",
+         "Properties": {
+            "Length": 16,
+            "ServiceToken": {
+               "Fn::GetAtt": [
+                  "RandomStringLambdaFunction",
+                  "Arn"
+               ]
             }
-        },
+         }
+      },
       "VaultMachine": {
          "Type": "AWS::EC2::Instance",
          "Properties": {
