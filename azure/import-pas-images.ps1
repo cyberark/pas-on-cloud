@@ -38,21 +38,22 @@ PARAM(
     # Supplied by CyberArk Vault/VaultDR AccessSAS
     [Parameter(Mandatory = $false)]
     [String]
-    $VaultAccessSAS
+    $PsmpAccessSAS,
+    # Supplied by CyberArk Vault/VaultDR AccessSAS
+    [Parameter(Mandatory = $true)]
+    [String]
 )
  
 #Set variables
+$release = "v10.8"
+$storageName = "cyberarkimages"
+$containerName = "cyberarkimages"
 $cpmDestBlob = "pas-cpm-$release.vhd"
 $pvwaDestBlob = "pas-pvwa-$release.vhd"
 $psmDestBlob = "pas-psm-$release.vhd"
 $psmpDestBlob = "pas-psmp-$release.vhd"
 $vaultDestBlob = "pas-vault-$release.vhd"
-
-$cpmImageName = "PAS-CPM-$release"
-$pvwaImageName = "PAS-PVWA-$release"
-$psmImageName = "PAS-PSM-$release"
-$psmpImageName = "PAS-PSMP-$release"
-$vaultImageName = "PAS-Vault-$release"
+$resourceGroupName = "Cyberark-Images"
 
 Try
 {
@@ -92,73 +93,61 @@ Try
     }
       
     #Start copy psmp
-    if ($PsmpAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob -Force
-    }
+    Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob
     
     #Start copy vault
-    if ($VaultAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $VaultAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $vaultDestBlob -Force
-    }
-
+    Start-AzureStorageBlobCopy -AbsoluteUri $VaultAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $vaultDestBlob
+     
+     
     #Wait for vhd to be fully copied (~40 minutes)
-    if ($CpmAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $cpmDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $cpmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $cpmDestBlob)
-        #Create Cpm Image from blob
-        $vmOSType = "Windows"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $cpmblobUri
-        $image = New-AzureRmImage -ImageName $cpmImageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-
-    if ($PvwaAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $pvwaDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $pvwablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $pvwaDestBlob)
-        #Create Pvwa Image from blob
-        $vmOSType = "Windows"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $pvwablobUri
-        $image = New-AzureRmImage -ImageName $pvwaImageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-
-    if ($PsmAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $psmDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $psmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmDestBlob)
-        #Create Psm Image from blob
-        $vmOSType = "Windows"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmblobUri
-        $image = New-AzureRmImage -ImageName $psmImageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-
-    if ($PsmpAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $psmpDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $psmpblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
-        #Create Psmp Image from blob
-        $vmOSType = "Linux"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmpblobUri
-        $image = New-AzureRmImage -ImageName $psmpImageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-
-    if ($VaultAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $vaultDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $vaultDestBlob)
-        #Create Vault Image from blob
-        $vmOSType = "Windows"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $vaultblobUri
-        $image = New-AzureRmImage -ImageName $vaultImageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    Write-Host "Completed"
+    Get-AzureStorageBlobCopyState -Blob $cpmDestBlob -Container $containerName -Context $destContext -WaitForComplete
+    Get-AzureStorageBlobCopyState -Blob $pvwaDestBlob -Container $containerName -Context $destContext -WaitForComplete
+    Get-AzureStorageBlobCopyState -Blob $psmDestBlob -Container $containerName -Context $destContext -WaitForComplete
+    Get-AzureStorageBlobCopyState -Blob $psmpDestBlob -Container $containerName -Context $destContext -WaitForComplete
+    Get-AzureStorageBlobCopyState -Blob $vaultDestBlob -Container $containerName -Context $destContext -WaitForComplete
+     
+     
+    $cpmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $cpmDestBlob)
+    $pvwablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $pvwaDestBlob)
+    $psmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmDestBlob)
+    $psmpblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
+    $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $vaultDestBlob)
+     
+     
+    #Create Cpm Image from blob
+    $vmOSType = "Windows"
+    $imageName = "PAS-CPM-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $cpmblobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    
+    #Create Pvwa Image from blob
+    $vmOSType = "Windows"
+    $imageName = "PAS-PVWA-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $pvwablobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    
+    #Create Psm Image from blob
+    $vmOSType = "Windows"
+    $imageName = "PAS-PSM-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmblobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    
+    #Create Psmp Image from blob
+    $vmOSType = "Linux"
+    $imageName = "PAS-PSMP-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmpblobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    
+    #Create Vault Image from blob
+    $vmOSType = "Windows"
+    $imageName = "PAS-Vault-$release"
+    $imageConfig = New-AzureRmImageConfig -Location $location
+    $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $vaultblobUri
+    $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
 }
 Catch
 {
