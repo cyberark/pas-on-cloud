@@ -2391,7 +2391,7 @@
          },
          "ap-south-1": {
             "CPM": "ami-0a1d3c9d70feaa107",
-            "PVWA": "ami-0dc291976629286e7",
+            "PVWA": "ami-0358cecfaa0048615",
             "PSM": "ami-050b0a6b98c9c15c5",
             "PSMP": "ami-07d62c13482f612e1"
          },
