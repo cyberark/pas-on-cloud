@@ -1,28 +1,47 @@
 PARAM(
+    # release number
+    [Parameter(Mandatory = $false)]
+    [String]
+    $release="v10.8",
     # location to import Cyberark images to
     [Parameter(Mandatory = $true)]
     [String]
     $location,
+    # storageName to import Cyberark images to
+    [Parameter(Mandatory = $false)]
+    [String]
+    $storageName="cyberarkimages",
+    # containerName to import Cyberark images to
+    [Parameter(Mandatory = $false)]
+    [String]
+    $containerName="cyberarkimages",
+    # resourceGroupName to import Cyberark images to
+    [Parameter(Mandatory = $false)]
+    [String]
+    $resourceGroupName="Cyberark-Images",
     # Supplied by CyberArk CPM AccessSAS
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]
     $CpmAccessSAS,
     # Supplied by CyberArk PVWA AccessSAS
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]
     $PvwaAccessSAS,
     # Supplied by CyberArk PSM AccessSAS
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]
     $PsmAccessSAS,
     # Supplied by CyberArk PSMP AccessSAS
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
+    [String]
+    $PsmpAccessSAS,
+    # Supplied by CyberArk Vault/VaultDR AccessSAS
+    [Parameter(Mandatory = $false)]
     [String]
     $PsmpAccessSAS,
     # Supplied by CyberArk Vault/VaultDR AccessSAS
     [Parameter(Mandatory = $true)]
     [String]
-    $VaultAccessSAS
 )
  
 #Set variables
@@ -56,13 +75,22 @@ Try
     }
      
     #Start copy cpm
-    Start-AzureStorageBlobCopy -AbsoluteUri $CpmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $cpmDestBlob
+    if ($CpmAccessSAS)
+    {
+        Start-AzureStorageBlobCopy -AbsoluteUri $CpmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $cpmDestBlob -Force
+    }
     
     #Start copy pvwa
-    Start-AzureStorageBlobCopy -AbsoluteUri $PvwaAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $pvwaDestBlob
-     
+    if ($PvwaAccessSAS)
+    {
+        Start-AzureStorageBlobCopy -AbsoluteUri $PvwaAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $pvwaDestBlob -Force
+    }
+
     #Start copy psm
-    Start-AzureStorageBlobCopy -AbsoluteUri $PsmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmDestBlob
+    if ($PsmAccessSAS)
+    {
+        Start-AzureStorageBlobCopy -AbsoluteUri $PsmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmDestBlob -Force
+    }
       
     #Start copy psmp
     Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob
