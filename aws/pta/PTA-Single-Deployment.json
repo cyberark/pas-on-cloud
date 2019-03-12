@@ -954,49 +954,49 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "PTA":"ami-0c862bfde07c8383b"
+            "PTA":"ami-067810abfed5f92b0"
          },
          "us-east-2":{
-            "PTA":"ami-02da822bac722d339"
+            "PTA":"ami-0eff7a81246d001d8"
          },
          "eu-west-2":{
             "PTA":"ami-02da822bac722d339"
          },
          "us-west-1":{
-            "PTA":"ami-02da822bac722d339"
+            "PTA":"ami-0b3d78d239d55509e"
          },
          "us-west-2":{
-            "PTA":"ami-0e26dd746598b2829"
+            "PTA":"ami-063e67533878a4e27"
          },
          "ca-central-1":{
-            "PTA":"ami-02da822bac722d339"
+            "PTA":"ami-09746870593f38cda"
          },
          "eu-west-1":{
-            "PTA":"ami-07e5542d089692bc2"
+            "PTA":"ami-0b32579d6f3ed35ba"
          },
          "eu-central-1":{
-            "PTA":"ami-06b0417970eaf337e"
+            "PTA":"ami-0bc38743c9254c5d3"
          },
          "ap-southeast-1":{
-            "PTA":"ami-029e0bb6069e7afd8"
+            "PTA":"ami-00c3b7d02343bb21d"
          },
          "ap-southeast-2":{
-            "PTA":"ami-0b33117017a0627ac"
+            "PTA":"ami-0e5ce5e19999d7697"
          },
          "ap-northeast-2":{
-            "PTA":"ami-0bee3849042c5f67e"
+            "PTA":"ami-091b1bd9fdd64fe81"
          },
          "ap-northeast-1":{
-            "PTA":"ami-04e8a59042a5e181b"
+            "PTA":"ami-0777a9ab951a1e239"
          },
          "ap-south-1":{
-            "PTA":"ami-0f64dbebffa1acdca"
+            "PTA":"ami-00844e58910ba2c39"
          },
          "sa-east-1":{
-            "PTA":"ami-07a90b5f5e0343929"
+            "PTA":"ami-071d36b6415462a72"
          },
-         "us-gov-west-1":{
-            "PTA":"ami-ba5ac4db"
+         "eu-west-3":{
+            "PTA":"ami-06c0ee40efde875ed"
          }
       }
    },
