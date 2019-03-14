@@ -1836,8 +1836,8 @@
             "Components":"ami-0de6755d4d9e55458"
          },
          "us-gov-west-1": {
-            "Vault": "ami-73482912",
-            "Components": "ami-a94425c8"
+            "Vault": "ami-815ac4e0",
+            "Components": "ami-875ac4e6"
          }
       }
    },
