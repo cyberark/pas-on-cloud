@@ -2243,59 +2243,59 @@
       "RegionMap":{
          "us-east-1":{
             "Vault":"ami-0cf1c48744ffdf9db",
-            "Components":"ami-07720ebb4f7e02ee9"
+            "Components":"ami-0f70712cd62b428f2"
          },
          "us-east-2":{
             "Vault":"ami-0efd82b593f0b4b83",
-            "Components":"ami-0e1469d79cb2d82e5"
+            "Components":"ami-070be371b0ffc43f3"
          },
          "eu-west-2":{
-            "Vault":"ami-0b57d5d528387343f",
+            "Vault":"ami-00a7049aaf4a9fcea",
             "Components":"ami-02bef13afd1eedf14"
          },
          "us-west-1":{
             "Vault":"ami-0da1386e3b160a55c",
-            "Components":"ami-0f32afb97c14ccfcf"
+            "Components":"ami-0406786e1269737ec"
          },
          "us-west-2":{
             "Vault":"ami-090bcd24bb360762b",
-            "Components":"ami-00623e3f18b41c12d"
+            "Components":"ami-0808aa4632b9ac4d7"
          },
          "ca-central-1":{
             "Vault":"ami-02082f5c5bde642f0",
-            "Components":"ami-03741711a7913dc01"
+            "Components":"ami-023b02c9a9ab017f3"
          },
          "eu-west-1":{
             "Vault":"ami-06fe53288df210711",
-            "Components":"ami-0cd9f99bfc99444d4"
+            "Components":"ami-0f83bf6c609d30283"
          },
          "eu-central-1":{
             "Vault":"ami-06920cea77dd0ecc3",
-            "Components":"ami-02dd302b6982468bc"
+            "Components":"ami-076b0d2bc733572c2"
          },
          "ap-southeast-1":{
             "Vault":"ami-0ac4c40371aaf0784",
-            "Components":"ami-003926a78d612e146"
+            "Components":"ami-0f4d5c6a1fb4f1d4e"
          },
          "ap-southeast-2":{
             "Vault":"ami-0f6822df95ff790ce",
-            "Components":"ami-0b665ca88463d13bc"
+            "Components":"ami-0cfbaf990d43e6574"
          },
          "ap-northeast-2":{
             "Vault":"ami-06827f6147908102d",
-            "Components":"ami-0f0d25078d4012488"
+            "Components":"ami-034d5751f19f9115b"
          },
          "ap-northeast-1":{
             "Vault":"ami-0f2f5331ae23e533b",
-            "Components":"ami-0de069d24805ae85f"
+            "Components":"ami-06efbff82dc19b0f0"
          },
          "ap-south-1":{
             "Vault":"ami-0e1dcf9eb1c5ede0a",
-            "Components":"ami-0813b3b7a56efeb31"
+            "Components":"ami-033164e60fbd3f976"
          },
          "sa-east-1":{
             "Vault":"ami-0f913359bafc47794",
-            "Components":"ami-01592615868c7a192"
+            "Components":"ami-0de6755d4d9e55458"
          },
          "us-gov-west-1": {
             "Vault": "ami-73482912",
