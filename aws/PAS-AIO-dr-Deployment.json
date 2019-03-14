@@ -2250,8 +2250,8 @@
             "Components":"ami-070be371b0ffc43f3"
          },
          "eu-west-2":{
-            "Vault":"ami-00a7049aaf4a9fcea",
-            "Components":"ami-02bef13afd1eedf14"
+            "Vault":"ami-0b57d5d528387343f",
+            "Components":"ami-00a7049aaf4a9fcea"
          },
          "us-west-1":{
             "Vault":"ami-0da1386e3b160a55c",
