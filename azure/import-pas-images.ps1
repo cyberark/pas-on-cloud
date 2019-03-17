@@ -38,10 +38,6 @@ PARAM(
     # Supplied by CyberArk Vault/VaultDR AccessSAS
     [Parameter(Mandatory = $false)]
     [String]
-    $PsmpAccessSAS,
-    # Supplied by CyberArk Vault/VaultDR AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
     $VaultAccessSAS
 )
  
