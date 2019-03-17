@@ -40,20 +40,17 @@ PARAM(
     [String]
     $PsmpAccessSAS,
     # Supplied by CyberArk Vault/VaultDR AccessSAS
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [String]
+    $VaultAccessSAS
 )
  
 #Set variables
-$release = "v10.8"
-$storageName = "cyberarkimages"
-$containerName = "cyberarkimages"
 $cpmDestBlob = "pas-cpm-$release.vhd"
 $pvwaDestBlob = "pas-pvwa-$release.vhd"
 $psmDestBlob = "pas-psm-$release.vhd"
 $psmpDestBlob = "pas-psmp-$release.vhd"
 $vaultDestBlob = "pas-vault-$release.vhd"
-$resourceGroupName = "Cyberark-Images"
 
 Try
 {
