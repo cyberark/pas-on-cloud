@@ -110,11 +110,11 @@
             "name": "GuidGenerator",
             "type": "Microsoft.Resources/deployments",
             "properties": {
-                "mode": "incremental",
-                "templateLink": {
-                    "uri": "https://armtemplates-azurewebsites-net.o365.apps.cyberark.com/api/NewGuid",
-                    "contentVersion": "1.0.0.0"
-                }
+              "mode": "incremental",
+              "templateLink": {
+                "uri": "https://raw.githubusercontent.com/davidjrh/azurerm-newguid/master/NewGuid.json",
+                "contentVersion": "1.0.0.0"
+              }
             }
         },
         {
@@ -162,7 +162,7 @@
                         "value": "[parameters('Vault Private IP')]"
                     },
                     "Guid": {
-                        "value": "[reference('GuidGenerator').outputs.guid0.value]"
+                        "value": "[reference('GuidGenerator').outputs.guid.value]"
                     }
                 }
             },
