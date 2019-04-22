@@ -2,6 +2,13 @@
 
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
+## [10.8.1] (Release date 2019/01/23)
+
+### Added
+- AWS : Added - PTA Automatic deployment
+- AWS : Fix for - access PIMServices.svc failure
+- Azure : Added - Vault automatic deployment  
+
 
 ## [10.7] (Release date 2019/01/23)
 
