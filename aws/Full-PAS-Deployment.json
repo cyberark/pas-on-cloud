@@ -1583,8 +1583,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -1593,7 +1594,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -1602,54 +1603,51 @@
                                  "\t)\n",
                                  "\treturn objectResponse['Parameter']['Value']\n",
                                  "\n",
+								 "inputHostname='",
+                                 {"Ref":"PVWAHostName"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tpvwaurl = 'https://{0}/PasswordVault'.format(hostname)\n",
+                                 "else:\n",
+                                 "\tpvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PVWA',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+                                 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-PVWA ",
+                                 "-PVWAVaultIP ",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 ",",
+								         ",",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultDRMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
-                                 "adminp",
-                                 "]\n",
-                                 "inputHostname='",
-                                 {"Ref":"PVWAHostName"},
-                                 "'\n",
-                                 "if not inputHostname:\n",
-                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
-                                 "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
-                                 "else:\n",
-                                 "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+                                 " -PVWAVaultPort ",
+                                 "1858 ",
+                                 "-PVWAVaultUser Administrator",
+                                 " ",
+                                 "-PVWAVaultPassword '+",
+                                 "adminp ",
+								 "+ ' -PVWAUrl '+",
+								 "pvwaurl",
+                                 "],",
+								 "stdout=sys.stdout)"
                               ]
                            ]
                         }
@@ -1708,11 +1706,6 @@
                      },
                      "06-CSTserviceConfig": {
                         "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "07-CSTserviceStart": {
-                        "command": "sc start \"CyberArk Scheduled Tasks\"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
@@ -1983,8 +1976,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -1992,7 +1986,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -2003,20 +1997,18 @@
                                  "\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'CPM',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+                                 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-CPM ",
+                                 "-CPMVaultIP ",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2030,15 +2022,14 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
+                                 " -CPMVaultPort ",
+                                 "1858 ",
+                                 "-CPMVaultUser Administrator",
+                                 " ",
+                                 "-CPMVaultPassword '+",
                                  "adminp",
-                                 "]\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+								 "],",
+								 "stdout=sys.stdout)"
                               ]
                            ]
                         }
@@ -2109,16 +2100,6 @@
                      },
                      "07-CPMSserviceConfig": {
                         "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "08-CPMserviceStart": {
-                        "command": "sc start \"CyberArk Password Manager\"",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "09-CPMSserviceStart": {
-                        "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
@@ -2356,8 +2337,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -2366,7 +2348,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -2377,20 +2359,20 @@
                                  "\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PSM',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+								 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-PSM ",
+                                 "-PSMAcceptEula ",
+                                 "Yes ",
+                                 "-PSMVaultIP ",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2404,22 +2386,15 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
+                                 " -PSMVaultPort ",
+                                 "1858 ",
+                                 "-PSMVaultUser Administrator",
+                                 " ",
+                                 "-PSMVaultPassword '+",
                                  "adminp",
-                                 "]\n",
-                                 "properties = urllib2.urlopen('http://169.254.169.254/latest/meta-data').read()\n",
-                                 "if 'public-ipv4' in properties:\n",
-                                 "\tipv4 = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4').read()\n",
-                                 "\tif ipv4 and ipv4 <> 'none':\n",
-                                 "\t\tcallArray.append('/psmpublicip')\n",
-                                 "\t\tcallArray.append(ipv4)\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                              ]
+                                 "],",
+								 "stdout=sys.stdout)"
+								 ]
                            ]
                         }
                      }
