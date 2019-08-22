@@ -48,8 +48,8 @@
       },
       "Key Vault Name":{
          "type":"String",
-	 "minLength": 3,
-	 "maxLength": 24,
+         "minLength":3,
+         "maxLength":24,
          "metadata":{
             "description":"Enter the name of the Key Vault , verify it does not already exist"
          }
