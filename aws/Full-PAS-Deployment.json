@@ -1624,7 +1624,7 @@
 								 "'powershell.exe',",
                                  "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
                                  "-PVWA ",
-                                 "-PVWAVaultIP '",
+                                 "-PVWAVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -1638,7 +1638,7 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "'",
+                                 "\"",
                                  " -PVWAVaultPort ",
                                  "1858 ",
                                  "-PVWAVaultUser Administrator",
@@ -2009,7 +2009,7 @@
 								 "'powershell.exe',",
                                  "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
                                  "-CPM ",
-                                 "-CPMVaultIP '",
+                                 "-CPMVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2023,7 +2023,7 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "'",
+                                 "\"",
                                  " -CPMVaultPort ",
                                  "1858 ",
                                  "-CPMVaultUser Administrator",
@@ -2374,7 +2374,7 @@
                                  "-PSM ",
                                  "-PSMAcceptEula ",
                                  "Yes ",
-                                 "-PSMVaultIP '",
+                                 "-PSMVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2388,7 +2388,7 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "'",
+                                 "\"",
                                  " -PSMVaultPort ",
                                  "1858 ",
                                  "-PSMVaultUser Administrator",
