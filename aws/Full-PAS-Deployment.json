@@ -1583,8 +1583,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -1593,7 +1594,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -1602,54 +1603,52 @@
                                  "\t)\n",
                                  "\treturn objectResponse['Parameter']['Value']\n",
                                  "\n",
+								 "inputHostname='",
+                                 {"Ref":"PVWAHostName"},
+                                 "'\n",
+                                 "if not inputHostname:\n",
+                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "\tpvwaurl = 'https://{0}/PasswordVault'.format(hostname)\n",
+                                 "else:\n",
+                                 "\tpvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PVWA',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+                                 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-PVWA ",
+                                 "-PVWAVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 ",",
+								         ",",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultDRMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
-                                 "adminp",
-                                 "]\n",
-                                 "inputHostname='",
-                                 {"Ref":"PVWAHostName"},
-                                 "'\n",
-                                 "if not inputHostname:\n",
-                                 "\thostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
-                                 "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append('https://{0}/PasswordVault'.format(hostname))\n",
-                                 "else:\n",
-                                 "\tcallArray.append('/pvwaurl')\n",
-                                 "\tcallArray.append('https://{0}/PasswordVault'.format(inputHostname))\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+                                 "\"",
+                                 " -PVWAVaultPort ",
+                                 "1858 ",
+                                 "-PVWAVaultUser Administrator",
+                                 " ",
+                                 "-PVWAVaultPassword '+",
+                                 "adminp ",
+								 "+ ' -PVWAUrl '+",
+								 "pvwaurl",
+                                 "],",
+								 "stdout=sys.stdout)"
                               ]
                            ]
                         }
@@ -1708,11 +1707,6 @@
                      },
                      "06-CSTserviceConfig": {
                         "command": "sc config \"CyberArk Scheduled Tasks\" start=auto",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "07-CSTserviceStart": {
-                        "command": "sc start \"CyberArk Scheduled Tasks\"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
@@ -1983,8 +1977,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -1992,7 +1987,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -2003,20 +1998,18 @@
                                  "\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'CPM',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+                                 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-CPM ",
+                                 "-CPMVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2030,15 +2023,15 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
+                                 "\"",
+                                 " -CPMVaultPort ",
+                                 "1858 ",
+                                 "-CPMVaultUser Administrator",
+                                 " ",
+                                 "-CPMVaultPassword '+",
                                  "adminp",
-                                 "]\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+								 "],",
+								 "stdout=sys.stdout)"
                               ]
                            ]
                         }
@@ -2109,16 +2102,6 @@
                      },
                      "07-CPMSserviceConfig": {
                         "command": "sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "08-CPMserviceStart": {
-                        "command": "sc start \"CyberArk Password Manager\"",
-                        "waitAfterCompletion": "0",
-                        "ignoreErrors": "false"
-                     },
-                     "09-CPMSserviceStart": {
-                        "command": "sc start \"CyberArk Central Policy Manager Scanner\"",
                         "waitAfterCompletion": "0",
                         "ignoreErrors": "false"
                      },
@@ -2356,8 +2339,9 @@
                      },
                      "C:\\deploy.py": {
                         "content": {
-                           "Fn::Join": [
-                              "", [
+                           "Fn::Join":[
+                              "",
+                              [
                                  "import boto3\n",
                                  "import sys\n",
                                  "import subprocess\n",
@@ -2366,7 +2350,7 @@
                                  "def fetchPassword(name):\n",
                                  "\tssmClient = boto3.client('ssm', region_name='",
                                  {
-                                    "Ref": "AWS::Region"
+                                    "Ref":"AWS::Region"
                                  },
                                  "')\n",
                                  "\tobjectResponse = ssmClient.get_parameter(\n",
@@ -2377,20 +2361,20 @@
                                  "\n",
                                  "adminp = fetchPassword('",
                                  {
-                                    "Fn::GetAtt": [
+                                    "Fn::GetAtt":[
                                        "StoreAdminPassword",
                                        "SsmId"
                                     ]
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PSM',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
+								 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-PSM ",
+                                 "-PSMAcceptEula ",
+                                 "Yes ",
+                                 "-PSMVaultIP \"",
                                  {
                                     "Fn::GetAtt": [
                                        "VaultMachine",
@@ -2404,22 +2388,16 @@
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
+                                 "\"",
+                                 " -PSMVaultPort ",
+                                 "1858 ",
+                                 "-PSMVaultUser Administrator",
+                                 " ",
+                                 "-PSMVaultPassword '+",
                                  "adminp",
-                                 "]\n",
-                                 "properties = urllib2.urlopen('http://169.254.169.254/latest/meta-data').read()\n",
-                                 "if 'public-ipv4' in properties:\n",
-                                 "\tipv4 = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4').read()\n",
-                                 "\tif ipv4 and ipv4 <> 'none':\n",
-                                 "\t\tcallArray.append('/psmpublicip')\n",
-                                 "\t\tcallArray.append(ipv4)\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
-                              ]
+                                 "],",
+								 "stdout=sys.stdout)"
+								 ]
                            ]
                         }
                      }
@@ -3367,102 +3345,102 @@
    "Mappings": {
       "RegionMap": {
          "us-east-1": {
-            "Vault": "ami-0cf1c48744ffdf9db",
-            "CPM": "ami-01f4a2a07b19aa6f0",
-            "PVWA": "ami-05d217d7beae359b9",
-            "PSM": "ami-08f6c84a58951e1cd",
-            "PSMP": "ami-0fb8ac4ef13225047"
+            "Vault": "ami-0d6b00444f4d52b5b",
+            "CPM": "ami-075c07b8e22ee53e7",
+            "PVWA": "ami-0be24aa7892c17a87",
+            "PSM": "ami-06b82fdefc378791e",
+            "PSMP": "ami-00e933699fd3ecce8"
          },
          "us-east-2":{
-            "Vault":"ami-0efd82b593f0b4b83",
-            "CPM":"ami-00991183ac415cbed",
-            "PVWA":"ami-0289fae2c2ead1a3f",
-            "PSM":"ami-0bc611a654b8649be",
-            "PSMP":"ami-0c20cbf0021eeddfa"
+            "Vault":"ami-08ef76793347fb10b",
+            "CPM":"ami-04833fbf583aede59",
+            "PVWA":"ami-0314a02352456e6cf",
+            "PSM":"ami-0492c708eb2a71d4d",
+            "PSMP":"ami-0e2f39a408b329ab2"
          },
          "eu-west-2": {
-            "Vault": "ami-0b57d5d528387343f",
-            "CPM": "ami-0a070b1fe3f976ce5",
-            "PVWA": "ami-0605fddba612b20fd",
-            "PSM": "ami-0534718f417ae5dac",
-            "PSMP": "ami-06ff76a43e0f1e659"
+            "Vault": "ami-056a3d415bb8c53bd",
+            "CPM": "ami-0c21e6365d2854dcb",
+            "PVWA": "ami-0049ee59a3c2e4989",
+            "PSM": "ami-0b99134bfe5d7a080",
+            "PSMP": "ami-053a8cbfe1b8cb48c"
          },
          "us-west-1": {
-            "Vault": "ami-0da1386e3b160a55c",
-            "CPM": "ami-031d438cb08e9e2a3",
-            "PVWA": "ami-0b809d1da1546e6f4",
-            "PSM": "ami-067ec025821bf90c8",
-            "PSMP": "ami-079c6f86eaaa21956"
+            "Vault": "ami-0eb689d34da452048",
+            "CPM": "ami-0aecc7050d836eaba",
+            "PVWA": "ami-096ae5fe412f3a8e9",
+            "PSM": "ami-083a0dff4a76c9497",
+            "PSMP": "ami-05a8c1b84e4a45e1f"
          },
          "us-west-2": {
-            "Vault": "ami-090bcd24bb360762b",
-            "CPM": "ami-0974a4fb38db9ba92",
-            "PVWA": "ami-083dfac640243baf1",
-            "PSM": "ami-0db48c502a164cbf5",
-            "PSMP": "ami-043f98b5d1d1fa0b5"
+            "Vault": "ami-0822844df9c4df9cd",
+            "CPM": "ami-075fd36fcbe096e6f",
+            "PVWA": "ami-0d788d74efdd9ad0d",
+            "PSM": "ami-04a0e3b7adb461878",
+            "PSMP": "ami-0c82e715179371587"
          },
          "ca-central-1": {
-            "Vault": "ami-02082f5c5bde642f0",
-            "CPM": "ami-0bfbfbaf34ef50082",
-            "PVWA": "ami-0d8b995c2aa494cb4",
-            "PSM": "ami-02d7335e178b736cb",
-            "PSMP": "ami-0ae8477d9339243f7"
+            "Vault": "ami-043cfe40b65b2e736",
+            "CPM": "ami-0a99b2e3a7807bdf9",
+            "PVWA": "ami-0d25380ac12618005",
+            "PSM": "ami-03ec9af68e021da0b",
+            "PSMP": "ami-06b98e350b395546e"
          },
          "eu-west-1": {
-            "Vault": "ami-06fe53288df210711",
-            "CPM": "ami-06b193ca65a341cc7",
-            "PVWA": "ami-0ccdc1e458ce0a0e3",
-            "PSM": "ami-0de6e5f2676414c57",
-            "PSMP": "ami-0de091c7e47fb5123"
+            "Vault": "ami-051b8ae65285d8b9d",
+            "CPM": "ami-00ad2168c42156475",
+            "PVWA": "ami-053c844409b6dfb64",
+            "PSM": "ami-0b20d862d967345a2",
+            "PSMP": "ami-013fcc5b1a0c36e39"
          },
          "eu-central-1": {
-            "Vault": "ami-06920cea77dd0ecc3",
-            "CPM": "ami-0a0e99bd1043bff3b",
-            "PVWA": "ami-00ddfe2f3f096d218",
-            "PSM": "ami-003322631d95a16fe",
-            "PSMP": "ami-0ec69297cc32195f2"
+            "Vault": "ami-025dc3321fc336b45",
+            "CPM": "ami-00f21809523b27d71",
+            "PVWA": "ami-0dc4c6dde90072ee8",
+            "PSM": "ami-0861175f375f4c16c",
+            "PSMP": "ami-037c49b2ee93e3d93"
          },
          "ap-southeast-1": {
-            "Vault": "ami-0ac4c40371aaf0784",
-            "CPM": "ami-07792d932a87f2f4a",
-            "PVWA": "ami-073b88b211b48c2c4",
-            "PSM": "ami-0c2b2ddacab1d0dfc",
-            "PSMP": "ami-04a54577464646bb3"
+            "Vault": "ami-00f5f9880ded42c37",
+            "CPM": "ami-02ab3eba26afbf2ea",
+            "PVWA": "ami-0edfb13c51969e30e",
+            "PSM": "ami-07333781f84fa3ccf",
+            "PSMP": "ami-09da15e5a7093ca9d"
          },
          "ap-southeast-2": {
-            "Vault": "ami-0f6822df95ff790ce",
-            "CPM": "ami-0f8fd5f9eaff9198f",
-            "PVWA": "ami-022d732d80853cd9e",
-            "PSM": "ami-0da1833ead00f469f",
-            "PSMP": "ami-057ba59ad2c8d2f73"
+            "Vault": "ami-0225efbe0ab2b62a2",
+            "CPM": "ami-05faa0b3d300538f7",
+            "PVWA": "ami-00fea9ede64a5244f",
+            "PSM": "ami-0b19c8efc441e2e93",
+            "PSMP": "ami-054d2791b1ed76dbb"
          },
          "ap-northeast-2": {
-            "Vault": "ami-06827f6147908102d",
-            "CPM": "ami-021f08f853d710b3a",
-            "PVWA": "ami-020972572398dd6b3",
-            "PSM": "ami-091e64e42f355690c",
-            "PSMP": "ami-0bffe43bca05042c8"
+            "Vault": "ami-0432fd92f8d0bcf45",
+            "CPM": "ami-053817b3aec02eb3d",
+            "PVWA": "ami-0ebb8fad48f8a7b80",
+            "PSM": "ami-07bdca4b367cd1fa7",
+            "PSMP": "ami-05b0697ed4fed6b57"
          },
          "ap-northeast-1": {
-            "Vault": "ami-0f2f5331ae23e533b",
-            "CPM": "ami-0e73e5e5271302454",
-            "PVWA": "ami-04ba944293de8ba20",
-            "PSM": "ami-044f960feba900d98",
-            "PSMP": "ami-09732d42317e4636f"
+            "Vault": "ami-01e188e6fed85df6b",
+            "CPM": "ami-0ac29e5eb928cb476",
+            "PVWA": "ami-039c2a7f3af933f78",
+            "PSM": "ami-00a046c3a8332b0fd",
+            "PSMP": "ami-013e5f7abdbed162d"
          },
          "ap-south-1": {
-            "Vault": "ami-0e1dcf9eb1c5ede0a",
-            "CPM": "ami-0a1d3c9d70feaa107",
-            "PVWA": "ami-0358cecfaa0048615",
-            "PSM": "ami-050b0a6b98c9c15c5",
-            "PSMP": "ami-07d62c13482f612e1"
+            "Vault": "ami-0d7eebd7fc187c46a",
+            "CPM": "ami-055d5cb3919670edf",
+            "PVWA": "ami-0a387ba579eb08b2e",
+            "PSM": "ami-0f5f42dc4ee9ddbd3",
+            "PSMP": "ami-00314dc1c99e22df5"
          },
          "sa-east-1": {
-            "Vault": "ami-0f913359bafc47794",
-            "CPM": "ami-018a24d9e6904ef10",
-            "PVWA": "ami-02f39927936fc77dd",
-            "PSM": "ami-0a1613614f417f6b3",
-            "PSMP": "ami-00572bcf418094156"
+            "Vault": "ami-071a4bd27fbeb0e3e",
+            "CPM": "ami-0e0ef15d85f2d2256",
+            "PVWA": "ami-063f99035d7747361",
+            "PSM": "ami-0625d90bb05051568",
+            "PSMP": "ami-05f810de9e7da0d4a"
          },
          "us-gov-west-1": {
             "Vault": "ami-73482912",
