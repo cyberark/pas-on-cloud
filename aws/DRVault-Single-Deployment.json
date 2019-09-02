@@ -1267,46 +1267,46 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-0cf1c48744ffdf9db"
+            "Vault":"ami-0d6b00444f4d52b5b"
          },
          "us-east-2":{
-            "Vault":"ami-0efd82b593f0b4b83"
+            "Vault":"ami-08ef76793347fb10b"
          },
          "eu-west-2":{
-            "Vault":"ami-0b57d5d528387343f"
+            "Vault":"ami-056a3d415bb8c53bd"
          },
          "us-west-1":{
-            "Vault":"ami-0da1386e3b160a55c"
+            "Vault":"ami-0eb689d34da452048"
          },
          "us-west-2":{
-            "Vault":"ami-090bcd24bb360762b"
+            "Vault":"ami-0822844df9c4df9cd"
          },
          "ca-central-1":{
-            "Vault":"ami-02082f5c5bde642f0"
+            "Vault":"ami-043cfe40b65b2e736"
          },
          "eu-west-1":{
-            "Vault":"ami-06fe53288df210711"
+            "Vault":"ami-051b8ae65285d8b9d"
          },
          "eu-central-1":{
-            "Vault":"ami-06920cea77dd0ecc3"
+            "Vault":"ami-025dc3321fc336b45"
          },
          "ap-southeast-1":{
-            "Vault":"ami-0ac4c40371aaf0784"
+            "Vault":"ami-00f5f9880ded42c37"
          },
          "ap-southeast-2":{
-            "Vault":"ami-0f6822df95ff790ce"
+            "Vault":"ami-0225efbe0ab2b62a2"
          },
          "ap-northeast-2":{
-            "Vault":"ami-06827f6147908102d"
+            "Vault":"ami-0432fd92f8d0bcf45"
          },
          "ap-northeast-1":{
-            "Vault":"ami-0f2f5331ae23e533b"
+            "Vault":"ami-01e188e6fed85df6b"
          },
          "ap-south-1":{
-            "Vault":"ami-0e1dcf9eb1c5ede0a"
+            "Vault":"ami-0d7eebd7fc187c46a"
          },
          "sa-east-1":{
-            "Vault":"ami-0f913359bafc47794"
+            "Vault":"ami-071a4bd27fbeb0e3e"
          },
          "us-gov-west-1": {
             "Vault": "ami-73482912"
