@@ -335,7 +335,6 @@
       "ComponentSecretString": {
          "Type": "AWS::CloudFormation::CustomResource",
          "Properties": {
-            "Length": 15,
             "ServiceToken": {
                "Fn::GetAtt": [
                   "RandomStringLambdaFunction",
