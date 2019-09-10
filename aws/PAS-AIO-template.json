@@ -1399,6 +1399,8 @@
                                  "\t)\n",
                                  "\treturn objectResponse['Parameter']['Value']\n",
                                  "\n",
+                                 "hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "pvwaurl = 'https://{0}/PasswordVault'.format(hostname)\n",
                                  "adminp = fetchPassword('",
                                  {
                                     "Fn::GetAtt":[
@@ -1408,31 +1410,28 @@
                                  },
                                  "')\n",
                                  "\n",
-                                 "callArray = [",
-                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
-                                 "'PVWA',",
-                                 "'/accepteula',",
-                                 "'Yes',",
-                                 "'/vaultip',",
-                                 "'",
-                                 {
+                                 "p = subprocess.Popen([",
+								 "'powershell.exe',",
+                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
+                                 "-PVWA ",
+                                 "-PVWAVaultIP ",
+				 {
                                     "Fn::GetAtt":[
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 "',",
-                                 "'/vaultport',",
-                                 "'1858',",
-                                 "'/vaultuser',",
-                                 "'Administrator',",
-                                 "'/vaultpassword',",
-                                 "adminp",
-                                 "]\n",
-                                 "hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
-                                 "callArray.append('/pvwaurl')\n",
-                                 "callArray.append('https://{0}/PasswordVault'.format(hostname))\n",
-                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+                                 "-PVWAVaultPort ",
+                                 "1858 ",
+                                 "-PVWAVaultUser ",
+				 "Administrator ",
+                                 " ",
+                                 "-PVWAVaultPassword '+",
+                                 "adminp ",
+								 "+ ' -PVWAUrl '+",
+								 "pvwaurl",
+                                 "],",
+								 "stdout=sys.stdout)"
                               ]
                            ]
                         }
@@ -1590,11 +1589,6 @@
                      },
                      "06-ScheduledTasksServiceConfig":{
                         "command":"sc config \"CyberArk Scheduled Tasks\" start=auto",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "07-ScheduledTasksServiceStart":{
-                        "command":"sc start \"CyberArk Scheduled Tasks\"",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
