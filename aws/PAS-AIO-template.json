@@ -1636,16 +1636,6 @@
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
-                     "14-CPMServiceStart":{
-                        "command":"sc start \"CyberArk Password Manager\"",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
-                     "15-CPMScannerServiceStart":{
-                        "command":"sc start \"CyberArk Central Policy Manager Scanner\"",
-                        "waitAfterCompletion":"0",
-                        "ignoreErrors":"false"
-                     },
                      "16-PSMdeploy":{
                         "command":"C:\\Python27\\python.exe C:\\deployPSM.py",
                         "waitAfterCompletion":"0",
