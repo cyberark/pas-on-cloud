@@ -3443,9 +3443,9 @@
             "PSMP": "ami-05f810de9e7da0d4a"
          },
          "us-gov-west-1": {
-            "Vault": "ami-73482912",
-            "CPM": "ami-835b3ae2",
-            "PVWA": "ami-4d5f3e2c",
+            "Vault": "ami-fdbff49c",
+            "CPM": "ami-5483c835",
+            "PVWA": "ami-6abbf00b",
             "PSM": "ami-e4a0c185",
             "PSMP": "ami-815f3ee0"
          }
