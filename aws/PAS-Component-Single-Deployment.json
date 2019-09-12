@@ -2372,7 +2372,7 @@
          "us-gov-west-1": {
             "CPM": "ami-5483c835",
             "PVWA": "ami-6abbf00b",
-            "PSM": "ami-e4a0c185",
+            "PSM": "ami-56bff437",
             "PSMP": "ami-815f3ee0"
          }
       }
