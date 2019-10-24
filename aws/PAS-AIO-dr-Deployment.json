@@ -2243,61 +2243,6 @@
       "RegionMap":{
          "us-east-1":{
             "Vault":"ami-0d6b00444f4d52b5b",
-<<<<<<< HEAD
-            "Components":"ami-0f70712cd62b428f2"
-         },
-         "us-east-2":{
-            "Vault":"ami-08ef76793347fb10b",
-            "Components":"ami-070be371b0ffc43f3"
-         },
-         "eu-west-2":{
-            "Vault":"ami-056a3d415bb8c53bd",
-            "Components":"ami-00a7049aaf4a9fcea"
-         },
-         "us-west-1":{
-            "Vault":"ami-0eb689d34da452048",
-            "Components":"ami-0406786e1269737ec"
-         },
-         "us-west-2":{
-            "Vault":"ami-0822844df9c4df9cd",
-            "Components":"ami-0808aa4632b9ac4d7"
-         },
-         "ca-central-1":{
-            "Vault":"ami-043cfe40b65b2e736",
-            "Components":"ami-023b02c9a9ab017f3"
-         },
-         "eu-west-1":{
-            "Vault":"ami-051b8ae65285d8b9d",
-            "Components":"ami-0f83bf6c609d30283"
-         },
-         "eu-central-1":{
-            "Vault":"ami-025dc3321fc336b45",
-            "Components":"ami-076b0d2bc733572c2"
-         },
-         "ap-southeast-1":{
-            "Vault":"ami-00f5f9880ded42c37",
-            "Components":"ami-0f4d5c6a1fb4f1d4e"
-         },
-         "ap-southeast-2":{
-            "Vault":"ami-0225efbe0ab2b62a2",
-            "Components":"ami-0cfbaf990d43e6574"
-         },
-         "ap-northeast-2":{
-            "Vault":"ami-0432fd92f8d0bcf45",
-            "Components":"ami-034d5751f19f9115b"
-         },
-         "ap-northeast-1":{
-            "Vault":"ami-01e188e6fed85df6b",
-            "Components":"ami-06efbff82dc19b0f0"
-         },
-         "ap-south-1":{
-            "Vault":"ami-0d7eebd7fc187c46a",
-            "Components":"ami-033164e60fbd3f976"
-         },
-         "sa-east-1":{
-            "Vault":"ami-071a4bd27fbeb0e3e",
-            "Components":"ami-0de6755d4d9e55458"
-=======
             "Components":"ami-0aeeceedcc474136c"
          },
          "us-east-2":{
@@ -2351,7 +2296,6 @@
          "sa-east-1":{
             "Vault":"ami-071a4bd27fbeb0e3e",
             "Components":"ami-074b4b4ffe573ab26"
->>>>>>> master
          },
          "us-gov-west-1": {
             "Vault": "ami-fdbff49c",
