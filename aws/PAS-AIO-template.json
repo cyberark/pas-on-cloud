@@ -1924,64 +1924,68 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-0cf1c48744ffdf9db",
-            "Components":"ami-0f70712cd62b428f2"
+            "Vault":"ami-0d6b00444f4d52b5b",
+            "Components":"ami-0aeeceedcc474136c"
          },
          "us-east-2":{
-            "Vault":"ami-0efd82b593f0b4b83",
-            "Components":"ami-070be371b0ffc43f3"
+            "Vault":"ami-08ef76793347fb10b",
+            "Components":"ami-0b75358451218acab"
          },
          "eu-west-2":{
-            "Vault":"ami-0b57d5d528387343f",
-            "Components":"ami-00a7049aaf4a9fcea"
+            "Vault":"ami-056a3d415bb8c53bd",
+            "Components":"ami-0f0a41c32d8b04a4d"
          },
          "us-west-1":{
-            "Vault":"ami-0da1386e3b160a55c",
-            "Components":"ami-0406786e1269737ec"
+            "Vault":"ami-0eb689d34da452048",
+            "Components":"ami-0e89dffa10c69173d"
          },
          "us-west-2":{
-            "Vault":"ami-090bcd24bb360762b",
-            "Components":"ami-0808aa4632b9ac4d7"
+            "Vault":"ami-0822844df9c4df9cd",
+            "Components":"ami-07ee75cf588c14a09"
          },
          "ca-central-1":{
-            "Vault":"ami-02082f5c5bde642f0",
-            "Components":"ami-023b02c9a9ab017f3"
+            "Vault":"ami-043cfe40b65b2e736",
+            "Components":"ami-0f4f284dbba7c9b8a"
          },
          "eu-west-1":{
-            "Vault":"ami-06fe53288df210711",
-            "Components":"ami-0f83bf6c609d30283"
+            "Vault":"ami-051b8ae65285d8b9d",
+            "Components":"ami-0affebd056694ae44"
          },
          "eu-central-1":{
-            "Vault":"ami-06920cea77dd0ecc3",
-            "Components":"ami-076b0d2bc733572c2"
+            "Vault":"ami-025dc3321fc336b45",
+            "Components":"ami-00584b0c41cd0f305"
          },
          "ap-southeast-1":{
-            "Vault":"ami-0ac4c40371aaf0784",
-            "Components":"ami-0f4d5c6a1fb4f1d4e"
+            "Vault":"ami-00f5f9880ded42c37",
+            "Components":"ami-00b171f6391e7eb20"
          },
          "ap-southeast-2":{
-            "Vault":"ami-0f6822df95ff790ce",
-            "Components":"ami-0cfbaf990d43e6574"
+            "Vault":"ami-0225efbe0ab2b62a2",
+            "Components":"ami-0498508ea666a9a0a"
          },
          "ap-northeast-2":{
-            "Vault":"ami-06827f6147908102d",
-            "Components":"ami-034d5751f19f9115b"
+            "Vault":"ami-0432fd92f8d0bcf45",
+            "Components":"ami-0b3602f5818f8df9b"
          },
          "ap-northeast-1":{
-            "Vault":"ami-0f2f5331ae23e533b",
-            "Components":"ami-06efbff82dc19b0f0"
+            "Vault":"ami-01e188e6fed85df6b",
+            "Components":"ami-0734150b526dc0b1a"
          },
          "ap-south-1":{
-            "Vault":"ami-0e1dcf9eb1c5ede0a",
-            "Components":"ami-033164e60fbd3f976"
+            "Vault":"ami-0d7eebd7fc187c46a",
+            "Components":"ami-0fd6505faee56eba1"
          },
          "sa-east-1":{
-            "Vault":"ami-0f913359bafc47794",
-            "Components":"ami-0de6755d4d9e55458"
+            "Vault":"ami-071a4bd27fbeb0e3e",
+            "Components":"ami-074b4b4ffe573ab26"
          },
          "us-gov-west-1": {
-            "Vault": "ami-815ac4e0",
-            "Components": "ami-875ac4e6"
+            "Vault": "ami-fdbff49c",
+            "Components": "ami-6bbdf60a"
+         },
+         "us-gov-east-1": {
+            "Vault": "ami-027579ab26d55ef87",
+            "Components": "ami-0380ee57a3253a494"
          }
       }
    },
