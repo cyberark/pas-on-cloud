@@ -1351,26 +1351,28 @@
                                  },
                                  "')\n",
                                  "\n",
-                                 "p = subprocess.Popen([",
-								 "'powershell.exe',",
-                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
-                                 "-CPM ",
-                                 "-CPMVaultIP ",
+                                 "callArray = [",
+                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
+                                 "'CPM',",
+                                 "'/accepteula',",
+                                 "'Yes',",
+                                 "'/vaultip',",
+                                 "'",
                                  {
                                     "Fn::GetAtt":[
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-				 " ",
-                                 "-CPMVaultPort ",
-                                 "1858 ",
-                                 "-CPMVaultUser Administrator",
-                                 " ",
-                                 "-CPMVaultPassword '+",
+                                 "',",
+                                 "'/vaultport',",
+                                 "'1858',",
+                                 "'/vaultuser',",
+                                 "'Administrator',",
+                                 "'/vaultpassword',",
                                  "adminp",
-								 "],",
-								 "stdout=sys.stdout)"
+                                 "]\n",
+                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
                         }
@@ -1397,8 +1399,6 @@
                                  "\t)\n",
                                  "\treturn objectResponse['Parameter']['Value']\n",
                                  "\n",
-                                 "hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
-                                 "pvwaurl = 'https://{0}/PasswordVault'.format(hostname)\n",
                                  "adminp = fetchPassword('",
                                  {
                                     "Fn::GetAtt":[
@@ -1408,29 +1408,31 @@
                                  },
                                  "')\n",
                                  "\n",
-                                 "p = subprocess.Popen([",
-								 "'powershell.exe',",
-                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
-                                 "-PVWA ",
-                                 "-PVWAVaultIP ",
-				 {
+                                 "callArray = [",
+                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
+                                 "'PVWA',",
+                                 "'/accepteula',",
+                                 "'Yes',",
+                                 "'/vaultip',",
+                                 "'",
+                                 {
                                     "Fn::GetAtt":[
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-                                 " ",
-                                 "-PVWAVaultPort ",
-                                 "1858 ",
-                                 "-PVWAVaultUser ",
-				 "Administrator ",
-                                 " ",
-                                 "-PVWAVaultPassword '+",
-                                 "adminp ",
-								 "+ ' -PVWAUrl '+",
-								 "pvwaurl",
-                                 "],",
-								 "stdout=sys.stdout)"
+                                 "',",
+                                 "'/vaultport',",
+                                 "'1858',",
+                                 "'/vaultuser',",
+                                 "'Administrator',",
+                                 "'/vaultpassword',",
+                                 "adminp",
+                                 "]\n",
+                                 "hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()\n",
+                                 "callArray.append('/pvwaurl')\n",
+                                 "callArray.append('https://{0}/PasswordVault'.format(hostname))\n",
+                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
                               ]
                            ]
                         }
@@ -1466,29 +1468,35 @@
                                  },
                                  "')\n",
                                  "\n",
-								 "p = subprocess.Popen([",
-								 "'powershell.exe',",
-                                 "'C:\\\\CyberArk\\\\CloudRegisterToVault.ps1 ",
-                                 "-PSM ",
-                                 "-PSMAcceptEula ",
-                                 "Yes ",
-                                 "-PSMVaultIP ",
+                                 "callArray = [",
+                                 "'C:\\\\CyberArk\\\\Components Registration\\\\RegisterComponent.exe',",
+                                 "'PSM',",
+                                 "'/accepteula',",
+                                 "'Yes',",
+                                 "'/vaultip',",
+                                 "'",
                                  {
                                     "Fn::GetAtt":[
                                        "VaultMachine",
                                        "PrivateIp"
                                     ]
                                  },
-				 " ",
-                                 "-PSMVaultPort ",
-                                 "1858 ",
-                                 "-PSMVaultUser Administrator",
-                                 " ",
-                                 "-PSMVaultPassword '+",
+                                 "',",
+                                 "'/vaultport',",
+                                 "'1858',",
+                                 "'/vaultuser',",
+                                 "'Administrator',",
+                                 "'/vaultpassword',",
                                  "adminp",
-                                 "],",
-								 "stdout=sys.stdout)"
-								 ]
+                                 "]\n",
+                                 "properties = urllib2.urlopen('http://169.254.169.254/latest/meta-data').read()\n",
+                                 "if 'public-ipv4' in properties:\n",
+                                 "\tipv4 = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-ipv4').read()\n",
+                                 "\tif ipv4 and ipv4 <> 'none':\n",
+                                 "\t\tcallArray.append('/psmpublicip')\n",
+                                 "\t\tcallArray.append(ipv4)\n",
+                                 "sys.exit(subprocess.call(callArray, cwd='C:\\CyberArk\\Components Registration'))\n"
+                              ]
                            ]
                         }
                      },
@@ -1585,6 +1593,11 @@
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
+                     "07-ScheduledTasksServiceStart":{
+                        "command":"sc start \"CyberArk Scheduled Tasks\"",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
                      "08-CPMdeploy":{
                         "command":"C:\\Python27\\python.exe C:\\deployCPM.py",
                         "waitAfterCompletion":"0",
@@ -1633,6 +1646,16 @@
                      },
                      "13-CPMScannerServiceConfig":{
                         "command":"sc config \"CyberArk Central Policy Manager Scanner\" start=auto",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "14-CPMServiceStart":{
+                        "command":"sc start \"CyberArk Password Manager\"",
+                        "waitAfterCompletion":"0",
+                        "ignoreErrors":"false"
+                     },
+                     "15-CPMScannerServiceStart":{
+                        "command":"sc start \"CyberArk Central Policy Manager Scanner\"",
                         "waitAfterCompletion":"0",
                         "ignoreErrors":"false"
                      },
