@@ -2286,87 +2286,87 @@
    "Mappings": {
       "RegionMap": {
          "us-east-1": {
-            "CPM": "ami-075c07b8e22ee53e7",
+            "CPM": "ami-04f7a7fcd53602ce5",
             "PVWA": "ami-0be24aa7892c17a87",
-            "PSM": "ami-06b82fdefc378791e",
+            "PSM": "ami-08bcf2e3bffefc66a",
             "PSMP": "ami-00e933699fd3ecce8"
          },
          "us-east-2":{
-            "CPM":"ami-04833fbf583aede59",
+            "CPM":"ami-0b9f21e6cfaded843",
             "PVWA":"ami-0314a02352456e6cf",
-            "PSM":"ami-0492c708eb2a71d4d",
+            "PSM":"ami-0b8e9c6b96a3ba48b",
             "PSMP":"ami-0e2f39a408b329ab2"
          },
          "eu-west-2": {
-            "CPM": "ami-0c21e6365d2854dcb",
-            "PVWA": "ami-0049ee59a3c2e4989",
-            "PSM": "ami-0b99134bfe5d7a080",
+            "CPM": "ami-00fe512ce1b91c596",
+            "PVWA": "ami-092a460a94ef64add",
+            "PSM": "ami-0805cd6834e34aa3a",
             "PSMP": "ami-053a8cbfe1b8cb48c"
          },
          "us-west-1": {
-            "CPM": "ami-0aecc7050d836eaba",
+            "CPM": "ami-061772055973f089b",
             "PVWA": "ami-096ae5fe412f3a8e9",
-            "PSM": "ami-083a0dff4a76c9497",
+            "PSM": "ami-06b9687179b13ecad",
             "PSMP": "ami-05a8c1b84e4a45e1f"
          },
          "us-west-2": {
-            "CPM": "ami-075fd36fcbe096e6f",
+            "CPM": "ami-087aef90e29feebcb",
             "PVWA": "ami-0d788d74efdd9ad0d",
-            "PSM": "ami-04a0e3b7adb461878",
+            "PSM": "ami-0a3dbe8ad8b44cf4d",
             "PSMP": "ami-0c82e715179371587"
          },
          "ca-central-1": {
-            "CPM": "ami-0a99b2e3a7807bdf9",
+            "CPM": "ami-06c6a246d6fba98fa",
             "PVWA": "ami-0d25380ac12618005",
-            "PSM": "ami-03ec9af68e021da0b",
+            "PSM": "ami-0848819c997f434d7",
             "PSMP": "ami-06b98e350b395546e"
          },
          "eu-west-1": {
-            "CPM": "ami-00ad2168c42156475",
+            "CPM": "ami-06ad61e56b74d8b20",
             "PVWA": "ami-053c844409b6dfb64",
-            "PSM": "ami-0b20d862d967345a2",
+            "PSM": "ami-0ae8f0528a0d55279",
             "PSMP": "ami-013fcc5b1a0c36e39"
          },
          "eu-central-1": {
-            "CPM": "ami-00f21809523b27d71",
+            "CPM": "ami-0123169c51de10702",
             "PVWA": "ami-0dc4c6dde90072ee8",
-            "PSM": "ami-0861175f375f4c16c",
+            "PSM": "ami-016e0405ebe7ea2e5",
             "PSMP": "ami-037c49b2ee93e3d93"
          },
          "ap-southeast-1": {
-            "CPM": "ami-02ab3eba26afbf2ea",
+            "CPM": "ami-0d65692af2e10edd4",
             "PVWA": "ami-0edfb13c51969e30e",
-            "PSM": "ami-07333781f84fa3ccf",
+            "PSM": "ami-0205db2668e6d55af",
             "PSMP": "ami-09da15e5a7093ca9d"
          },
          "ap-southeast-2": {
-            "CPM": "ami-05faa0b3d300538f7",
+            "CPM": "ami-0c840a37861c588e9",
             "PVWA": "ami-00fea9ede64a5244f",
-            "PSM": "ami-0b19c8efc441e2e93",
+            "PSM": "ami-094835c4445ff0f09",
             "PSMP": "ami-054d2791b1ed76dbb"
          },
          "ap-northeast-2": {
-            "CPM": "ami-053817b3aec02eb3d",
+            "CPM": "ami-070279807875a7e45",
             "PVWA": "ami-0ebb8fad48f8a7b80",
-            "PSM": "ami-07bdca4b367cd1fa7",
+            "PSM": "ami-057094f767dfa18d7",
             "PSMP": "ami-05b0697ed4fed6b57"
          },
          "ap-northeast-1": {
-            "CPM": "ami-0ac29e5eb928cb476",
+            "CPM": "ami-0bdba1fe42967dca6",
             "PVWA": "ami-039c2a7f3af933f78",
-            "PSM": "ami-00a046c3a8332b0fd",
+            "PSM": "ami-0db464e43465320d8",
             "PSMP": "ami-013e5f7abdbed162d"
          },
          "ap-south-1": {
-            "CPM": "ami-055d5cb3919670edf",
+            "CPM": "ami-06d3924a52041602a",
             "PVWA": "ami-0a387ba579eb08b2e",
-            "PSM": "ami-0f5f42dc4ee9ddbd3",
+            "PSM": "ami-009a1ab04de53139d",
             "PSMP": "ami-00314dc1c99e22df5"
          },
          "sa-east-1": {
-            "CPM": "ami-0e0ef15d85f2d2256",
+            "CPM": "ami-03497206fc20b5bce",
             "PVWA": "ami-063f99035d7747361",
-            "PSM": "ami-0625d90bb05051568",
+            "PSM": "ami-0e01f607b257ea490",
             "PSMP": "ami-05f810de9e7da0d4a"
          },
          "us-gov-west-1": {
