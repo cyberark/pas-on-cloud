@@ -3443,11 +3443,18 @@
             "PSMP": "ami-0bdded3e75b04786d"
          },
          "us-gov-west-1": {
-            "Vault": "ami-73482912",
-            "CPM": "ami-835b3ae2",
-            "PVWA": "ami-4d5f3e2c",
-            "PSM": "ami-e4a0c185",
-            "PSMP": "ami-815f3ee0"
+            "Vault": "ami-fdbff49c",
+            "CPM": "ami-5483c835",
+            "PVWA": "ami-6abbf00b",
+            "PSM": "ami-56bff437",
+            "PSMP": "ami-95b6fdf4"
+         },
+         "us-gov-east-1": {
+            "Vault": "ami-027579ab26d55ef87",
+            "CPM": "ami-005676d3d8ddc47bc",
+            "PVWA": "ami-061762cafdb68d4ab",
+            "PSM": "ami-0a25e30f22418a0d4",
+            "PSMP": "ami-038b1bf791cd3a266"
          }
       }
    },
