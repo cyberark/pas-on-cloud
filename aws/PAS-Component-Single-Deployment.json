@@ -2289,13 +2289,13 @@
             "CPM": "ami-04f7a7fcd53602ce5",
             "PVWA": "ami-0cf8634480dda1144",
             "PSM": "ami-03c666b49fb2a6d1e",
-            "PSMP": "ami-08e46097f2414d196"
+            "PSMP": "ami-06df2e71b38c015e7"
          },
          "us-east-2":{
             "CPM":"ami-0b9f21e6cfaded843",
             "PVWA":"ami-08a681d279829d63c",
             "PSM":"ami-001abd7f34c69d945",
-            "PSMP":"ami-0e07cb60880991cd3"
+            "PSMP":"ami-0e06bbc7716f7ee44"
          },
          "eu-west-2": {
             "CPM": "ami-004a680e7fdf1c154",
@@ -2307,67 +2307,67 @@
             "CPM": "ami-061772055973f089b",
             "PVWA": "ami-036e3e4d12e5c297a",
             "PSM": "ami-0d457c439de72b25a",
-            "PSMP": "ami-0a5f09d98644f2a50"
+            "PSMP": "ami-01e467d0d055b3dcf"
          },
          "us-west-2": {
             "CPM": "ami-087aef90e29feebcb",
             "PVWA": "ami-07f6456fe7fcbae42",
             "PSM": "ami-0c45197c4a506b71e",
-            "PSMP": "ami-0c73ac93ff0b643e3"
+            "PSMP": "ami-08a1956927798c8db"
          },
          "ca-central-1": {
             "CPM": "ami-06c6a246d6fba98fa",
             "PVWA": "ami-002a6ff252d6a3905",
             "PSM": "ami-0afaeee4f5fbce4ec",
-            "PSMP": "ami-054f6c1acf5bfd178"
+            "PSMP": "ami-04a175e3f987fb4e3"
          },
          "eu-west-1": {
             "CPM": "ami-06ad61e56b74d8b20",
             "PVWA": "ami-0efb2d3e00fb745d1",
             "PSM": "ami-03f8dd7652e1fe674",
-            "PSMP": "ami-0d5bda0c79568df92"
+            "PSMP": "ami-09c53e615fcbcfb61"
          },
          "eu-central-1": {
             "CPM": "ami-0123169c51de10702",
             "PVWA": "ami-0493aafbf3e73aa17",
             "PSM": "ami-020b66e53a257efcb",
-            "PSMP": "ami-0a7d3c6531d8e3200"
+            "PSMP": "ami-08461350aac95bd1c"
          },
          "ap-southeast-1": {
             "CPM": "ami-0d65692af2e10edd4",
             "PVWA": "ami-0795e7fa035769c23",
             "PSM": "ami-072623ee02c0a7d7b",
-            "PSMP": "ami-0d0287d00a5f08f90"
+            "PSMP": "ami-0173fa00b55d6394c"
          },
          "ap-southeast-2": {
             "CPM": "ami-0c840a37861c588e9",
             "PVWA": "ami-08d2aa64b216a7534",
             "PSM": "ami-01bd684fdcc0588c2",
-            "PSMP": "ami-056e7415b19ad5649"
+            "PSMP": "ami-0d0976a68dedba8a0"
          },
          "ap-northeast-2": {
             "CPM": "ami-070279807875a7e45",
             "PVWA": "ami-0de7ff042bdbc61a3",
             "PSM": "ami-08b2dfa4af9a09274",
-            "PSMP": "ami-0ce4597af06493887"
+            "PSMP": "ami-018e60760813baa13"
          },
          "ap-northeast-1": {
             "CPM": "ami-0bdba1fe42967dca6",
             "PVWA": "ami-01e4ffd62120912fb",
             "PSM": "ami-075da7833c7735d20",
-            "PSMP": "ami-0ba9c1e70b87142a4"
+            "PSMP": "ami-03072f0cf1d158e2d"
          },
          "ap-south-1": {
             "CPM": "ami-06d3924a52041602a",
             "PVWA": "ami-08d81b134bd6c980f",
             "PSM": "ami-08f948b6799af2735",
-            "PSMP": "ami-0f3d70d3fb2c72c8c"
+            "PSMP": "ami-04169e7eefa99af28"
          },
          "sa-east-1": {
             "CPM": "ami-03497206fc20b5bce",
             "PVWA": "ami-0b43a0f3e235a1fd2",
             "PSM": "ami-01113b223c1b0e851",
-            "PSMP": "ami-0bdded3e75b04786d"
+            "PSMP": "ami-0ebecc6c0a2b153c4"
          },
          "us-gov-west-1": {
             "CPM": "ami-5483c835",
