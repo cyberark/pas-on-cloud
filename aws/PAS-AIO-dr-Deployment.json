@@ -2298,12 +2298,12 @@
             "Components":"ami-00cfd31ae016795e7"
          },
          "us-gov-west-1": {
-            "Vault": "ami-fdbff49c",
-            "Components": "ami-6bbdf60a"
+            "Vault": "ami-78623219",
+            "Components": "ami-32653553"
          },
          "us-gov-east-1": {
-            "Vault": "ami-027579ab26d55ef87",
-            "Components": "ami-0380ee57a3253a494"
+            "Vault": "ami-05d7a1f0992d35d2d",
+            "Components": "ami-0f5c9c71a1ef15d65"
          }
       }
    },
