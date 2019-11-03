@@ -2370,16 +2370,16 @@
             "PSMP": "ami-0ebecc6c0a2b153c4"
          },
          "us-gov-west-1": {
-            "CPM": "ami-5483c835",
-            "PVWA": "ami-6abbf00b",
-            "PSM": "ami-56bff437",
-            "PSMP": "ami-95b6fdf4"
+            "CPM": "ami-4f5d0d2e",
+            "PVWA": "ami-a75e0ec6",
+            "PSM": "ami-63a3f002",
+            "PSMP": "ami-0aa5f66b"
          },
          "us-gov-east-1": {
-            "CPM": "ami-005676d3d8ddc47bc",
-            "PVWA": "ami-061762cafdb68d4ab",
-            "PSM": "ami-0a25e30f22418a0d4",
-            "PSMP": "ami-038b1bf791cd3a266"
+            "CPM": "ami-03596373a1667c288",
+            "PVWA": "ami-031e71c93a2834fc0",
+            "PSM": "ami-0e920778453d2f001",
+            "PSMP": "ami-00040d83d93d7cbd6"
          }
       }
    },
