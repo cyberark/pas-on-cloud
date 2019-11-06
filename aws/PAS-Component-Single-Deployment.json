@@ -2390,5 +2390,9 @@
             "Ref":"LogGroup"
          }
       }
+   },
+   "GetVaultMachineIp":{
+    "Description": "PrivateIP",
+    "Value" : { "Fn::GetAtt" : [ "PVWAMachine", "PrivateIp" ]}
    }
 }
