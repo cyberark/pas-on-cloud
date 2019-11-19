@@ -318,10 +318,10 @@
          "Type": "AWS::Lambda::Function",
          "Properties": {
              "Code": {
-                 "ZipFile": "const response = require(\"cfn-response\");\nconst randomString = (length, chars) => {\n    var result = '';\n    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];\n    return result;\n}\nexports.handler = (event, context) =>{\n\n  const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3, '0123456789') + randomString(11, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');\n  const responseData = {RandomString: str};\n  response.send(event, context, response.SUCCESS, responseData);\n\n};\n"
+                 "ZipFile": "const response = require(\"./cfn-response\");\nconst randomString = (length, chars) => {\n    var result = '';\n    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];\n    return result;\n}\nexports.handler = (event, context) =>{\n\n  const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3, '0123456789') + randomString(11, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');\n  const responseData = {RandomString: str};\n  response.send(event, context, response.SUCCESS, responseData);\n\n};\n"
              },
              "Handler": "index.handler",
-             "Runtime": "nodejs8.10",
+             "Runtime": "nodejs10.x",
              "Role": {
                  "Fn::GetAtt": [
                      "LambdaLogDenyRole",
