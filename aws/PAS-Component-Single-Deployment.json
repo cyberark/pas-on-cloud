@@ -2286,87 +2286,87 @@
    "Mappings": {
       "RegionMap": {
          "us-east-1": {
-            "CPM": "ami-04f7a7fcd53602ce5",
-            "PVWA": "ami-0cf8634480dda1144",
-            "PSM": "ami-03c666b49fb2a6d1e",
+            "CPM": "ami-0c5048832f0ba342b",
+            "PVWA": "ami-01512e92898f7ba04",
+            "PSM": "ami-08e096c0a3522f356",
             "PSMP": "ami-06df2e71b38c015e7"
          },
          "us-east-2":{
-            "CPM":"ami-0b9f21e6cfaded843",
-            "PVWA":"ami-08a681d279829d63c",
-            "PSM":"ami-001abd7f34c69d945",
+            "CPM":"ami-083b0f4f9d741d954",
+            "PVWA":"ami-0f945da6e23f077a9",
+            "PSM":"ami-09b4ac3bdeae933c0",
             "PSMP":"ami-0e06bbc7716f7ee44"
          },
          "eu-west-2": {
-            "CPM": "ami-004a680e7fdf1c154",
-            "PVWA": "ami-0ca049740fa47f20a",
-            "PSM": "ami-06b5aba159017f494",
+            "CPM": "ami-07fd173db280acdd4",
+            "PVWA": "ami-08304728cfc488809",
+            "PSM": "ami-08f851be28facba76",
             "PSMP": "ami-0ac3bd7ed3bf2ab65"
          },
          "us-west-1": {
-            "CPM": "ami-061772055973f089b",
-            "PVWA": "ami-036e3e4d12e5c297a",
-            "PSM": "ami-0d457c439de72b25a",
+            "CPM": "ami-099bcb5ad7933f4ea",
+            "PVWA": "ami-04696a8ab6b72e55c",
+            "PSM": "ami-01eb3fb9c9c81365d",
             "PSMP": "ami-01e467d0d055b3dcf"
          },
          "us-west-2": {
-            "CPM": "ami-087aef90e29feebcb",
-            "PVWA": "ami-07f6456fe7fcbae42",
-            "PSM": "ami-0c45197c4a506b71e",
+            "CPM": "ami-0e217872421f388da",
+            "PVWA": "ami-08d239a59b430d34e",
+            "PSM": "ami-08ee313797af3001f",
             "PSMP": "ami-08a1956927798c8db"
          },
          "ca-central-1": {
-            "CPM": "ami-06c6a246d6fba98fa",
-            "PVWA": "ami-002a6ff252d6a3905",
-            "PSM": "ami-0afaeee4f5fbce4ec",
+            "CPM": "ami-0d30069a5fefbb76b",
+            "PVWA": "ami-0609dcbfc67c0ff0b",
+            "PSM": "ami-0ac9ec0e3a84f7d2f",
             "PSMP": "ami-04a175e3f987fb4e3"
          },
          "eu-west-1": {
-            "CPM": "ami-06ad61e56b74d8b20",
-            "PVWA": "ami-0efb2d3e00fb745d1",
-            "PSM": "ami-03f8dd7652e1fe674",
+            "CPM": "ami-0e7871f260cff49cd",
+            "PVWA": "ami-06b533e49a82d0eaf",
+            "PSM": "ami-0c1aab51f2b76b3f3",
             "PSMP": "ami-09c53e615fcbcfb61"
          },
          "eu-central-1": {
-            "CPM": "ami-0123169c51de10702",
-            "PVWA": "ami-0493aafbf3e73aa17",
-            "PSM": "ami-020b66e53a257efcb",
+            "CPM": "ami-0d80700930f21c822",
+            "PVWA": "ami-0f9f83f225903fa54",
+            "PSM": "ami-0d25e8bcf7b72ddc4",
             "PSMP": "ami-08461350aac95bd1c"
          },
          "ap-southeast-1": {
-            "CPM": "ami-0d65692af2e10edd4",
-            "PVWA": "ami-0795e7fa035769c23",
-            "PSM": "ami-072623ee02c0a7d7b",
+            "CPM": "ami-0f4c5e5d997518a87",
+            "PVWA": "ami-0cb6d24dcd607ec98",
+            "PSM": "ami-08f7c51d67091747f",
             "PSMP": "ami-0173fa00b55d6394c"
          },
          "ap-southeast-2": {
-            "CPM": "ami-0c840a37861c588e9",
-            "PVWA": "ami-08d2aa64b216a7534",
-            "PSM": "ami-01bd684fdcc0588c2",
+            "CPM": "ami-0ba04d0de7e57e96a",
+            "PVWA": "ami-03f90659c438a56c8",
+            "PSM": "ami-0221aac7e5aa4877e",
             "PSMP": "ami-0d0976a68dedba8a0"
          },
          "ap-northeast-2": {
-            "CPM": "ami-070279807875a7e45",
-            "PVWA": "ami-0de7ff042bdbc61a3",
-            "PSM": "ami-08b2dfa4af9a09274",
+            "CPM": "ami-089d652381509cb91",
+            "PVWA": "ami-0d40187c0f8c4b8db",
+            "PSM": "ami-08ac621e8106f7ece",
             "PSMP": "ami-018e60760813baa13"
          },
          "ap-northeast-1": {
-            "CPM": "ami-0bdba1fe42967dca6",
-            "PVWA": "ami-01e4ffd62120912fb",
-            "PSM": "ami-075da7833c7735d20",
+            "CPM": "ami-0e8fa7121b8b46482",
+            "PVWA": "ami-0fcb9f4bfab7f1b64",
+            "PSM": "ami-03de5e42ad5435e97",
             "PSMP": "ami-03072f0cf1d158e2d"
          },
          "ap-south-1": {
-            "CPM": "ami-06d3924a52041602a",
-            "PVWA": "ami-08d81b134bd6c980f",
-            "PSM": "ami-08f948b6799af2735",
+            "CPM": "ami-06abf8d5e4c0f3ba1",
+            "PVWA": "ami-076964d92284f16fa",
+            "PSM": "ami-000f302e84175b8ab",
             "PSMP": "ami-04169e7eefa99af28"
          },
          "sa-east-1": {
-            "CPM": "ami-03497206fc20b5bce",
-            "PVWA": "ami-0b43a0f3e235a1fd2",
-            "PSM": "ami-01113b223c1b0e851",
+            "CPM": "ami-0c4d646f214dc2565",
+            "PVWA": "ami-0f7517ec36ced0752",
+            "PSM": "ami-0a0688382df21b7fa",
             "PSMP": "ami-0ebecc6c0a2b153c4"
          },
          "us-gov-west-1": {
