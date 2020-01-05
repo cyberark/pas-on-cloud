@@ -154,6 +154,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":60,
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -208,6 +209,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":60,
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -2242,60 +2244,60 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-00e1303b366221ce1",
-            "Components":"ami-0bf7d69a7a8745648"
+            "Vault":"ami-01d4a7bd46088f700",
+            "Components":"ami-0d60899760a0f72d0"
          },
          "us-east-2":{
-            "Vault":"ami-06829996a50e545ec",
-            "Components":"ami-009a8212aa9804a3e"
+            "Vault":"ami-068bc4ecc92db8199",
+            "Components":"ami-038df21a13ba787e0"
          },
          "eu-west-2":{
-            "Vault":"ami-06f0d07427c71d6fc",
-            "Components":"ami-04a51aec0c699e05d"
+            "Vault":"ami-0a559ff9a29efa431",
+            "Components":"ami-00060b60d4e62f0ac"
          },
          "us-west-1":{
-            "Vault":"ami-0981925fc5d500c3f",
-            "Components":"ami-0b3b1d97d8c12812b"
+            "Vault":"ami-0f1803a9c76472be5",
+            "Components":"ami-03da1c724e48f14aa"
          },
          "us-west-2":{
-            "Vault":"ami-018fadffb3b04749b",
-            "Components":"ami-0ec787824b5f17fc2"
+            "Vault":"ami-01edee6e967c17628",
+            "Components":"ami-004d35db409cd1259"
          },
          "ca-central-1":{
-            "Vault":"ami-01c706fb43feaf36d",
-            "Components":"ami-0808674e83f35f09f"
+            "Vault":"ami-0582d8c1a70001244",
+            "Components":"ami-09e798caa99d5db9e"
          },
          "eu-west-1":{
-            "Vault":"ami-01a2eaeb0ad4feb4e",
-            "Components":"ami-079d32fd0331e1ed2"
+            "Vault":"ami-09397273b9046d5b9",
+            "Components":"ami-037a7aacc0dff283e"
          },
          "eu-central-1":{
-            "Vault":"ami-00a9dbb10bdccc482",
-            "Components":"ami-0456b688d6fb1cfe9"
+            "Vault":"ami-06f43402c6e002660",
+            "Components":"ami-07b7ebd1370fd3a0b"
          },
          "ap-southeast-1":{
-            "Vault":"ami-0fbce720d312b5a34",
-            "Components":"ami-08cbab38289c6d3ad"
+            "Vault":"ami-0872cf43e69e28466",
+            "Components":"ami-075a9bf74b646b365"
          },
          "ap-southeast-2":{
-            "Vault":"ami-0076c46e1d082c7b3",
-            "Components":"ami-0df00addfa8ba2708"
+            "Vault":"ami-0a02581b7c2a55e6f",
+            "Components":"ami-062bdb7830ab4e93d"
          },
          "ap-northeast-2":{
-            "Vault":"ami-0974723fbb6bfd28c",
-            "Components":"ami-05adb53092ff8db32"
+            "Vault":"ami-0ed3745003fa46976",
+            "Components":"ami-08c6a0c3c2936331a"
          },
          "ap-northeast-1":{
-            "Vault":"ami-0aedf22711b04923e",
-            "Components":"ami-0b963922bf7fcbf07"
+            "Vault":"ami-02e14fe4621742bde",
+            "Components":"ami-0213d17d7095fa9ab"
          },
          "ap-south-1":{
-            "Vault":"ami-0d9f7cd7554ffa69a",
-            "Components":"ami-0069a8a9dae74f9e3"
+            "Vault":"ami-0ff8fe4a731baa07a",
+            "Components":"ami-0bcd7fc027a70234b"
          },
          "sa-east-1":{
-            "Vault":"ami-0b3df6c3a17a9aedd",
-            "Components":"ami-00cfd31ae016795e7"
+            "Vault":"ami-04b91be9198835fc8",
+            "Components":"ami-032cf6f8ef4afc498"
          },
          "us-gov-west-1": {
             "Vault": "ami-fdbff49c",
