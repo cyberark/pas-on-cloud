@@ -154,6 +154,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":"60",
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -208,6 +209,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":"60",
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
