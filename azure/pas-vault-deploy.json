@@ -118,13 +118,14 @@
    "resources":[
       {
          "type":"Microsoft.Resources/deployments",
-         "name":"GuidGenerator",
-         "apiVersion":"2015-01-01",
+         "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
+         "apiVersion": "2018-02-01",
          "properties":{
             "mode":"incremental",
-            "templateLink":{
-               "uri":"https://raw.githubusercontent.com/davidjrh/azurerm-newguid/master/NewGuid.json",
-               "contentVersion":"1.0.0.0"
+            "template":{
+               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "contentVersion":"1.0.0.0",
+               "resources": []
             }
          }
       },
