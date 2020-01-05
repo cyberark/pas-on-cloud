@@ -2255,7 +2255,7 @@
          },
          "us-west-1":{
             "Vault":"ami-0f1803a9c76472be5",
-            "Components":"ami-0b3b1d97d8c12812b"
+            "Components":"ami-03da1c724e48f14aa"
          },
          "us-west-2":{
             "Vault":"ami-01edee6e967c17628",
