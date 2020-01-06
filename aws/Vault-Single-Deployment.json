@@ -164,6 +164,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":60,
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -218,6 +219,7 @@
             },
             "Runtime":"python2.7",
             "Handler":"index.lambda_handler",
+            "Timeout":60,
             "Role":{
                "Fn::GetAtt":[
                   "LambdaDeployRole",
@@ -1182,46 +1184,46 @@
    "Mappings":{
       "RegionMap":{
          "us-east-1":{
-            "Vault":"ami-00e1303b366221ce1"
+            "Vault":"ami-01d4a7bd46088f700"
          },
          "us-east-2":{
-            "Vault":"ami-06829996a50e545ec"
+            "Vault":"ami-068bc4ecc92db8199"
          },
          "eu-west-2":{
-            "Vault":"ami-06f0d07427c71d6fc"
+            "Vault":"ami-0a559ff9a29efa431"
          },
          "us-west-1":{
-            "Vault":"ami-0981925fc5d500c3f"
+            "Vault":"ami-0f1803a9c76472be5"
          },
          "us-west-2":{
-            "Vault":"ami-018fadffb3b04749b"
+            "Vault":"ami-01edee6e967c17628"
          },
          "ca-central-1":{
-            "Vault":"ami-01c706fb43feaf36d"
+            "Vault":"ami-0582d8c1a70001244"
          },
          "eu-west-1":{
-            "Vault":"ami-01a2eaeb0ad4feb4e"
+            "Vault":"ami-09397273b9046d5b9"
          },
          "eu-central-1":{
-            "Vault":"ami-00a9dbb10bdccc482"
+            "Vault":"ami-06f43402c6e002660"
          },
          "ap-southeast-1":{
-            "Vault":"ami-0fbce720d312b5a34"
+            "Vault":"ami-0872cf43e69e28466"
          },
          "ap-southeast-2":{
-            "Vault":"ami-0076c46e1d082c7b3"
+            "Vault":"ami-0a02581b7c2a55e6f"
          },
          "ap-northeast-2":{
-            "Vault":"ami-0974723fbb6bfd28c"
+            "Vault":"ami-0ed3745003fa46976"
          },
          "ap-northeast-1":{
-            "Vault":"ami-0aedf22711b04923e"
+            "Vault":"ami-02e14fe4621742bde"
          },
          "ap-south-1":{
-            "Vault":"ami-0d9f7cd7554ffa69a"
+            "Vault":"ami-0ff8fe4a731baa07a"
          },
          "sa-east-1":{
-            "Vault":"ami-0b3df6c3a17a9aedd"
+            "Vault":"ami-04b91be9198835fc8"
          },
          "us-gov-west-1": {
             "Vault": "ami-78623219"

@@ -86,6 +86,19 @@
   },
   "resources": [
     {
+       "type":"Microsoft.Resources/deployments",
+       "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
+       "apiVersion": "2018-02-01",
+       "properties":{
+          "mode":"incremental",
+          "template":{
+             "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+             "contentVersion":"1.0.0.0",
+             "resources": []
+          }
+       }
+    },
+    {
       "comments": "Vault Network Security group",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('networkSecurityGroups_NSG_Vault_name')]",
