@@ -40,7 +40,7 @@
         }
     },
     "variables": {
-        "GuidSubstring": "[take(parameters('Guid'), 15)]"
+        "GuidSubstring": "[uniqueString( resourceGroup().id, deployment().name )]"
     },
     "resources": [
         {
