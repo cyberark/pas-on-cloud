@@ -161,9 +161,6 @@
                     },
                     "VaultPrivateIP": {
                         "value": "[parameters('Vault Private IP')]"
-                    },
-                    "Guid": {
-                        "value": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d"
                     }
                 }
             },
