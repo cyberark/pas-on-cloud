@@ -161,9 +161,6 @@
                     },
                     "VaultPrivateIP": {
                         "value": "[parameters('Vault Private IP')]"
-                    },
-                    "Guid": {
-                        "value": "[reference('GuidGenerator').outputs.guid.value]"
                     }
                 }
             },

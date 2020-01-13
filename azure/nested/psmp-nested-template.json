@@ -34,9 +34,6 @@
         },
         "VaultPrivateIP": {
             "type": "string"
-        },
-        "Guid": {
-            "type": "string"
         }
     },
     "variables": {
