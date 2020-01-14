@@ -3446,18 +3446,18 @@
             "PSMP": "ami-02129f1be6a069a69"
          },
          "us-gov-west-1": {
-            "Vault": "ami-78623219",
-            "CPM": "ami-4f5d0d2e",
-            "PVWA": "ami-a75e0ec6",
-            "PSM": "ami-63a3f002",
-            "PSMP": "ami-0aa5f66b"
+            "Vault": "ami-0e87a36f",
+            "CPM": "ami-e94e6a88",
+            "PVWA": "ami-f2e2c693",
+            "PSM": "ami-13406472",
+            "PSMP": "ami-2c23044d"
          },
          "us-gov-east-1": {
-            "Vault": "ami-05d7a1f0992d35d2d",
-            "CPM": "ami-03596373a1667c288",
-            "PVWA": "ami-031e71c93a2834fc0",
-            "PSM": "ami-0e920778453d2f001",
-            "PSMP": "ami-00040d83d93d7cbd6"
+            "Vault": "ami-00268514ee37890b9",
+            "CPM": "ami-084456b03a3ed8ab2",
+            "PVWA": "ami-062952a36194ca27e",
+            "PSM": "ami-07858426bb4179bfc",
+            "PSMP": "ami-06569e3bb5ab0cf98"
          }
       }
    },

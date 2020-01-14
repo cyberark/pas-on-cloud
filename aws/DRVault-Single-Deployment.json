@@ -1311,10 +1311,10 @@
             "Vault":"ami-04b91be9198835fc8"
          },
          "us-gov-west-1": {
-            "Vault": "ami-78623219"
+            "Vault": "ami-0e87a36f"
          },
          "us-gov-east-1": {
-            "Vault": "ami-05d7a1f0992d35d2d"
+            "Vault": "ami-00268514ee37890b9"
          }
       }
    },
