@@ -53,7 +53,7 @@
     }
   },
   "variables": {
-    "virtualNetworks_Solution_Vnet_name": "Solution-Vnet",
+    "virtualNetworks_Solution_Vnet_name": "Pas-Vnet",
     "Vault_Subnet_name": "Vault-Subnet",
     "Vault_NSG__name": "NSG-Vault",
     "PVWA_Subnet_name": "PVWA-Subnet",
