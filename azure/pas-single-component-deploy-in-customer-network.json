@@ -98,7 +98,7 @@
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet'))]",
-        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('Component Subnet'))]",
+        "subnetRefComponent": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet')), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "availabilitySetPlatformFaultDomainCount": 3,
         "availabilitySetPlatformUpdateDomainCount": 5,
