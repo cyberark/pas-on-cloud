@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "Solution VNET CIDR": {
+    "PAS VNET CIDR": {
       "type": "string",
       "defaultValue": "10.0.0.0/16",
       "metadata": {
@@ -779,7 +779,7 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[parameters('Solution VNET CIDR')]"
+            "[parameters('PAS VNET CIDR')]"
           ]
         },
         "virtualNetworkPeerings": [],
