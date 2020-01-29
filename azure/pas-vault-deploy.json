@@ -122,7 +122,7 @@
       "vnetIdVault":"[resourceId('Microsoft.Network/virtualNetworks', parameters('Primary Vault Vnet Name'))]",
       "vnetIdVaultDR":"[resourceId('Microsoft.Network/virtualNetworks', parameters('DR Vault Vnet Name'))]",
       "subnetRefVault":"[concat(variables('vnetIdVault'), '/subnets/','Vault-Subnet')]",
-      "subnetRefVaultDR":"[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-DR-Subnet')]",
+      "subnetRefVaultDR":"[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-Subnet')]",
       "networkInterfaceName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
       "availabilitySetPlatformFaultDomainCount":3,
       "availabilitySetPlatformUpdateDomainCount":5,
