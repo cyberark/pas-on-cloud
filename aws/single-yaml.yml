@@ -875,6 +875,19 @@ Resources:
                   - /etc/awslogs/awslogs.conf
         install_psmp:
           files:
+            /root/CD-Image/deploy.py:
+              content: |
+                import sys
+                import subprocess
+                import argparse
+                
+                parser = argparse.ArgumentParser()
+                parser.add_argument("vaultip", type=str, help="vault ip address")
+                parser.add_argument("vaultuser", type=str, help="vault administrator user")
+                parser.add_argument("vaultpass", type=str, help="vault administrator password")
+                args = parser.parse_args()
+                
+                sys.exit(subprocess.call('sudo /root/CD-Image/activatePSMP {} {} {}'.format(args.vaultip, args.vaultuser, args.vaultpass)))                
             /root/CD-Image/activatePSMP:
               content: |
                 #!/bin/bash -e
@@ -912,7 +925,7 @@ Resources:
             03-PSMPdeploy:
               command:
                 Fn::Sub:
-                  - 'sudo /root/CD-Image/activatePSMP ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
+                  - 'sudo /root/CD-Image/deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
                   - VaultIpAddress:
                       !If
                         - DRValueEmpty
