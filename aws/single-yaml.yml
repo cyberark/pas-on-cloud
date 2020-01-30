@@ -546,7 +546,7 @@ Resources:
               ignoreErrors: 'true'
             02-deploy:
               command:
-                - !Sub
+                Fn::Sub:
                   - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
                   - VaultIpAddress:
                       !If
