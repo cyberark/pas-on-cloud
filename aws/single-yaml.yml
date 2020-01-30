@@ -880,8 +880,11 @@ Resources:
                 #!/bin/bash -e
                 chmod 700 /root/CD-Image/register_and_activation.sh
                 /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $2 -Password $3 -Hostname
+                [ $? -eq 0 ]  || exit 1
                 echo Credentials file successfully created.
                 /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $1 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
+                [ $? -eq 0 ]  || exit 1
+                echo PSMP successfully registered to vault.
             /root/CD-Image/preinstall:
               content:
                 Fn::Sub: |-
@@ -899,6 +902,7 @@ Resources:
                 Fn::Sub: |-
                   #!/bin/bash -e
                   shred -u /root/CD-Image/activatePSMP
+                  [ $? -eq 0 ]  || exit 1
                   rm -rf /root/CD-Image/
           commands:
             01-ScriptsPermissions:
