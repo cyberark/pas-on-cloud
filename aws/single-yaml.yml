@@ -882,9 +882,9 @@ Resources:
               content: |
                 #!/bin/bash -e
                 chmod 700 /root/CD-Image/register_and_activation.sh
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $1 -Password $2 -Hostname
+                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $2 -Password $3 -Hostname
                 echo Credentials file successfully created.
-                /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $0 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
+                /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $1 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
           commands:
             00-ChangeHostName:
               command: !Sub 'sudo hostname ${ComponentHostName}'
