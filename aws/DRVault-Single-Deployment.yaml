@@ -274,8 +274,7 @@ Resources:
                   downloadFile('${DeployBucket}','${LicenseFile}','C:\\vaultLicense.xml')
                   downloadFile('${DeployBucket}','${RecoveryPublicKey}','C:\\recoveryPublic.key')
 
-                  subprocess.call('C:\\Program files (x86)\\PrivateArk\\Server\\CAVaultManager.exe PostInstall /AdminPass {} /MasterPass {} /RecPub C:\\recoveryPublic.key /IsPrimaryOrDR DR /PrimaryVaultIP {} /DRPassword {} /EnableFailOver /LicensePath C:\\vaultLicense.xml /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS'.format(args.adminpass, args.masterpass, args.vaultip, args.drpass))
-                  sys.exit(0)
+                  sys.exit(subprocess.call('C:\\Program files (x86)\\PrivateArk\\Server\\CAVaultManager.exe PostInstall /AdminPass {} /MasterPass {} /RecPub C:\\recoveryPublic.key /IsPrimaryOrDR DR /PrimaryVaultIP {} /DRPassword {} /EnableFailOver /LicensePath C:\\vaultLicense.xml /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS'.format(args.adminpass, args.masterpass, args.vaultip, args.drpass)))
           services:
             windows:
               AmazonSSMAgent:
