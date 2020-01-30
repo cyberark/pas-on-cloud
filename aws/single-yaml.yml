@@ -282,7 +282,7 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(vaultip, vaultuser, vaultpass))
+                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass))
                 sys.exit(0)
           services:
             windows:
@@ -729,7 +729,7 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(vaultip, vaultuser, vaultpass))
+                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass))
                 sys.exit(0)
           services:
             windows:
