@@ -879,17 +879,12 @@ Resources:
         install_psmp:
           files:
             /root/CD-Image/activatePSMP:
-              content: !Sub
-                - |
-                  #!/bin/bash -e
-                  chmod 700 /root/CD-Image/register_and_activation.sh
-                  /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $0 -Password $1 -Hostname
-                  echo Credentials file successfully created.
-                  /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ${VaultIpAddress} $(curl http://169.254.169.254/latest/meta-data/instance-id) y
-                - VaultIpAddress: !If
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+              content: |
+                #!/bin/bash -e
+                chmod 700 /root/CD-Image/register_and_activation.sh
+                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $1 -Password $2 -Hostname
+                echo Credentials file successfully created.
+                /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $0 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
           commands:
             00-ChangeHostName:
               command: !Sub 'sudo hostname ${ComponentHostName}'
@@ -912,7 +907,14 @@ Resources:
             08-Chmod:
               command: sudo chmod 700 /root/CD-Image/activatePSMP
             09-PSMPdeploy:
-              command: !Sub 'sudo /root/CD-Image/activatePSMP ${VaultAdminUser} ${VaultAdminPassword}'
+              command:
+                Fn::Sub:
+                  - 'sudo /root/CD-Image/activatePSMP ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
+                  - VaultIpAddress:
+                      !If
+                        - DRValueEmpty
+                        - !Sub '${VaultPrivateIP}'
+                        - !Sub '${VaultPrivateIP},${DRPrivateIP}'
             10-ClearData:
               command: sudo shred -u /root/CD-Image/activatePSMP
             11-RemoveInstallationFolder:
