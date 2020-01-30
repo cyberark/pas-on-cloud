@@ -919,7 +919,7 @@ Resources:
                   rm -rf /root/CD-Image/
           commands:
             01-ScriptsPermissions:
-              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/activatePSMP /root/CD-Image/postinstall
+              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/deploy.py /root/CD-Image/activatePSMP /root/CD-Image/postinstall
             02-PreInstall:
               command: sudo /root/CD-Image/preinstall
             03-PSMPdeploy:
