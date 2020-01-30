@@ -282,8 +282,7 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass))
-                sys.exit(0)
+                sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass)))
           services:
             windows:
               AmazonSSMAgent:
@@ -525,8 +524,7 @@ Resources:
                     else:
                       pvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)
                     
-                    subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl))
-                    sys.exit(0)
+                    sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl)))
 
                   - InputHostname:
                       !If
@@ -730,8 +728,7 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass))
-                sys.exit(0)
+                sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass)))
           services:
             windows:
               AmazonSSMAgent:
