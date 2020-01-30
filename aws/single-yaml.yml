@@ -885,28 +885,30 @@ Resources:
                 /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $2 -Password $3 -Hostname
                 echo Credentials file successfully created.
                 /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $1 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
+            /root/CD-Image/preinstall:
+              content:
+                Fn::Sub: |-
+                  #!/bin/bash -e
+                  hostname ${ComponentHostName}
+                  sed -i 's/localhost\\./${ComponentHostName}./g' /etc/hosts
+                  sed -i 's/localhost /${ComponentHostName} /g' /etc/hosts
+                  chmod 646 /etc/sysconfig/network
+                  sed -i 's/HOSTNAME=localhost.localdomain/HOSTNAME=${ComponentHostName}/g' /etc/sysconfig/network
+                  chmod 644 /etc/hosts
+                  chmod 644 /etc/sysconfig/network
+                  chmod 700 /root/CD-Image/activatePSMP
+            /root/CD-Image/postinstall:
+              content:
+                Fn::Sub: |-
+                  #!/bin/bash -e
+                  shred -u /root/CD-Image/activatePSMP
+                  rm -rf /root/CD-Image/
           commands:
-            00-ChangeHostName:
-              command: !Sub 'sudo hostname ${ComponentHostName}'
-            01-ChangeHostName-chmod-hosts:
-              command: sudo chmod 646 /etc/hosts
-            02-ChangeHostName-sed-hosts1:
-              command: !Sub 'sudo sed -i ''s/localhost\./${ComponentHostName}./g''
-                /etc/hosts'
-            03-ChangeHostName-sed-hosts2:
-              command: !Sub 'sudo sed -i ''s/localhost /${ComponentHostName} /g''
-                /etc/hosts'
-            04-ChangeHostName-chmod-network:
-              command: sudo chmod 646 /etc/sysconfig/network
-            05-ChangeHostName-sed-network:
-              command: !Sub 'sudo sed -i ''s/HOSTNAME=localhost.localdomain/HOSTNAME=${ComponentHostName}/g'' /etc/sysconfig/network'
-            06-ChangeHostName-chmod-hosts-revert:
-              command: sudo chmod 644 /etc/hosts
-            07-ChangeHostName-chmod-network-revert:
-              command: sudo chmod 644 /etc/sysconfig/network
-            08-Chmod:
-              command: sudo chmod 700 /root/CD-Image/activatePSMP
-            09-PSMPdeploy:
+            01-ScriptsPermissions:
+              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/activatePSMP /root/CD-Image/postinstall
+            02-PreInstall:
+              command: sudo /root/CD-Image/preinstall
+            03-PSMPdeploy:
               command:
                 Fn::Sub:
                   - 'sudo /root/CD-Image/activatePSMP ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
@@ -915,10 +917,8 @@ Resources:
                         - DRValueEmpty
                         - !Sub '${VaultPrivateIP}'
                         - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-            10-ClearData:
-              command: sudo shred -u /root/CD-Image/activatePSMP
-            11-RemoveInstallationFolder:
-              command: sudo rm -rf /root/CD-Image/
+            04-PostInstall:
+              command: sudo /root/CD-Image/postinstall
             99-SignalCompletion:
               command: !Sub '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}'
     Condition: CreatePSMPCondition
