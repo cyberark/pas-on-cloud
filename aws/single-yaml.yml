@@ -298,7 +298,7 @@ Resources:
               ignoreErrors: 'true'
             02-deploy:
               command:
-                - !Sub
+                Fn::Sub:
                   - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
                   - VaultIpAddress:
                       !If
@@ -745,7 +745,7 @@ Resources:
               ignoreErrors: 'true'
             02-deploy:
               command:
-                - !Sub
+                Fn::Sub:
                   - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
                   - VaultIpAddress:
                       !If
@@ -1004,7 +1004,7 @@ Conditions:
   DRValueEmpty: !Equals
     - ''
     - !Ref 'DRPrivateIP'
-  PVWAHostnameEmpty: !Equals
+  PVWAHostNameEmpty: !Equals
     - ''
     - !Ref 'PVWAHostName'
 Metadata:
