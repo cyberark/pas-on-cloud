@@ -505,7 +505,7 @@ Resources:
                 $s.Change($Null,$Null,$Null,$Null,$Null,$Null,$Null,$Password,$Null,$Null,$Null)
             C:\deploy.py:
               content:
-                Fn::Sub:
+                !Sub
                   - |
                     import sys
                     import subprocess
@@ -527,6 +527,7 @@ Resources:
                     
                     subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl))
                     sys.exit(0)
+
                   - InputHostname:
                       !If
                         - PVWAHostNameEmpty
