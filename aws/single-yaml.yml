@@ -792,34 +792,8 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           install_all:
-            - install_cfn
             - install_logs
             - install_psmp
-        install_cfn:
-          files:
-            /etc/cfn/cfn-hup.conf:
-              content: !Sub |
-                [main]
-                stack=${AWS::StackId}
-                region=${AWS::Region}
-              mode: '000400'
-              owner: root
-              group: root
-            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Sub |
-                [cfn-auto-reloader-hook]
-                triggers=post.update
-                path=Resources.PSMPMachine.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
-                runas=root
-          services:
-            sysvinit:
-              cfn-hup:
-                enabled: 'true'
-                ensureRunning: 'true'
-                files:
-                  - /etc/cfn/cfn-hup.conf
-                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
         install_logs:
           files:
             /etc/awslogs/awslogs.conf:
@@ -840,11 +814,6 @@ Resources:
                 file = /var/log/cfn-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = {instance_id}/cfn-init.log
-                datetime_format = 
-                [/var/log/cfn-hup.log]
-                file = /var/log/cfn-hup.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-hup.log
                 datetime_format = 
                 [/var/log/cfn-wire.log]
                 file = /var/log/cfn-wire.log
