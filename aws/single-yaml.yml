@@ -282,7 +282,8 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                p = subprocess.check_output('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP {} -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(vaultip, vaultuser, vaultpass), stderr=subprocess.STDOUT)
+                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(vaultip, vaultuser, vaultpass))
+                sys.exit(0)
           services:
             windows:
               AmazonSSMAgent:
@@ -299,10 +300,11 @@ Resources:
               command:
                 - !Sub
                   - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
-                  - VaultIpAddress: !If
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+                  - VaultIpAddress:
+                      !If
+                        - DRValueEmpty
+                        - !Sub '${VaultPrivateIP}'
+                        - !Sub '${VaultPrivateIP},${DRPrivateIP}'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             03-configureCPMUser:
@@ -502,27 +504,34 @@ Resources:
                 $s = Get-WMIObject -class Win32_Service -Filter $filter
                 $s.Change($Null,$Null,$Null,$Null,$Null,$Null,$Null,$Password,$Null,$Null,$Null)
             C:\deploy.py:
-              content: |
-                import sys
-                import subprocess
-                import argparse
-                import urllib2
+              content:
+                Fn::Sub:
+                  - |
+                    import sys
+                    import subprocess
+                    import argparse
+                    import urllib2
 
-                parser = argparse.ArgumentParser()
-                parser.add_argument("vaultip", type=str, help="vault ip address")
-                parser.add_argument("vaultuser", type=str, help="vault administrator user")
-                parser.add_argument("vaultpass", type=str, help="vault administrator password")
-                parser.add_argument("pvwahostname", type=str, help="pvwa url")
-                args = parser.parse_args()
+                    parser = argparse.ArgumentParser()
+                    parser.add_argument("vaultip", type=str, help="vault ip address")
+                    parser.add_argument("vaultuser", type=str, help="vault administrator user")
+                    parser.add_argument("vaultpass", type=str, help="vault administrator password")
+                    args = parser.parse_args()
 
-                inputHostname = args.pvwahostname
-                if not inputHostname:
-                  hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()
-                  pvwaurl = 'https://{0}/PasswordVault'.format(hostname)
-                else:
-                  pvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)
-                
-                p = subprocess.check_output('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP {} -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(vaultip, vaultuser, vaultpass, pvwaurl), stderr=subprocess.STDOUT)
+                    inputHostname = "${InputHostname}"
+                    if not inputHostname:
+                      hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()
+                      pvwaurl = 'https://{0}/PasswordVault'.format(hostname)
+                    else:
+                      pvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)
+                    
+                    subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl))
+                    sys.exit(0)
+                  - InputHostname:
+                      !If
+                        - PVWAHostNameEmpty
+                        - ''
+                        - !Sub '${PVWAHostName}'
           services:
             windows:
               AmazonSSMAgent:
@@ -538,12 +547,12 @@ Resources:
             02-deploy:
               command:
                 - !Sub
-                  - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword} ${PVWAHostName}'
+                  - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
                   - VaultIpAddress:
-                    !If
-                      - DRValueEmpty
-                      - !Sub '${VaultPrivateIP}'
-                      - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+                      !If
+                        - DRValueEmpty
+                        - !Sub '${VaultPrivateIP}'
+                        - !Sub '${VaultPrivateIP},${DRPrivateIP}'
               ignoreErrors: 'false'
             03-startAppPool:
               command: powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "& {&'Set-ItemProperty' -Path IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}"
@@ -720,7 +729,8 @@ Resources:
                 parser.add_argument("vaultpass", type=str, help="vault administrator password")
                 args = parser.parse_args()
                 
-                p = subprocess.check_output('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP {} -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(vaultip, vaultuser, vaultpass), stderr=subprocess.STDOUT)
+                subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(vaultip, vaultuser, vaultpass))
+                sys.exit(0)
           services:
             windows:
               AmazonSSMAgent:
@@ -737,10 +747,11 @@ Resources:
               command:
                 - !Sub
                   - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
-                  - VaultIpAddress: !If
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+                  - VaultIpAddress:
+                      !If
+                        - DRValueEmpty
+                        - !Sub '${VaultPrivateIP}'
+                        - !Sub '${VaultPrivateIP},${DRPrivateIP}'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             03-PSMserviceConfig:
@@ -993,6 +1004,9 @@ Conditions:
   DRValueEmpty: !Equals
     - ''
     - !Ref 'DRPrivateIP'
+  PVWAHostnameEmpty: !Equals
+    - ''
+    - !Ref 'PVWAHostName'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
