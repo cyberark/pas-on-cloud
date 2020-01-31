@@ -855,16 +855,9 @@ Resources:
                   sed -i 's/HOSTNAME=localhost.localdomain/HOSTNAME=${ComponentHostName}/g' /etc/sysconfig/network
                   chmod 644 /etc/hosts
                   chmod 644 /etc/sysconfig/network
-            /root/CD-Image/postinstall:
-              content:
-                Fn::Sub: |-
-                  #!/bin/bash -e
-                  shred -u /root/CD-Image/user.cred
-                  [ $? -eq 0 ]  || exit 1
-                  rm -rf /root/CD-Image/
           commands:
             01-ScriptsPermissions:
-              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/postinstall
+              command: sudo chmod 700 /root/CD-Image/preinstall
             02-PreInstall:
               command: sudo /root/CD-Image/preinstall
             03-CreateCredFile:
@@ -879,7 +872,7 @@ Resources:
                         - !Sub '${VaultPrivateIP}'
                         - !Sub '${VaultPrivateIP},${DRPrivateIP}'
             05-PostInstall:
-              command: sudo /root/CD-Image/postinstall
+              command: sudo rm -rf /root/CD-Image/
             99-SignalCompletion:
               command: !Sub '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}'
     Condition: CreatePSMPCondition
