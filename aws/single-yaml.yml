@@ -844,16 +844,6 @@ Resources:
                   - /etc/awslogs/awslogs.conf
         install_psmp:
           files:
-            /root/CD-Image/activatePSMP:
-              content: |
-                #!/bin/bash -e
-                chmod 700 /root/CD-Image/register_and_activation.sh
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username $2 -Password $3 -Hostname
-                [ $? -eq 0 ]  || exit 1
-                echo Credentials file successfully created.
-                /root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred $1 $(curl http://169.254.169.254/latest/meta-data/instance-id) y
-                [ $? -eq 0 ]  || exit 1
-                echo PSMP successfully registered to vault.
             /root/CD-Image/preinstall:
               content:
                 Fn::Sub: |-
@@ -865,29 +855,30 @@ Resources:
                   sed -i 's/HOSTNAME=localhost.localdomain/HOSTNAME=${ComponentHostName}/g' /etc/sysconfig/network
                   chmod 644 /etc/hosts
                   chmod 644 /etc/sysconfig/network
-                  chmod 700 /root/CD-Image/activatePSMP
             /root/CD-Image/postinstall:
               content:
                 Fn::Sub: |-
                   #!/bin/bash -e
-                  shred -u /root/CD-Image/activatePSMP
+                  shred -u /root/CD-Image/user.cred
                   [ $? -eq 0 ]  || exit 1
                   rm -rf /root/CD-Image/
           commands:
             01-ScriptsPermissions:
-              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/activatePSMP /root/CD-Image/postinstall
+              command: sudo chmod 700 /root/CD-Image/preinstall /root/CD-Image/postinstall
             02-PreInstall:
               command: sudo /root/CD-Image/preinstall
-            03-PSMPdeploy:
+            03-CreateCredFile:
+              command: !Sub 'sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username ${VaultAdminUser} -Password ${VaultAdminPassword} -Hostname'
+            04-PSMPdeploy:
               command:
                 Fn::Sub:
-                  - 'sudo /root/CD-Image/activatePSMP ${VaultIpAddress} ${VaultAdminUser} ${VaultAdminPassword}'
+                  - '/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ${VaultIpAddress} $(curl http://169.254.169.254/latest/meta-data/instance-id) y'
                   - VaultIpAddress:
                       !If
                         - DRValueEmpty
                         - !Sub '${VaultPrivateIP}'
                         - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-            04-PostInstall:
+            05-PostInstall:
               command: sudo /root/CD-Image/postinstall
             99-SignalCompletion:
               command: !Sub '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}'
