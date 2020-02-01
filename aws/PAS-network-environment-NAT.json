@@ -559,7 +559,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -573,7 +573,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
@@ -639,7 +639,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -677,7 +677,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
@@ -731,7 +731,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -757,7 +757,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
@@ -799,7 +799,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -839,7 +839,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
@@ -1243,7 +1243,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -1257,7 +1257,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultMainSubnet"
+                    "Ref": "VaultMainSubnetCIDR"
                 }
             }
         },
@@ -1271,7 +1271,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
@@ -1285,7 +1285,7 @@
                 "FromPort": 1858,
                 "ToPort": 1858,
                 "CidrIp": {
-                    "Ref": "VaultDRSubnet"
+                    "Ref": "VaultDRSubnetCIDR"
                 }
             }
         },
