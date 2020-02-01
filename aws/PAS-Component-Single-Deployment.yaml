@@ -127,7 +127,7 @@ Resources:
         Fn::Sub: |-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL%   --stack ${AWS::StackId}  --resource CPMMachine  --region ${AWS::Region}
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
@@ -335,8 +335,7 @@ Resources:
               waitAfterCompletion: forever
               ignoreErrors: 'false'
             99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL%          --stack ${AWS::StackId}         --resource
-                CPMMachine          --region ${AWS::Region}'
+              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}'
     Condition: CreateCPMCondition
     CreationPolicy:
       ResourceSignal:
@@ -525,7 +524,6 @@ Resources:
                       pvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)
                     
                     sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl)))
-
                   - InputHostname:
                       !If
                         - PVWAHostNameEmpty
