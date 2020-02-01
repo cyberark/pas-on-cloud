@@ -1314,7 +1314,7 @@
                     },
                     "Parameters": [
                         "PASVPCCIDR",
-                        "VaultNATGWSubnetCIDR",
+                        "PASNATGWSubnetCIDR",
                         "VaultMainSubnetCIDR",
                         "VaultDRSubnetCIDR",
                         "CPMMainSubnetCIDR",
@@ -1324,7 +1324,7 @@
                         "PSMMainSubnetCIDR",
                         "PSMSecondarySubnetCIDR",
                         "PTAMainSubnetCIDR",
-                        "PTADRySubnetCIDR"
+                        "PTADRSubnetCIDR"
                     ]
                 },
                 {
@@ -1341,7 +1341,7 @@
                 "PASVPCCIDR": {
                     "default": "PAS VPC CIDR"
                 },
-                "VaultNATGWSubnetCIDR": {
+                "PASNATGWSubnetCIDR": {
                     "default": "Vault NAT Gateway Subnet CIDR"
                 },
                 "VaultMainSubnetCIDR": {
@@ -1371,7 +1371,7 @@
                 "PTAMainSubnetCIDR": {
                     "default": "PTA Main Subnet CIDR"
                 },
-                "PTADRySubnetCIDR": {
+                "PTADRSubnetCIDR": {
                     "default": "PTA DR Subnet CIDR"
                 },
                 "UsersAccessCIDR": {
@@ -1483,7 +1483,7 @@
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
-        "PTASecondarySubnetCIDR": {
+        "PTADRSubnetCIDR": {
             "Description": "IPv4 address range for the PTA DR subnet",
             "Type": "String",
             "MinLength": "9",
