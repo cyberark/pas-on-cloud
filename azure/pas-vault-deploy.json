@@ -48,6 +48,7 @@
       },
       "Key Vault Name":{
          "type":"String",
+         "defaultValue":"null",
          "minLength":3,
          "maxLength":24,
          "metadata":{
@@ -97,6 +98,18 @@
             "description":"Enter Vault Image ID."
          }
       },
+      "Availability Zone":{
+         "type":"string",
+         "allowedValues": [
+             "1",
+             "2",
+             "3"
+         ],
+         "defaultValue": "1",
+         "metadata":{
+            "description":"Choose the availability zone for the Vault VM"
+         }
+      },
       "Vault AvailablitySet Name":{
          "type":"String",
          "metadata":{
@@ -143,6 +156,7 @@
          }
       },
       {
+         "condition": "[not(equals(variables('vaultName'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
          "name":"[variables('vaultName')]",
          "apiVersion":"2015-06-01",
@@ -204,8 +218,11 @@
       {
          "type":"Microsoft.Compute/virtualMachines",
          "name":"[parameters('Vault VM Host Name')]",
-         "apiVersion":"2017-03-30",
+         "apiVersion":"2019-07-01",
          "location":"[resourceGroup().location]",
+         "zones": [
+               "[parameters('Availability Zone')]"
+         ],
          "identity":{
             "type":"SystemAssigned"
          },

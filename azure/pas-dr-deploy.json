@@ -108,6 +108,18 @@
                 "description": "Enter Vault DR Image ID."
             }
         },
+        "Availability Zone":{
+            "type":"string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "defaultValue": "2",
+            "metadata":{
+               "description":"Choose the availability zone for the Vault DR VM"
+            }
+         },
         "Vault DR AvailablitySet Name": {
             "type": "String",
             "metadata": {
@@ -189,8 +201,11 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Vault DR VM Host Name')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
             "identity": {
                 "type": "SystemAssigned"
             },
