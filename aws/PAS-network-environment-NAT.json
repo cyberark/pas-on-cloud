@@ -229,7 +229,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "PSM PSMP Main"
+                        "Value": "PSM Main"
                     }
                 ]
             }
@@ -256,16 +256,16 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "PSM PSMP Secondary"
+                        "Value": "PSM Secondary"
                     }
                 ]
             }
         },
-        "PSMMainSubnet": {
+        "PSMPMainSubnet": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "CidrBlock": {
-                    "Ref": "PSMMainSubnetCIDR"
+                    "Ref": "PSMPMainSubnetCIDR"
                 },
                 "AvailabilityZone": {
                     "Fn::Select": [
@@ -283,16 +283,16 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "PSM PSMP Main"
+                        "Value": "PSMP Main"
                     }
                 ]
             }
         },
-        "PSMSecondarySubnet": {
+        "PSMPSecondarySubnet": {
             "Type": "AWS::EC2::Subnet",
             "Properties": {
                 "CidrBlock": {
-                    "Ref": "PSMSecondarySubnetCIDR"
+                    "Ref": "PSMPSecondarySubnetCIDR"
                 },
                 "AvailabilityZone": {
                     "Fn::Select": [
@@ -310,7 +310,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "PSM PSMP Secondary"
+                        "Value": "PSMP Secondary"
                     }
                 ]
             }
@@ -574,6 +574,138 @@
                 }
             }
         },
+        "VaultMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "VaultMainSubnet"
+                }
+            }
+        },
+        "VaultDRRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "VaultDRSubnet"
+                }
+            }
+        },
+        "PVWAMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PVWAMainSubnet"
+                }
+            }
+        },
+        "PVWASecondaryRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PVWASecondarySubnet"
+                }
+            }
+        },
+        "CPMMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "CPMMainSubnet"
+                }
+            }
+        },
+        "CPMDRRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "CPMDRSubnet"
+                }
+            }
+        },
+        "PTAMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PTAMainSubnet"
+                }
+            }
+        },
+        "PTADRRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PTADRSubnet"
+                }
+            }
+        },
+        "PSMMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PSMMainSubnet"
+                }
+            }
+        },
+        "PSMSecondaryRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PSMSecondarySubnet"
+                }
+            }
+        },
+        "PSMPMainRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PSMPMainSubnet"
+                }
+            }
+        },
+        "PSMPSecondaryRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PASPrivateRT"
+                },
+                "SubnetId": {
+                    "Ref": "PSMPSecondarySubnet"
+                }
+            }
+        },
         "PASPrivateNATRoute": {
             "Type": "AWS::EC2::Route",
             "Properties": {
@@ -802,7 +934,23 @@
                 "IpProtocol": "tcp",
                 "FromPort": 443,
                 "ToPort": 443,
-                "CidrIp": "0.0.0.0/0"
+                "CidrIp": {
+                    "Ref": "PVWAMainSubnetCIDR"
+                }
+            }
+        },
+        "CPMSGEgress4": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "CPMSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "PVWASecondarySubnetCIDR"
+                }
             }
         },
         "PSMSGIngress1": {
@@ -1002,6 +1150,34 @@
                 "ToPort": 3389,
                 "CidrIp": {
                     "Ref": "AdministrativeAccessCIDR"
+                }
+            }
+        },
+        "PVWASGIngress3": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "CPMMainSubnetCIDR"
+                }
+            }
+        },
+        "PVWASGIngress4": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "CPMDRSubnetCIDR"
                 }
             }
         },
@@ -1539,6 +1715,8 @@
                         "PVWASecondarySubnetCIDR",
                         "PSMMainSubnetCIDR",
                         "PSMSecondarySubnetCIDR",
+                        "PSMPMainSubnetCIDR",
+                        "PSMPSecondarySubnetCIDR",
                         "PTAMainSubnetCIDR",
                         "PTADRSubnetCIDR"
                     ]
@@ -1579,10 +1757,16 @@
                     "default": "PVWA Secondary Subnet CIDR"
                 },
                 "PSMMainSubnetCIDR": {
-                    "default": "PSM, PSMP Main Subnet CIDR"
+                    "default": "PSM Main Subnet CIDR"
                 },
                 "PSMSecondarySubnetCIDR": {
-                    "default": "PSM, PSMP Secondary Subnet CIDR"
+                    "default": "PSM Secondary Subnet CIDR"
+                },
+                "PSMPMainSubnetCIDR": {
+                    "default": "PSMP Main Subnet CIDR"
+                },
+                "PSMPSecondarySubnetCIDR": {
+                    "default": "PSMP Secondary Subnet CIDR"
                 },
                 "PTAMainSubnetCIDR": {
                     "default": "PTA Main Subnet CIDR"
@@ -1623,7 +1807,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.1.0/28",
+            "Default": "10.0.1.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1632,7 +1816,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.2.0/28",
+            "Default": "10.0.2.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1641,7 +1825,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.3.0/26",
+            "Default": "10.0.3.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1650,7 +1834,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.4.0/26",
+            "Default": "10.0.4.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1659,7 +1843,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.5.0/26",
+            "Default": "10.0.5.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1668,25 +1852,43 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.6.0/26",
+            "Default": "10.0.6.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
         "PSMMainSubnetCIDR": {
-            "Description": "IPv4 address range for the PSM PSMP Main subnet",
+            "Description": "IPv4 address range for the PSM Main subnet",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.7.0/26",
+            "Default": "10.0.7.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
         "PSMSecondarySubnetCIDR": {
-            "Description": "IPv4 address range for the PSM PSMP Secondary subnet",
+            "Description": "IPv4 address range for the PSM Secondary subnet",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.8.0/26",
+            "Default": "10.0.8.0/24",
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "PSMPMainSubnetCIDR": {
+            "Description": "IPv4 address range for the PSMP Main subnet",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.9.0/24",
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "PSMPSecondarySubnetCIDR": {
+            "Description": "IPv4 address range for the PSMP Secondary subnet",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "10.0.10.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1695,7 +1897,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.9.0/26",
+            "Default": "10.0.11.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
@@ -1704,7 +1906,7 @@
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
-            "Default": "10.0.10.0/26",
+            "Default": "10.0.12.0/24",
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
