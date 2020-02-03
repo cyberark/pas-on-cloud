@@ -1181,6 +1181,62 @@
                 }
             }
         },
+        "PVWASGIngress5": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "PSMMainSubnetCIDR"
+                }
+            }
+        },
+        "PVWASGIngress6": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "PSMSecondarySubnetCIDR"
+                }
+            }
+        },
+        "PVWASGIngress7": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "PSMPMainSubnetCIDR"
+                }
+            }
+        },
+        "PVWASGIngress8": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                    "Ref": "PSMPSecondarySubnetCIDR"
+                }
+            }
+        },
         "PVWASGEgress1": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
