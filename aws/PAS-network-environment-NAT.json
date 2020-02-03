@@ -153,6 +153,222 @@
                 ]
             }
         },
+        "CPMMainSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "CPMMainSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "CPM Main"
+                    }
+                ]
+            }
+        },
+        "CPMDRSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "CPMDRSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "CPM DR"
+                    }
+                ]
+            }
+        },
+        "PSMMainSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PSMMainSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PSM PSMP Main"
+                    }
+                ]
+            }
+        },
+        "PSMSecondarySubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PSMSecondarySubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PSM PSMP Secondary"
+                    }
+                ]
+            }
+        },
+        "PSMMainSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PSMMainSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PSM PSMP Main"
+                    }
+                ]
+            }
+        },
+        "PSMSecondarySubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PSMSecondarySubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PSM PSMP Secondary"
+                    }
+                ]
+            }
+        },
+        "PTAMainSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PTAMainSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PTA Main"
+                    }
+                ]
+            }
+        },
+        "PTADRSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "PTADRSubnetCIDR"
+                },
+                "AvailabilityZone": {
+                    "Fn::Select": [
+                        "1",
+                        {
+                            "Fn::GetAZs": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "VpcId": {
+                    "Ref": "PASVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PTA DR"
+                    }
+                ]
+            }
+        },
         "PASIGW": {
             "Type": "AWS::EC2::InternetGateway",
             "Properties": {
