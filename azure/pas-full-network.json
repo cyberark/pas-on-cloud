@@ -300,22 +300,20 @@
             }
           },
           {
-            "name": "Allow1858VaultOut",
+            "name": "AllowPTAOut",
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "8443",
               "destinationPortRange": "8443",
-              "sourceAddressPrefix": "[parameters('PTA Subnet CIDR')]",
-              "destinationAddressPrefix": "",
+              "sourceAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
+              "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
               "access": "Allow",
-              "priority": 130,
+              "priority": 140,
               "direction": "Outbound",
               "sourcePortRanges": [],
               "destinationPortRanges": [],
               "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": [
-                "[parameters('Vault Main Subnet CIDR')]"
-              ]
+              "destinationAddressPrefixes": []
             }
           }
         ],
