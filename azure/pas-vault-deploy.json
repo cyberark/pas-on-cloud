@@ -116,24 +116,24 @@
             "description":"Enter the Availability Set for the Vault VM , If doesn’t exist it will be created"
          }
       },
-      "Primary Vault Vnet Name":{
+      "Primary Vault VNet Name":{
          "type":"String",
-         "defaultValue": "Pas-Vnet",
+         "defaultValue": "PAS-VNet",
          "metadata":{
-            "description":"Enter the Vnet for the Vault VM"
+            "description":"Enter the VNet for the Vault VM"
          }
       },
-      "DR Vault Vnet Name":{
+      "DR Vault VNet Name":{
          "type":"String",
-         "defaultValue": "Pas-Vnet",
+         "defaultValue": "PAS-VNet",
          "metadata":{
-            "description":"Enter the Vnet for the Vault-DR VM"
+            "description":"Enter the VNet for the Vault-DR VM"
          }
       }
    },
    "variables":{
-      "vnetIdVault":"[resourceId('Microsoft.Network/virtualNetworks', parameters('Primary Vault Vnet Name'))]",
-      "vnetIdVaultDR":"[resourceId('Microsoft.Network/virtualNetworks', parameters('DR Vault Vnet Name'))]",
+      "vnetIdVault":"[resourceId('Microsoft.Network/virtualNetworks', parameters('Primary Vault VNet Name'))]",
+      "vnetIdVaultDR":"[resourceId('Microsoft.Network/virtualNetworks', parameters('DR Vault VNet Name'))]",
       "subnetRefVault":"[concat(variables('vnetIdVault'), '/subnets/','Vault-Subnet')]",
       "subnetRefVaultDR":"[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-Subnet')]",
       "networkInterfaceName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
