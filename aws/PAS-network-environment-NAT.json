@@ -965,18 +965,6 @@
                 }
             }
         },
-        "PSMSGEgress1": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "PSMSG"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": 22,
-                "ToPort": 22,
-                "CidrIp": "0.0.0.0/0"
-            }
-        },
         "PSMSGEgress2": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
@@ -1843,7 +1831,7 @@
             "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
         },
         "VaultMainSubnetCIDR": {
-            "Description": "IPv4 address range for the main Vault subnet",
+            "Description": "IPv4 address range for the Vault main subnet",
             "Type": "String",
             "MinLength": "9",
             "MaxLength": "18",
