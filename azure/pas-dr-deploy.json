@@ -120,12 +120,6 @@
                "description":"Choose the availability zone for the Vault DR VM"
             }
          },
-        "Vault DR AvailablitySet Name": {
-            "type": "String",
-            "metadata": {
-                "description": "Enter the Availability Set for the Vault DR VM , If doesn’t exist it will be created"
-            }
-        },
         "DR Vault VNet Name":{
             "type":"String",
             "defaultValue": "PAS-VNet",
@@ -145,8 +139,6 @@
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('DR Vault VNet Name'))]",
         "subnetRefVault": "[concat(variables('vnetId'), '/subnets/',parameters('DR Vault Subnet Name'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Vault DR VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "availabilitySetPlatformFaultDomainCount": 3,
-        "availabilitySetPlatformUpdateDomainCount": 5,
         "publicIpAddressName": "[toLower(concat(parameters('Vault DR VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
@@ -238,14 +230,10 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                         }
                     ]
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Vault DR AvailablitySet Name'))]"
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-                "[concat('Microsoft.Compute/availabilitySets/', parameters('Vault DR AvailablitySet Name'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ]
         },
         {
@@ -271,17 +259,6 @@
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Host Name'), '/extensions/ManagedIdentityExtensionForWindows')]"
             ]
-        },
-        {
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('Vault DR AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
-                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
-                "managed": true
-            }
         },
         {
             "type": "Microsoft.Network/networkInterfaces",

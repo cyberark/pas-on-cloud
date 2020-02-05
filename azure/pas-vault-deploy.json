@@ -110,12 +110,6 @@
             "description":"Choose the availability zone for the Vault VM"
          }
       },
-      "Vault AvailablitySet Name":{
-         "type":"String",
-         "metadata":{
-            "description":"Enter the Availability Set for the Vault VM , If doesn’t exist it will be created"
-         }
-      },
       "Primary Vault VNet Name":{
          "type":"String",
          "defaultValue": "PAS-VNet",
@@ -137,8 +131,6 @@
       "subnetRefVault":"[concat(variables('vnetIdVault'), '/subnets/','Vault-Subnet')]",
       "subnetRefVaultDR":"[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-Subnet')]",
       "networkInterfaceName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-      "availabilitySetPlatformFaultDomainCount":3,
-      "availabilitySetPlatformUpdateDomainCount":5,
       "publicIpAddressName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
       "vaultName":"[parameters('Key Vault Name')]"
    },
@@ -255,14 +247,10 @@
                      "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                   }
                ]
-            },
-            "availabilitySet":{
-               "id":"[resourceId('Microsoft.Compute/availabilitySets', parameters('Vault AvailablitySet Name'))]"
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-            "[concat('Microsoft.Compute/availabilitySets/', parameters('Vault AvailablitySet Name'))]"
+            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
          ]
       },
       {
@@ -291,17 +279,6 @@
             "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
-      },
-      {
-         "type":"Microsoft.Compute/availabilitySets",
-         "name":"[parameters('Vault AvailablitySet Name')]",
-         "apiVersion":"2016-04-30-preview",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "platformFaultDomainCount":"[variables('availabilitySetPlatformFaultDomainCount')]",
-            "platformUpdateDomainCount":"[variables('availabilitySetPlatformUpdateDomainCount')]",
-            "managed":true
-         }
       },
       {
          "type":"Microsoft.Network/networkInterfaces",
