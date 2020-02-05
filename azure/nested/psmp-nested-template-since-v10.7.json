@@ -23,9 +23,6 @@
         "Imageid": {
             "type": "string"
         },
-        "AvailablitySetName": {
-            "type": "string"
-        },
         "NetworkInterfaceName": {
             "type": "string"
         },
@@ -77,9 +74,6 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
                         }
                     ]
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
                 }
             },
             "dependsOn": []
