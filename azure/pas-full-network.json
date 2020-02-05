@@ -612,7 +612,7 @@
       "properties": {
         "securityRules": [
           {
-            "name": "PVWA out",
+            "name": "PVWAout",
             "properties": {
               "protocol": "TCP",
               "sourcePortRange": "*",
