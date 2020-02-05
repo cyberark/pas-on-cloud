@@ -116,6 +116,27 @@
             }
           },
           {
+            "name": "AllowRabbitPVWA",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "5671",
+              "destinationPortRange": "5671",
+              "sourceAddressPrefix": "",
+              "destinationAddressPrefix": "",
+              "access": "Allow",
+              "priority": 400,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [
+                "[parameters('PVWA Subnet CIDR')]"
+              ],
+              "destinationAddressPrefixes": [
+                "[parameters('Vault Subnet CIDR')]"
+              ]
+            }
+          },
+          {
             "name": "AllowStorageVaultOut",
             "properties": {
               "protocol": "TCP",
@@ -270,6 +291,23 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 130,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowRabbitVault",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "5671",
+              "destinationPortRange": "5671",
+              "sourceAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
+              "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
+              "access": "Allow",
+              "priority": 410,
               "direction": "Outbound",
               "sourcePortRanges": [],
               "destinationPortRanges": [],
