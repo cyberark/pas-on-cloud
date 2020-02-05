@@ -374,7 +374,7 @@
           }
         ]
       },
-      "dependsOn": []
+      "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', variables('Vault_NSG_name'))]"]
     },
     {
       "comments": "Network Security group CPM subnet",
@@ -478,7 +478,7 @@
           }
         ]
       },
-      "dependsOn": []
+      "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', variables('PVWA_NSG_name'))]"]
     },
     {
       "comments": "Network Security group PSM subnet",
@@ -582,26 +582,7 @@
           }
         ]
       },
-      "dependsOn": []
-    },
-    {
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworks_Solution_VNet_name')]",
-      "apiVersion": "2018-02-01",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[parameters('PAS VNET CIDR')]"
-          ]
-        },
-        "virtualNetworkPeerings": [],
-        "enableDdosProtection": false,
-        "enableVmProtection": false
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Vault_NSG_name'))]"
-      ]
+      "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', variables('CPM_NSG_name'))]"]
     },
     {
       "comments": "PSMP Components Security Group",
@@ -722,7 +703,7 @@
           }
         ]
       },
-      "dependsOn": []
+      "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', variables('PSM_NSG_name'))]"]
     },
     {
       "comments": "PTA Components Security Group",
@@ -1000,7 +981,26 @@
           }
         ]
       },
-      "dependsOn": []
+      "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', variables('PSMP_NSG_name'))]"]
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworks_Solution_VNet_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('PAS VNET CIDR')]"
+          ]
+        },
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false,
+        "enableVmProtection": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Vault_NSG_name'))]"
+      ]
     },
     {
       "type": "Microsoft.Network/virtualNetworks/subnets",
@@ -1048,7 +1048,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Solution_VNet_name'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Solution_VNet_name'), variables('PVWA_Subnet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Solution_VNet_name'), variables('CPM_Subnet_name'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('PSM_NSG_name'))]"
       ]
     },
@@ -1073,6 +1073,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Solution_VNet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Solution_VNet_name'), variables('PSM_Subnet_name'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('Vault_NSG_name'))]"
       ]
     },
@@ -1089,6 +1090,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Solution_VNet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Solution_VNet_name'), variables('Vault_Subnet_name'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('PSMP_NSG_name'))]"
       ]
     },
@@ -1105,6 +1107,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworks_Solution_VNet_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworks_Solution_VNet_name'), variables('PSMP_Subnet_name'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('PTA_NSG_name'))]"
       ]
     }
