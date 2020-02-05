@@ -6,6 +6,11 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+  LogStream:
+    Type: AWS::Logs::LogStream
+    Properties: 
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: 'VaultMachine/CfnInitLog'
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -199,12 +204,15 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
+                  - logs:DescribeLogGroups
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${LogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -263,18 +271,6 @@ Resources:
                             }
                           },
                           {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
                             "Id":"CloudWatchCfnInitLog",
                             "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
                             "Parameters":{
@@ -282,25 +278,13 @@ Resources:
                                 "SecretKey":"",
                                 "Region": "${AWS::Region}",
                                 "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
+                                "LogStream": "${LogStream}"
                             }
                           }
                       ],
                       "Flows":{
                           "Flows":[
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog"
+                            "CfnInitLog,CloudWatchCfnInitLog"
                           ]
                       }
                     }
