@@ -6,10 +6,6 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
-  DeployBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -36,88 +32,146 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - '*'
-        - PolicyName: S3
+        - PolicyName: SSM
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:ListBucket
-                  - s3:PutObject
-                  - s3:DeleteObject
-                  - s3:DeleteObjectVersion
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${DeployBucket}/*'
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
     Condition: EULACondition
-  CopyfileFromBucketLambda:
+  StorePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
-      Description: Copy files from foreign region to local region
+      Description: Saves given password to parameter store as SecureString
       Code:
         ZipFile: |-
           import uuid
           import boto3
           import cfnresponse
-
-          def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):
-              s3Client = boto3.client('s3')
-              copy_source = {'Bucket': bucket,'Key': fileKey}
-              s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
-
-          def DeleteObjectFromBucket(bucket, key):
-              s3Client = boto3.client('s3')
-              s3Client.delete_object(Bucket=bucket, Key=key)
-
+          
+          
+          def storePassword(name, value):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.put_parameter(Name=name, Value=value, Type='SecureString')
+          
+          
+          def deletePassword(name):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.delete_parameter(Name=name)
+          
+          
           def lambda_handler(event, context):
-
               physicalResourceId = str(uuid.uuid4())
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
-
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                  print ('The property Password must not be empty')
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
               try:
                   if event['RequestType'] == 'Delete':
-                      DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
-                      print 'Object Deleted Successfully'
+                      deletePassword(physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
                       return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-
                   if event['RequestType'] == 'Create':
-                      CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
-                      print 'file copied successfully'
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-
+                      storePassword(physicalResourceId, event['ResourceProperties']['Password'])
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = {'SsmId': physicalResourceId}
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+              except client.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
               except Exception as E:
-                  print E
+                  print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python2.7
+          
+          
+      Runtime: python3.7
       Handler: index.lambda_handler
+      Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-  CopyLicenseToBucket:
+    Condition: EULACondition
+  DeletePasswordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Delete password from parameter store
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+          
+          
+          def deletePassword(name):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.delete_parameter(Name=name)
+          
+          
+          def lambda_handler(event, context):
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              try:
+                  if event['RequestType'] == 'Create':
+                      deletePassword(event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except client.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+          
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaDeployRole.Arn'
+    Condition: EULACondition
+  StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'LicenseFile'
-      FileName: !Ref 'LicenseFile'
-      DestBucket: !Ref 'DeployBucket'
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultMasterPassword'
     Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-  CopyRecpubToBucket:
+  StoreAdminPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultAdminPassword'
+    Condition: EULACondition
+    DependsOn:
+      - LambdaDeployRole
+  CleanMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'RecoveryPublicKey'
-      FileName: !Ref 'RecoveryPublicKey'
-      DestBucket: !Ref 'DeployBucket'
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreMasterPassword.SsmId'
     Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
+      - StoreMasterPassword
+      - VaultMachine
+  CleanAdminPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreAdminPassword.SsmId'
+    Condition: EULACondition
+    DependsOn:
+      - LambdaDeployRole
+      - StoreAdminPassword
+      - VaultMachine
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -138,10 +192,8 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: LogRolePolicy
+        - PolicyName: VaultLogPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -153,6 +205,16 @@ Resources:
                   - logs:DescribeLogStreams
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
     Condition: EULACondition
     DeletionPolicy: Retain
   VaultMachine:
@@ -189,18 +251,6 @@ Resources:
                       "PollInterval":"00:00:05",
                       "Components":[
                           {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
                             "Id":"CfnInitLog",
                             "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
                             "Parameters":{
@@ -225,29 +275,6 @@ Resources:
                             }
                           },
                           {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
                             "Id":"CloudWatchCfnInitLog",
                             "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
                             "Parameters":{
@@ -268,50 +295,35 @@ Resources:
                                 "LogGroup": "${LogGroup}",
                                 "LogStream":"{instance_id}/CfnInitCmdLog"
                             }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
                           }
                       ],
                       "Flows":{
                           "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
                             "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
+                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog"
                           ]
                       }
                     }
                   }
-            C:\deploy.py:
+            C:\CyberArk\VaultPostInstall.ps1:
               content:
                 Fn::Sub: |-
-                  import boto3
-                  import sys
-                  import subprocess
-                  import argparse
+                  [CmdletBinding()]
+                  Param(
+                    [Parameter(Mandatory=$true)][string]$SSMMasterPassParameterID,
+                    [Parameter(Mandatory=$true)][string]$SSMAdminPassParameterID,
+                    [Parameter(Mandatory=$true)][string]$LicensePath,
+                    [Parameter(Mandatory=$true)][string]$RecoveryPublicKeyPath
+                  )
 
-                  parser = argparse.ArgumentParser()
-                  parser.add_argument("adminpass", type=str, help="vault administrator password")
-                  parser.add_argument("masterpass", type=str, help="vault master password")
-                  args = parser.parse_args()
+                  # Get passwords from SSM
+                  $MasterPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
+                  $AdminPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
+                  Set-Location "C:\Program files (x86)\PrivateArk\Server"
 
-                  def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-
-                  downloadFile('${DeployBucket}','${LicenseFile}','C:\\vaultLicense.xml')
-                  downloadFile('${DeployBucket}','${RecoveryPublicKey}','C:\\recoveryPublic.key')
-
-                  sys.exit(subprocess.call('C:\\Program files (x86)\\PrivateArk\\Server\\CAVaultManager.exe PostInstall /AdminPass {} /MasterPass {} /RecPub C:\\recoveryPublic.key /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword {} /EnableFailOver /LicensePath C:\\vaultLicense.xml /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS'.format(args.adminpass, args.masterpass, args.adminpass)))
+                  # Run PostInstall process
+                  & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS
+                  exit $LASTEXITCODE
           services:
             windows:
               AmazonSSMAgent:
@@ -324,26 +336,31 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '30'
               ignoreErrors: 'true'
-            2-deploy:
-              command: !Sub 'C:\Python27\python.exe C:\deploy.py ${VaultAdminPassword} ${VaultMasterPassword}'
+            2-downloadLicense:
+              command: !Sub 'powershell.exe -Command "Read-S3Object -BucketName ${VaultFilesBucket} -Key ${LicenseFile} -File C:\CyberArk\vaultLicense.xml"'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
-            3-CheckVaultServiceStatus:
+            3-downloadRecpub:
+              command: !Sub 'powershell.exe -Command "Read-S3Object -BucketName ${VaultFilesBucket} -Key ${RecoveryPublicKey} -File C:\CyberArk\recoveryPublic.key"'
+              waitAfterCompletion: '0'
+              ignoreErrors: 'false'
+            4-postInstall:
+              command: !Sub 'powershell.exe C:\CyberArk\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicensePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key"'
+              waitAfterCompletion: '0'
+              ignoreErrors: 'false'
+            5-checkVaultServiceStatus:
               command: powershell.exe -Command "if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1}"
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
-            4-ChangeHostName:
+            6-changeHostName:
               command: !Sub 'powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart'
               waitAfterCompletion: forever
               ignoreErrors: 'false'
-            99-SignalCompletion:
+            99-signalCompletion:
               command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}'
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DependsOn:
-      - CopyLicenseToBucket
-      - CopyRecpubToBucket
     DeletionPolicy: Retain
   VaultInstancesKMSPolicy:
     Type: AWS::IAM::Policy
