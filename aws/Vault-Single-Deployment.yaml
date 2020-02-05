@@ -184,7 +184,6 @@ Resources:
       Roles:
         - !Ref 'VaultInstancesRole'
     Condition: EULACondition
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -223,8 +222,35 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+        - PolicyName: VaultFilesBucketAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+        - PolicyName: VaultBootstrapKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:Encrypt
+                  - kms:Decrypt
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource: '*'
     Condition: EULACondition
-    DeletionPolicy: Retain
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -308,6 +334,25 @@ Resources:
                   # Run PostInstall process
                   & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS
                   exit $LASTEXITCODE
+            C:\CyberArk\VaultRemoveIAMPolicies.ps1:
+              content:
+                Fn::Sub: |-
+                  try {
+                    # Retrieve KMS Key ID
+                    $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
+                    $KMSKeyID = $DBParmLine.Split('=')[1]
+ 
+                    # Remove inline policies after deployment
+                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
+                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
+                    Write-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -PolicyDocument '{"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/$KMSKeyID", "Effect": "Allow"}]}' -Force
+                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapKMSPolicy -Force
+                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapIAMPolicy -Force
+                    
+                    exit 0
+                  } catch {
+                    exit 1
+                  }
           services:
             windows:
               AmazonSSMAgent:
@@ -336,7 +381,11 @@ Resources:
               command: powershell.exe -Command "if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1}"
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
-            6-changeHostName:
+            6-reduceIAMPermissions:
+              command: !Sub 'powershell.exe C:\CyberArk\VaultRemoveIAMPolicies.ps1'
+              waitAfterCompletion: '30'
+              ignoreErrors: 'false'
+            7-changeHostName:
               command: !Sub 'powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart'
               waitAfterCompletion: forever
               ignoreErrors: 'false'
@@ -345,49 +394,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DeletionPolicy: Retain
-  VaultInstancesKMSPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultInstancesKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:Encrypt
-              - kms:Decrypt
-            Resource: '*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-    DeletionPolicy: Retain
-  VaultInstancesS3VaultFilesBucketPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultFilesBucketAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
-            Resource: !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-  VaultBootstrapKMSPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultBootstrapKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:CreateKey
-              - kms:GenerateRandom
-            Resource: '*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
 Parameters:
   EULA:
     Type: String
