@@ -829,6 +829,34 @@
                 }
             }
         },
+        "VaultSGIngress8": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "VaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 5671,
+                "ToPort": 5671,
+                "SourceSecurityGroupId": {
+                    "Ref": "PVWASG"
+                }
+            }
+        },
+        "VaultSGIngress9": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "VaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 5671,
+                "ToPort": 5671,
+                "SourceSecurityGroupId": {
+                    "Ref": "VaultSG"
+                }
+            }
+        },
         "VaultSGEgress1": {
             "Type": "AWS::EC2::SecurityGroupEgress",
             "Properties": {
@@ -880,6 +908,20 @@
                 "ToPort": 514,
                 "DestinationSecurityGroupId": {
                     "Ref": "PTASG"
+                }
+            }
+        },
+        "VaultSGEgress5": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "VaultSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 5671,
+                "ToPort": 5671,
+                "DestinationSecurityGroupId": {
+                    "Ref": "VaultSG"
                 }
             }
         },
@@ -1258,6 +1300,34 @@
                 "IpProtocol": "tcp",
                 "FromPort": 1858,
                 "ToPort": 1858,
+                "CidrIp": {
+                    "Ref": "VaultDRSubnetCIDR"
+                }
+            }
+        },
+        "PVWASGEgress5": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 5671,
+                "ToPort": 5671,
+                "CidrIp": {
+                    "Ref": "VaultMainSubnetCIDR"
+                }
+            }
+        },
+        "PVWASGEgress6": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "PVWASG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": 5671,
+                "ToPort": 5671,
                 "CidrIp": {
                     "Ref": "VaultDRSubnetCIDR"
                 }
