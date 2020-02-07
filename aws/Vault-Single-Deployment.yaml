@@ -220,13 +220,14 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
-        - PolicyName: VaultBootstrapKMSPolicy
+        - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
                   - kms:CreateKey
                   - kms:GenerateRandom
+                  - kms:TagResource
                   - kms:Encrypt
                   - kms:Decrypt
                 Resource: '*'
@@ -333,15 +334,23 @@ Resources:
                     # Retrieve KMS Key ID
                     $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
                     $KMSKeyID = $DBParmLine.Split('=')[1]
-                    
+
+                    # Prepare KMS permissions document
                     Set-Location $PSScriptRoot
                     (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
+
+                    # Tag KMS Key with Vault instance id
+                    $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
+                    $Tag = New-Object Amazon.KeyManagementService.Model.Tag
+                    $Tag.TagKey = "VaultInstance"
+                    $Tag.TagValue = $InstanceId
+                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $Tag -Force
  
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
+                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -Force
                     Write-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -PolicyDocument (Get-Content -Raw KMSPolicy.json) -Force
-                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapKMSPolicy -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapIAMPolicy -Force
 
                     exit 0
