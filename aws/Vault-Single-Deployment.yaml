@@ -11,6 +11,7 @@ Resources:
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/CfnInitLog'
+    DeletionPolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -57,19 +58,10 @@ Resources:
           import uuid
           import boto3
           import cfnresponse
-          
-          
-          def storePassword(name, value):
-              ssmClient = boto3.client('ssm')
-              return ssmClient.put_parameter(Name=name, Value=value, Type='SecureString')
-          
-          
-          def deletePassword(name):
-              ssmClient = boto3.client('ssm')
-              return ssmClient.delete_parameter(Name=name)
-          
-          
+
+
           def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
               physicalResourceId = str(uuid.uuid4())
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
@@ -78,15 +70,15 @@ Resources:
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
               try:
                   if event['RequestType'] == 'Delete':
-                      deletePassword(physicalResourceId)
+                      ssmClient.delete_parameter(Name=physicalResourceId)
                       print ('Password successfully deleted. Id='+physicalResourceId)
                       return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
                   if event['RequestType'] == 'Create':
-                      storePassword(physicalResourceId, event['ResourceProperties']['Password'])
+                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
                       print ('The store parameter has been created. Id='+physicalResourceId)
                       response = {'SsmId': physicalResourceId}
                       return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
-              except client.exceptions.ParameterNotFound:
+              except ssmClient.exceptions.ParameterNotFound:
                   print ('Item already removed')
                   return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
               except Exception as E:
@@ -110,23 +102,19 @@ Resources:
           import cfnresponse
           
           
-          def deletePassword(name):
-              ssmClient = boto3.client('ssm')
-              return ssmClient.delete_parameter(Name=name)
-          
-          
           def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
               physicalResourceId = str(uuid.uuid4())
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
               try:
                   if event['RequestType'] == 'Create':
-                      deletePassword(event['ResourceProperties']['key'])
+                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
                       print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
                       return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
                   if event['RequestType'] == 'Delete':
                       return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except client.exceptions.ParameterNotFound:
+              except ssmClient.exceptions.ParameterNotFound:
                   print ('Item already removed')
                   return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
               except Exception as E:
@@ -334,6 +322,10 @@ Resources:
                   # Run PostInstall process
                   & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS
                   exit $LASTEXITCODE
+            C:\CyberArk\KMSPolicy.json:
+              content:
+                Fn::Sub: |-
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
             C:\CyberArk\VaultRemoveIAMPolicies.ps1:
               content:
                 Fn::Sub: |-
@@ -341,14 +333,17 @@ Resources:
                     # Retrieve KMS Key ID
                     $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
                     $KMSKeyID = $DBParmLine.Split('=')[1]
+                    
+                    Set-Location $PSScriptRoot
+                    (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
  
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
-                    Write-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -PolicyDocument '{"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/$KMSKeyID", "Effect": "Allow"}]}' -Force
+                    Write-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -PolicyDocument (Get-Content -Raw KMSPolicy.json) -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapKMSPolicy -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapIAMPolicy -Force
-                    
+
                     exit 0
                   } catch {
                     exit 1
