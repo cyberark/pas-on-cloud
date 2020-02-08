@@ -339,13 +339,18 @@ Resources:
                     Set-Location $PSScriptRoot
                     (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
 
-                    # Tag KMS Key with Vault instance id
+                    # Get Instance ID
                     $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
+                    
+                    # Load AWS powershell assemblies
+                    Get-AWSPowerShellVersion
+
+                    # Tag KMS Key with Vault instance id
                     $Tag = New-Object Amazon.KeyManagementService.Model.Tag
                     $Tag.TagKey = "VaultInstance"
                     $Tag.TagValue = $InstanceId
                     Add-KMSResourceTag -KeyId $KMSKeyID -Tag $Tag -Force
- 
+
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
@@ -355,6 +360,7 @@ Resources:
 
                     exit 0
                   } catch {
+                    Write-Host "An error occurred: $_"
                     exit 1
                   }
           services:
@@ -367,7 +373,7 @@ Resources:
           commands:
             1-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
+              waitAfterCompletion: '0'
               ignoreErrors: 'true'
             2-downloadLicense:
               command: !Sub 'powershell.exe -Command "Read-S3Object -BucketName ${VaultFilesBucket} -Key ${LicenseFile} -File C:\CyberArk\vaultLicense.xml"'
