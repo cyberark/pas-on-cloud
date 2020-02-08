@@ -230,6 +230,7 @@ Resources:
                   - kms:TagResource
                   - kms:Encrypt
                   - kms:Decrypt
+                  - kms:EnableKeyRotation
                 Resource: '*'
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
@@ -345,11 +346,12 @@ Resources:
                     # Load AWS powershell assemblies
                     Get-AWSPowerShellVersion
 
-                    # Tag KMS Key with Vault instance id and CloudFormation stack id
+                    # Tag KMS Key with Vault instance id and enable key rotation
                     $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
                     $InstanceTag.TagKey = "VaultInstance"
                     $InstanceTag.TagValue = $InstanceId
                     Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+                    Enable-KMSKeyRotation -KeyId $KMSKeyID -Force
 
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
