@@ -308,67 +308,70 @@ Resources:
                     }
                   }
             C:\CyberArk\VaultPostInstall.ps1:
-              content:
-                Fn::Sub: |-
-                  [CmdletBinding()]
-                  Param(
-                    [Parameter(Mandatory=$true)][string]$SSMMasterPassParameterID,
-                    [Parameter(Mandatory=$true)][string]$SSMAdminPassParameterID,
-                    [Parameter(Mandatory=$true)][string]$LicensePath,
-                    [Parameter(Mandatory=$true)][string]$RecoveryPublicKeyPath
-                  )
+              content: |
+                [CmdletBinding()]
+                Param(
+                  [Parameter(Mandatory=$true)][string]$Region,
+                  [Parameter(Mandatory=$true)][string]$SSMMasterPassParameterID,
+                  [Parameter(Mandatory=$true)][string]$SSMAdminPassParameterID,
+                  [Parameter(Mandatory=$true)][string]$LicensePath,
+                  [Parameter(Mandatory=$true)][string]$RecoveryPublicKeyPath
+                )
 
-                  # Get passwords from SSM
-                  $MasterPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
-                  $AdminPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
-                  Set-Location "C:\Program files (x86)\PrivateArk\Server"
+                # Get passwords from SSM
+                $MasterPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
+                $AdminPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
+                Set-Location "C:\Program files (x86)\PrivateArk\Server"
 
-                  # Run PostInstall process
-                  & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS
-                  exit $LASTEXITCODE
+                # Run PostInstall process
+                & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion $Region /CloudVendor AWS
+                exit $LASTEXITCODE
             C:\CyberArk\KMSPolicy.json:
               content:
                 Fn::Sub: |-
                   {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
             C:\CyberArk\VaultRemoveIAMPolicies.ps1:
-              content:
-                Fn::Sub: |-
-                  try {
-                    # Retrieve KMS Key ID
-                    $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
-                    $KMSKeyID = $DBParmLine.Split('=')[1]
+              content: |
+                [CmdletBinding()]
+                Param(
+                  [Parameter(Mandatory=$true)][string]$Role
+                )
+                try {
+                  # Retrieve KMS Key ID
+                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
+                  $KMSKeyID = $DBParmLine.Split('=')[1]
 
-                    # Prepare KMS permissions document
-                    Set-Location $PSScriptRoot
-                    (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
+                  # Prepare KMS permissions document
+                  Set-Location $PSScriptRoot
+                  (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
 
-                    # Get Instance ID
-                    $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
-                    
-                    # Load AWS powershell assemblies
-                    Get-AWSPowerShellVersion | Out-Null
+                  # Get Instance ID
+                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
+                  
+                  # Load AWS powershell assemblies
+                  Get-AWSPowerShellVersion | Out-Null
 
-                    # Tag KMS Key with Vault instance id and enable key rotation
-                    $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
-                    $InstanceTag.TagKey = "VaultInstance"
-                    $InstanceTag.TagValue = $InstanceId
-                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
-                    Enable-KMSKeyRotation -KeyId $KMSKeyID -Force
-                    Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
-                    New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
+                  # Tag KMS Key with Vault instance id and enable key rotation
+                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
+                  $InstanceTag.TagKey = "VaultInstance"
+                  $InstanceTag.TagValue = $InstanceId
+                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+                  Enable-KMSKeyRotation -KeyId $KMSKeyID -Force
+                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
+                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
 
-                    # Remove inline policies after deployment
-                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
-                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
-                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -Force
-                    Write-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultInstancesKMSPolicy -PolicyDocument (Get-Content -Raw KMSPolicy.json) -Force
-                    Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultBootstrapIAMPolicy -Force
+                  # Remove inline policies after deployment
+                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultFilesBucketAccess -Force
+                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultSSMPolicy -Force
+                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultInstancesKMSPolicy -Force
+                  Write-IAMRolePolicy -RoleName $Role -PolicyName VaultInstancesKMSPolicy -PolicyDocument (Get-Content -Raw KMSPolicy.json) -Force
+                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultBootstrapIAMPolicy -Force
 
-                    exit 0
-                  } catch {
-                    Write-Host "An error occurred: $_"
-                    exit 1
-                  }
+                  exit 0
+                } catch {
+                  Write-Host "An error occurred: $_"
+                  exit 1
+                }
           services:
             windows:
               AmazonSSMAgent:
@@ -390,7 +393,7 @@ Resources:
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             4-postInstall:
-              command: !Sub 'powershell.exe C:\CyberArk\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicensePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key"'
+              command: !Sub 'powershell.exe C:\CyberArk\VaultPostInstall.ps1 -Region ${AWS::Region} -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicensePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key"'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             5-checkVaultServiceStatus:
@@ -398,7 +401,7 @@ Resources:
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             6-reduceIAMPermissions:
-              command: !Sub 'powershell.exe C:\CyberArk\VaultRemoveIAMPolicies.ps1'
+              command: !Sub 'powershell.exe C:\CyberArk\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             7-changeHostName:
