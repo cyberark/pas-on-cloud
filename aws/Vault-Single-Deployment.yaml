@@ -351,11 +351,6 @@ Resources:
                     $InstanceTag.TagValue = $InstanceId
                     Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
 
-                    $CloudFormationTag = New-Object Amazon.KeyManagementService.Model.Tag
-                    $CloudFormationTag.TagKey = "aws:cloudformation:stack-id"
-                    $CloudFormationTag.TagValue = "${AWS::StackId}"
-                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $CloudFormationTag -Force
-
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultSSMPolicy -Force
