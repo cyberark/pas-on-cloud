@@ -346,7 +346,7 @@ Resources:
                     $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
                     
                     # Load AWS powershell assemblies
-                    Get-AWSPowerShellVersion
+                    Get-AWSPowerShellVersion | Out-Null
 
                     # Tag KMS Key with Vault instance id and enable key rotation
                     $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
@@ -399,7 +399,7 @@ Resources:
               ignoreErrors: 'false'
             6-reduceIAMPermissions:
               command: !Sub 'powershell.exe C:\CyberArk\VaultRemoveIAMPolicies.ps1'
-              waitAfterCompletion: '30'
+              waitAfterCompletion: '0'
               ignoreErrors: 'false'
             7-changeHostName:
               command: !Sub 'powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart'
