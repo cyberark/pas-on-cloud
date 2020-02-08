@@ -345,11 +345,16 @@ Resources:
                     # Load AWS powershell assemblies
                     Get-AWSPowerShellVersion
 
-                    # Tag KMS Key with Vault instance id
-                    $Tag = New-Object Amazon.KeyManagementService.Model.Tag
-                    $Tag.TagKey = "VaultInstance"
-                    $Tag.TagValue = $InstanceId
-                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $Tag -Force
+                    # Tag KMS Key with Vault instance id and CloudFormation stack id
+                    $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
+                    $InstanceTag.TagKey = "VaultInstance"
+                    $InstanceTag.TagValue = $InstanceId
+                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+
+                    $CloudFormationTag = New-Object Amazon.KeyManagementService.Model.Tag
+                    $CloudFormationTag.TagKey = "aws:cloudformation:stack-id"
+                    $CloudFormationTag.TagValue = "${AWS::StackId}"
+                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $CloudFormationTag -Force
 
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
