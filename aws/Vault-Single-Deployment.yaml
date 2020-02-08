@@ -231,6 +231,8 @@ Resources:
                   - kms:Encrypt
                   - kms:Decrypt
                   - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
                 Resource: '*'
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
@@ -352,6 +354,8 @@ Resources:
                     $InstanceTag.TagValue = $InstanceId
                     Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
                     Enable-KMSKeyRotation -KeyId $KMSKeyID -Force
+                    Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
+                    New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
 
                     # Remove inline policies after deployment
                     Remove-IAMRolePolicy -RoleName ${VaultInstancesRole} -PolicyName VaultFilesBucketAccess -Force
