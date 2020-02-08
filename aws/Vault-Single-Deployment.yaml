@@ -587,7 +587,3 @@ Mappings:
       Vault: ami-0e87a36f
     us-gov-east-1:
       Vault: ami-00268514ee37890b9
-Outputs:
-  CloudWatchLogGroupName:
-    Description: The name of the CloudWatch log group
-    Value: !Ref 'LogGroup'
