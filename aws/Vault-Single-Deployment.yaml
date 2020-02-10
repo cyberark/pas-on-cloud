@@ -307,71 +307,10 @@ Resources:
                       }
                     }
                   }
-            C:\CyberArk\VaultPostInstall.ps1:
-              content: |
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Region,
-                  [Parameter(Mandatory=$true)][string]$SSMMasterPassParameterID,
-                  [Parameter(Mandatory=$true)][string]$SSMAdminPassParameterID,
-                  [Parameter(Mandatory=$true)][string]$LicensePath,
-                  [Parameter(Mandatory=$true)][string]$RecoveryPublicKeyPath
-                )
-
-                # Get passwords from SSM
-                $MasterPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
-                $AdminPassword = (Get-SSMParameterValue -Name "$SSMAdminPassParameterID" -WithDecryption $true).Parameters.Value
-                Set-Location "C:\Program files (x86)\PrivateArk\Server"
-
-                # Run PostInstall process
-                & ".\CAVaultManager.exe" PostInstall /AdminPass $AdminPassword /MasterPass $MasterPassword /RecPub $RecoveryPublicKeyPath /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword $AdminPassword /EnableFailOver /LicensePath $LicensePath /AcceptEULA yes /CloudRegion $Region /CloudVendor AWS
-                exit $LASTEXITCODE
             C:\CyberArk\KMSPolicy.json:
               content:
                 Fn::Sub: |-
                   {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
-            C:\CyberArk\VaultRemoveIAMPolicies.ps1:
-              content: |
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Role
-                )
-                try {
-                  # Retrieve KMS Key ID
-                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
-                  $KMSKeyID = $DBParmLine.Split('=')[1]
-
-                  # Prepare KMS permissions document
-                  Set-Location $PSScriptRoot
-                  (Get-Content KMSPolicy.json) | Foreach-Object {$_ -replace 'KMSKEYID_PLACEHOLDER', $KMSKeyID} | Out-File KMSPolicy.json
-
-                  # Get Instance ID
-                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
-                  
-                  # Load AWS powershell assemblies
-                  Get-AWSPowerShellVersion | Out-Null
-
-                  # Tag KMS Key with Vault instance id and enable key rotation
-                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
-                  $InstanceTag.TagKey = "VaultInstance"
-                  $InstanceTag.TagValue = $InstanceId
-                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
-                  Enable-KMSKeyRotation -KeyId $KMSKeyID -Force
-                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
-                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
-
-                  # Remove inline policies after deployment
-                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultFilesBucketAccess -Force
-                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultSSMPolicy -Force
-                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultInstancesKMSPolicy -Force
-                  Write-IAMRolePolicy -RoleName $Role -PolicyName VaultInstancesKMSPolicy -PolicyDocument (Get-Content -Raw KMSPolicy.json) -Force
-                  Remove-IAMRolePolicy -RoleName $Role -PolicyName VaultBootstrapIAMPolicy -Force
-
-                  exit 0
-                } catch {
-                  Write-Host "An error occurred: $_"
-                  exit 1
-                }
           services:
             windows:
               AmazonSSMAgent:
@@ -381,33 +320,13 @@ Resources:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              command: >
+                !Sub 'powershell.exe -Command C:\CyberArk\VaultInit.ps1 -vaultFilesBucket ${VaultFilesBucket} `
+                -licenseFileKey ${LicenseFile} -recoveryPublicKey ${RecoveryPublicKey} -region ${AWS::Region} `
+                -ssmMasterPassParamID ${StoreMasterPassword.SsmId} -ssmAdminPassParamID ${StoreAdminPassword.SsmId} `
+                -vaultInstancesRole ${VaultInstancesRole} -vaultHostName ${VaultHostName}' 
               waitAfterCompletion: '0'
               ignoreErrors: 'true'
-            2-downloadLicense:
-              command: !Sub 'powershell.exe -Command "Read-S3Object -BucketName ${VaultFilesBucket} -Key ${LicenseFile} -File C:\CyberArk\vaultLicense.xml"'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            3-downloadRecpub:
-              command: !Sub 'powershell.exe -Command "Read-S3Object -BucketName ${VaultFilesBucket} -Key ${RecoveryPublicKey} -File C:\CyberArk\recoveryPublic.key"'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            4-postInstall:
-              command: !Sub 'powershell.exe C:\CyberArk\VaultPostInstall.ps1 -Region ${AWS::Region} -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicensePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key"'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            5-checkVaultServiceStatus:
-              command: powershell.exe -Command "if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1}"
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            6-reduceIAMPermissions:
-              command: !Sub 'powershell.exe C:\CyberArk\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            7-changeHostName:
-              command: !Sub 'powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart'
-              waitAfterCompletion: forever
-              ignoreErrors: 'false'
             99-signalCompletion:
               command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}'
     CreationPolicy:
