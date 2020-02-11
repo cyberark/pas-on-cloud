@@ -289,6 +289,30 @@ Resources:
                             }
                           },
                           {
+                            "Id":"VaultInitLog",
+                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                            "Parameters":{
+                                "LogDirectoryPath":"C:\\CyberArk\\logs",
+                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
+                                "Encoding":"ASCII",
+                                "Filter":"VaultInit.log",
+                                "CultureName":"en-US",
+                                "TimeZoneKind":"Local"
+                            }
+                          },
+                          {
+                            "Id":"VaultInitLog",
+                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
+                            "Parameters":{
+                                "LogDirectoryPath":"C:\\CyberArk\\logs",
+                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
+                                "Encoding":"ASCII",
+                                "Filter":"VaultPostInstall.log",
+                                "CultureName":"en-US",
+                                "TimeZoneKind":"Local"
+                            }
+                          },
+                          {
                             "Id":"CloudWatchCfnInitLog",
                             "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
                             "Parameters":{
