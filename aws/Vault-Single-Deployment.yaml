@@ -313,7 +313,7 @@ Resources:
               waitAfterCompletion: '0'
             3-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk_init\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicenseFilePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key" -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk_init\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -LicensePath "C:\CyberArk\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: '0'
             4-removePermissions:
               command: !Sub >
@@ -323,7 +323,6 @@ Resources:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
               waitAfterCompletion: forever
-              ignoreErrors: 'false'
         configSignal:
           commands:
             0-signalCompletion:
