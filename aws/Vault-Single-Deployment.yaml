@@ -293,35 +293,23 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
+                enabled: 'false'
                 ensureRunning: 'true'
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            1-downloadLatestSSM:
-              command: >
-                powershell.exe -Command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe" -UseBasicParsing
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            2-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S" -Wait
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            3-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            4-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+            1-stopSSM:
+              command: powershell.exe -Command "Stop-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
-              ignoreErrors: 'true'
-        configServices:
-          commands:
-            1-configcw:
+            2-configcw:
               command: !Sub >
                 powershell.exe -File C:\CyberArk_init\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+              waitAfterCompletion: '10'
+            3-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: '60'
+        configServices:
+          commands:
             2-download:
               command: !Sub >
                 powershell.exe -File C:\CyberArk_init\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
