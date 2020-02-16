@@ -293,19 +293,16 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'false'
+                enabled: 'true'
                 ensureRunning: 'true'
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            1-stopSSM:
-              command: powershell.exe -Command "Stop-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-            2-configcw:
+            1-configcw:
               command: !Sub >
                 powershell.exe -File C:\CyberArk_init\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
               waitAfterCompletion: '10'
-            3-restartSSM:
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
         configServices:
