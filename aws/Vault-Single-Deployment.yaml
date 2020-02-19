@@ -6,24 +6,28 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/CfnInitLog'
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultInitLog'
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultPostInstallLog'
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -60,7 +64,6 @@ Resources:
                   - ssm:DeleteParameter
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-    Condition: EULACondition
   StorePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -102,7 +105,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -137,14 +139,12 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultMasterPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
@@ -152,7 +152,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultAdminPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -161,10 +160,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreMasterPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-      - StoreMasterPassword
       - VaultMachine
   CleanAdminPassword:
     Type: AWS::CloudFormation::CustomResource
@@ -172,10 +169,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreAdminPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-      - StoreAdminPassword
       - VaultMachine
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -183,7 +178,6 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -256,7 +250,6 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
-    Condition: EULACondition
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -326,7 +319,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -400,10 +392,6 @@ Parameters:
   VaultInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Vault instance will reside.
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref 'EULA'
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -415,6 +403,12 @@ Rules:
           - !Ref 'VaultAdminPassword'
           - !Ref 'RetypeAdminPassword'
         AssertDescription: The password confirmation does not match.
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref 'EULA'
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
