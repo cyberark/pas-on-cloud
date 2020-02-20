@@ -5,24 +5,28 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
+    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultDRMachine/CfnInitLog'
+    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultDRMachine/VaultInitLog'
+    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
+    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
@@ -60,7 +64,6 @@ Resources:
                   - ssm:DeleteParameter
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-    Condition: EULACondition
   StorePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -102,7 +105,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -137,14 +139,12 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultMasterPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
@@ -152,7 +152,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultAdminPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
@@ -160,7 +159,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultDRPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -169,10 +167,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreMasterPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-      - StoreMasterPassword
       - VaultDRMachine
   CleanAdminPassword:
     Type: AWS::CloudFormation::CustomResource
@@ -180,10 +176,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreAdminPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-      - StoreAdminPassword
       - VaultDRMachine
   CleanDRPassword:
     Type: AWS::CloudFormation::CustomResource
@@ -191,10 +185,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreDRPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
-      - StoreDRPassword
       - VaultDRMachine
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -202,7 +194,6 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -276,7 +267,6 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
-    Condition: EULACondition
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -347,7 +337,7 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
             2-allowDR:
-              command: !Sub >
+              command: >
                 powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1
             3-postInstall:
               command: !Sub >
@@ -366,8 +356,7 @@ Resources:
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
-    DeletionPolicy: Retain
+        Timeout: PT20M
 Parameters:
   EULA:
     Type: String
@@ -449,10 +438,6 @@ Parameters:
   DRInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Vault DR instance will reside.
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref 'EULA'
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -464,6 +449,12 @@ Rules:
           - !Ref 'VaultDRPassword'
           - !Ref 'RetypeDRPassword'
         AssertDescription: The password confirmation does not match.
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref 'EULA'
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
