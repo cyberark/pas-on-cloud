@@ -257,6 +257,11 @@ Resources:
         - Key: Name
           Value: !Ref 'VaultInstanceName'
       SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: '30'
+            Encrypted: 'true'
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: !FindInMap
         - RegionMap
