@@ -5,29 +5,29 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-    DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/CfnInitLog'
-    DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultInitLog'
-    DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultPostInstallLog'
-    DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
