@@ -319,7 +319,7 @@ Resources:
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-            waitAfterCompletion: 0
+              waitAfterCompletion: 0
         configServices:
           commands:
             1-downloadLicenseRecpub:
