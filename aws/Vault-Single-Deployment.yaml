@@ -260,8 +260,8 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
-            VolumeSize: '30'
-            Encrypted: 'true'
+            VolumeSize: 30
+            Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: !FindInMap
         - RegionMap
