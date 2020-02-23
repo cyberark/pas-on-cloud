@@ -330,6 +330,7 @@ Resources:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
