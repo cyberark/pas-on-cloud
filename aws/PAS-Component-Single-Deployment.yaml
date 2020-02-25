@@ -496,9 +496,8 @@ Resources:
               waitAfterCompletion: '0'
             3-registration:
               command: !Sub >
-                powershell.exe -File
-                C:\CyberArk\Deployment\PVWARegistration.ps1 -VaultAdminUser
-                ${VaultAdminUser} -SSMAdminPassParameterID
+                powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             4-startAppPool:
@@ -619,9 +618,8 @@ Resources:
               waitAfterCompletion: '0'
             2-registration:
               command: !Sub >
-                powershell.exe -File
-                C:\CyberArk\Deployment\PSMRegistration.ps1 -VaultAdminUser
-                ${VaultAdminUser} -SSMAdminPassParameterID
+                powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             3-PSMserviceConfig:
@@ -945,7 +943,7 @@ Mappings:
       PSM: ami-09b4ac3bdeae933c0
       PSMP: ami-022c7e173b0e6e7c4
     eu-west-2:
-      CPM: ami-0a7321102fa0d3a82
+      CPM: ami-0fa71dc6b1de1cf03
       PVWA: ami-02b60449b1f16c568
       PSM: ami-0247d491cd8340178
       PSMP: ami-0e5eb6dfb2ad55e05
