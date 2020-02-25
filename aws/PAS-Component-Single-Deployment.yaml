@@ -359,16 +359,21 @@ Resources:
             4-configureCPMService:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Password
-                Manager","CyberArk Central Policy Manager Scanner"
+                -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
               waitAfterCompletion: '0'
-            5-CPMserviceConfig:
+            5-configureCPMService:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Password
+                Manager"
+              waitAfterCompletion: '0'
+            6-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
               waitAfterCompletion: '0'
-            6-CPMSserviceConfig:
+            7-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: '0'
-            7-ChangeHostName:
+            8-ChangeHostName:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${ComponentHostName} -Force -Restart
