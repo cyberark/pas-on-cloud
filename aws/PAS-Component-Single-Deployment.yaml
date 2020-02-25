@@ -85,7 +85,7 @@ Resources:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -96,7 +96,7 @@ Resources:
       Policies:
         - PolicyName: CloudWatch
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -109,7 +109,7 @@ Resources:
                   - '*'
         - PolicyName: SSM
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -249,7 +249,7 @@ Resources:
       Policies:
         - PolicyName: LogRolePolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -302,7 +302,7 @@ Resources:
                     Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-downloadLatestSSM:
-              command: >
+              command: !Sub >
                 powershell.exe -Command
                 [Net.ServicePointManager]::SecurityProtocol =
                 [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
@@ -331,7 +331,7 @@ Resources:
         configServices:
           commands:
             1-cloudwatch:
-              command: >-
+              command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CPMCfnInitLogStream
                 ${CPMCfnInitLogStream} -CPMConfiguration ${CPMConfigurationsLog}
@@ -568,7 +568,7 @@ Resources:
                     Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-cloudwatch:
-              command: >-
+              command: !Sub >-
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PSMCfnInitLogStream
                 ${PSMCfnInitLogStreamLog} -PSMConfiguration
@@ -676,7 +676,7 @@ Resources:
         update_ssmagent:
           commands:
             01_download_ssmagent_update:
-              command: >-
+              command: !Sub >-
                 sudo yum install -y
                 https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
               ignoreErrors: 'true'
@@ -761,7 +761,7 @@ Resources:
                 Password -Username $1 -Password $adminpassword -HostName
           commands:
             1-ScriptsPermissions:
-              command: >-
+              command: !Sub >-
                 sudo chmod 700 /root/CD-Image/preinstall.sh
                 /root/CD-Image/createCredFile.sh
               waitAfterCompletion: '0'
