@@ -838,11 +838,13 @@ Parameters:
     Type: String
     Description: Select the instance type of the Component instance.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
-    Default: m4.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - t3.medium
+      - c5.large
+    Default: m5.large
   ComponentInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the Component instance.
