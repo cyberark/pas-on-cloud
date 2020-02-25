@@ -364,8 +364,7 @@ Resources:
             5-configureCPMService:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Password
-                Manager"
+                -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
               waitAfterCompletion: '0'
             6-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
