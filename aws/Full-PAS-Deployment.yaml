@@ -8,6 +8,218 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: Private
+  CPMCfnInitLogStream:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMCfnInitLogStream
+    DeletionPolicy: Retain
+  CPMConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMConfigurations
+    DeletionPolicy: Retain
+  CPMRegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMRegistrationLog
+    DeletionPolicy: Retain
+  CPMSetLocalServiceLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+    DeletionPolicy: Retain
+  PSMCfnInitLogStreamLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMCfnInitLogStreamLog
+    DeletionPolicy: Retain
+  PSMConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMConfigurationsLog
+    DeletionPolicy: Retain
+  PSMRegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMRegistrationLog
+    DeletionPolicy: Retain
+  PVWACfnInitLogStreamLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWACfnInitLogStreamLog
+    DeletionPolicy: Retain
+  PVWAConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+    DeletionPolicy: Retain
+  PVWARegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWARegistrationLog
+    DeletionPolicy: Retain
+  PVWASetLocalServiceLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
+    DeletionPolicy: Retain
+  CfnInitLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: 'VaultDRMachine/CfnInitLog'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  VaultInitLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: 'VaultDRMachine/VaultInitLog'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  VaultPostInstallLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  StoreMasterPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultMasterPassword'
+    DependsOn:
+      - LambdaDeployRole
+  StoreAdminPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultAdminPassword'
+    DependsOn:
+      - LambdaDeployRole
+  StoreDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultDRPassword'
+    DependsOn:
+      - LambdaDeployRole
+  CleanMasterPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreMasterPassword.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultDRMachine
+  CleanAdminPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreAdminPassword.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultDRMachine
+  CleanDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreDRPassword.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultDRMachine
+  StorePasswordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Saves given password to parameter store as SecureString
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                  print ('The property Password must not be empty')
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+              try:
+                  if event['RequestType'] == 'Delete':
+                      ssmClient.delete_parameter(Name=physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Create':
+                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = {'SsmId': physicalResourceId}
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+
+
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaDeployRole.Arn'
+  DeletePasswordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Delete password from parameter store
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              try:
+                  if event['RequestType'] == 'Create':
+                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaDeployRole.Arn'
+  
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -76,39 +288,39 @@ Resources:
       Description: Copy files from foreign region to local region
       Code:
         ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
+         import uuid
+         import boto3
+         import cfnresponse
 
-          def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):
-              s3Client = boto3.client('s3')
-              copy_source = {'Bucket': bucket,'Key': fileKey}
-              s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
+         def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):
+            s3Client = boto3.client('s3')
+            copy_source = {'Bucket': bucket,'Key': fileKey}
+            s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
 
-          def DeleteObjectFromBucket(bucket, key):
-              s3Client = boto3.client('s3')
-              s3Client.delete_object(Bucket=bucket, Key=key)
+         def DeleteObjectFromBucket(bucket, key):
+            s3Client = boto3.client('s3')
+            s3Client.delete_object(Bucket=bucket, Key=key)
 
-          def lambda_handler(event, context):
+         def lambda_handler(event, context):
 
-              physicalResourceId = str(uuid.uuid4())
-              if 'PhysicalResourceId' in event:
-                  physicalResourceId = event['PhysicalResourceId']
+            physicalResourceId = str(uuid.uuid4())
+            if 'PhysicalResourceId' in event:
+               physicalResourceId = event['PhysicalResourceId']
 
-              try:
-                  if event['RequestType'] == 'Delete':
-                      DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
-                      print 'Object Deleted Successfully'
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+            try:
+               if event['RequestType'] == 'Delete':
+                     DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
+                     print 'Object Deleted Successfully'
+                     return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
 
-                  if event['RequestType'] == 'Create':
-                      CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
-                      print 'file copied successfully'
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+               if event['RequestType'] == 'Create':
+                     CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
+                     print 'file copied successfully'
+                     return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
 
-              except Exception as E:
-                  print E
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+            except Exception as E:
+               print E
+               return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
       Runtime: python2.7
       Handler: index.lambda_handler
       Role: !GetAtt 'LambdaDeployRole.Arn'
@@ -141,19 +353,19 @@ Resources:
     Properties:
       Code:
         ZipFile: |
-          const response = require("./cfn-response");
-          const randomString = (length, chars) => {
-              var result = '';
-              for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-              return result;
-          }
-          exports.handler = (event, context) =>{
+         const response = require("./cfn-response");
+         const randomString = (length, chars) => {
+            var result = '';
+            for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+            return result;
+         }
+         exports.handler = (event, context) =>{
 
-            const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3, '0123456789') + randomString(11, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-            const responseData = {RandomString: str};
-            response.send(event, context, response.SUCCESS, responseData);
+         const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3, '0123456789') + randomString(11, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+         const responseData = {RandomString: str};
+         response.send(event, context, response.SUCCESS, responseData);
 
-          };
+         };
       Handler: index.handler
       Runtime: nodejs10.x
       Role: !GetAtt 'LambdaLogDenyRole.Arn'
@@ -191,140 +403,17 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           files:
-            C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json:
+            C:\CyberArk\Deployment\KMSPolicy.json:
               content:
                 Fn::Sub: |-
-                  {
-                    "IsEnabled":true,
-                    "EngineConfiguration":{
-                      "PollInterval":"00:00:05",
-                      "Components":[
-                          {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
-                          }
-                      ],
-                      "Flows":{
-                          "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
-                          ]
-                      }
-                    }
-                  }
-            C:\deploy.py:
-              content:
-                Fn::Sub: |-
-                  import boto3
-                  import sys
-                  import subprocess
-                  import argparse
-
-                  parser = argparse.ArgumentParser()
-                  parser.add_argument("adminpass", type=str, help="vault administrator password")
-                  parser.add_argument("masterpass", type=str, help="vault master password")
-                  args = parser.parse_args()
-
-                  def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-
-                  downloadFile('${DeployBucket}','${LicenseFile}','C:\\vaultLicense.xml')
-                  downloadFile('${DeployBucket}','${RecoveryPublicKey}','C:\\recoveryPublic.key')
-
-                  sys.exit(subprocess.call('C:\\Program files (x86)\\PrivateArk\\Server\\CAVaultManager.exe PostInstall /AdminPass {} /MasterPass {} /RecPub C:\\recoveryPublic.key /IsPrimaryOrDR Primary /PrimaryVaultIP 1.1.1.1 /DRPassword {} /EnableFailOver /LicensePath C:\\vaultLicense.xml /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS'.format(args.adminpass, args.masterpass, args.adminpass)))
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
@@ -333,23 +422,40 @@ Resources:
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
+            1-configCloudWatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+              waitAfterCompletion: 10
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
-              ignoreErrors: 'true'
-            02-deploy:
-              command: !Sub 'C:\Python27\python.exe C:\deploy.py ${VaultAdminPassword} ${VaultMasterPassword}'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            03-CheckVaultServiceStatus:
-              command: powershell.exe -Command " if ((Get-Service 'PrivateArk Server').Status -eq 'Running') {exit 0} else {exit 1} "
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}'
+              waitAfterCompletion: 0
+        configServices:
+          commands:
+            1-downloadLicenseRecpub:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            2-fixENE:
+              command: >
+                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
+              waitAfterCompletion: 0
+            3-postInstall:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            4-removePermissions:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+              waitAfterCompletion: 0
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DependsOn:
       - CopyLicenseToBucket
       - CopyRecpubToBucket
@@ -377,142 +483,17 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           files:
-            C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json:
+            C:\CyberArk\Deployment\KMSPolicy.json:
               content:
                 Fn::Sub: |-
-                  {
-                    "IsEnabled":true,
-                    "EngineConfiguration":{
-                      "PollInterval":"00:00:05",
-                      "Components":[
-                          {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
-                          }
-                      ],
-                      "Flows":{
-                          "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
-                          ]
-                      }
-                    }
-                  }
-            C:\deploy.py:
-              content:
-                Fn::Sub: |-
-                  import boto3
-                  import sys
-                  import subprocess
-                  import argparse
-
-                  parser = argparse.ArgumentParser()
-                  parser.add_argument("adminpass", type=str, help="vault administrator password")
-                  parser.add_argument("masterpass", type=str, help="vault master password")
-                  parser.add_argument("vaultip", type=str, help="vault ip address")
-                  parser.add_argument("drpass", type=str, help="vault dr password")
-                  args = parser.parse_args()
-
-                  def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-
-                  downloadFile('${DeployBucket}','${LicenseFile}','C:\\vaultLicense.xml')
-                  downloadFile('${DeployBucket}','${RecoveryPublicKey}','C:\\recoveryPublic.key')
-
-                  sys.exit(subprocess.call('C:\\Program files (x86)\\PrivateArk\\Server\\CAVaultManager.exe PostInstall /AdminPass {} /MasterPass {} /RecPub C:\\recoveryPublic.key /IsPrimaryOrDR DR /PrimaryVaultIP {} /DRPassword {} /EnableFailOver /LicensePath C:\\vaultLicense.xml /AcceptEULA yes /CloudRegion ${AWS::Region} /CloudVendor AWS'.format(args.adminpass, args.masterpass, args.vaultip, args.drpass)))
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
@@ -521,27 +502,44 @@ Resources:
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
+            1-configCloudWatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+              waitAfterCompletion: 10
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
-              ignoreErrors: 'true'
-            02-deploy:
-              command: !Sub 'C:\Python27\python.exe C:\deploy.py ${VaultAdminPassword} ${VaultMasterPassword} ${VaultMachine.PrivateIp} ${VaultDRPassword}'
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            03-CheckVaultServiceStatus:
-              command: powershell.exe -Command " if ((Get-Service 'PrivateArk Server').Status -eq 'Stopped') {exit 0} else {exit 1} "
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            04-CheckDRServiceStatus:
-              command: powershell.exe -Command " if ((Get-Service 'CyberArk Vault Disaster Recovery').Status -eq 'Running') {exit 0} else {exit 1} "
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}'
+              waitAfterCompletion: 0
+        configServices:
+          commands:
+            1-downloadLicenseRecpub:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            2-fixENE:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
+              waitAfterCompletion: 0
+            3-allowDR:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1 -PrimaryVaultIP ${VaultPrivateIP}
+              waitAfterCompletion: 0
+            4-postInstall:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultPrivateIP} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            5-removePermissions:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+              waitAfterCompletion: 0
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -609,209 +607,113 @@ Resources:
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
     Metadata:
-      AWS::CloudFormation::Init:
-        config:
-          files:
-            C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json:
-              content:
-                Fn::Sub: |-
-                  {
-                    "IsEnabled":true,
-                    "EngineConfiguration":{
-                      "PollInterval":"00:00:05",
-                      "Components":[
-                          {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
-                          }
-                      ],
-                      "Flows":{
-                          "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
-                          ]
-                      }
-                    }
-                  }
-            C:\Set-LocalAccountPassword.ps1:
-              content: |-
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Username,
-                  [Parameter(Mandatory=$true)][string]$Password
-                )
-                $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-                $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $Username }
-                if ($existing -eq $null) {
-                    Write-Error "User $Username does not exist"
-                    return
-                }
-                $existing.SetPassword($Password)
-            C:\Set-ServiceLogon.ps1:
-              content: |
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Service,
-                  [Parameter(Mandatory=$true)][string]$Password
-                )
-                $filter = 'Name=' + "'" + $Service + "'" + ''
-                $s = Get-WMIObject -class Win32_Service -Filter $filter
-                $s.Change($Null,$Null,$Null,$Null,$Null,$Null,$Null,$Password,$Null,$Null,$Null)
-            C:\deploy.py:
-              content:
-                !Sub
-                  - |
-                    import sys
-                    import subprocess
-                    import argparse
-                    import urllib2
-
-                    parser = argparse.ArgumentParser()
-                    parser.add_argument("vaultip", type=str, help="vault ip address")
-                    parser.add_argument("vaultuser", type=str, help="vault administrator user")
-                    parser.add_argument("vaultpass", type=str, help="vault administrator password")
-                    args = parser.parse_args()
-
-                    inputHostname = "${InputHostname}"
-                    if not inputHostname:
-                      hostname = urllib2.urlopen('http://169.254.169.254/latest/meta-data/hostname').read()
-                      pvwaurl = 'https://{0}/PasswordVault'.format(hostname)
-                    else:
-                      pvwaurl = 'https://{0}/PasswordVault'.format(inputHostname)
-                    
-                    sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PVWA -PVWAVaultIP \'{}\' -PVWAVaultPort 1858 -PVWAVaultUser {} -PVWAVaultPassword {} -PVWAURL {}'.format(args.vaultip, args.vaultuser, args.vaultpass, pvwaurl)))
-                  - InputHostname:
-                      !If
-                        - PVWAHostNameEmpty
-                        - ''
-                        - !Sub '${PVWAHostName}'
+      'AWS::CloudFormation::Init':
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
+            1-cloudwatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -PVWACfnInitLogStream
+                ${PVWACfnInitLogStreamLog} -PVWAConfiguration
+                ${PVWAConfigurationsLog} -PVWARegistration
+                ${PVWARegistrationLog} -PVWASetLocalService
+                ${PVWASetLocalServiceLog} -Region ${AWS::Region}
+            2-downloadLatestSSM:
+              command: >
+                powershell.exe -Command
+                [Net.ServicePointManager]::SecurityProtocol =
+                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
+                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
+                -UseBasicParsing
+              waitAfterCompletion: '0'
               ignoreErrors: 'true'
-            02-deploy:
-              command:
-                Fn::Sub:
-                  - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} Administrator ${VaultAdminPassword}'
-                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            3-updateLatestSSM:
+              command: >
+                powershell.exe -Command Start-Process -FilePath
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
+                -Wait
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            03-startAppPool:
-              command: powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "& {&'Set-ItemProperty' -Path IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}"
+              ignoreErrors: 'true'
+            4-removeLatestSSM:
+              command: >
+                powershell.exe -Command rm -Force
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            04-configurePVWAUser:
-              command: !Sub 'powershell.exe -File C:\Set-LocalAccountPassword.ps1 -Username "PVWAReportsUser" -Password "${PVWASecretString.RandomString}"'
+              ignoreErrors: 'true'
+            5-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: '60'
+              ignoreErrors: 'true'
+            6-ChangeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName
+                ${ComponentHostName} -Force -Restart
+              waitAfterCompletion: forever
+        configServices:
+          commands:
+            1-configurePVWAService:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            05-configurePVWAService:
-              command: !Sub 'powershell.exe -File C:\Set-ServiceLogon.ps1 -Service "CyberArk Scheduled Tasks" -Password "${PVWASecretString.RandomString}"'
+            2-configuration:
+              command: !Sub
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  1858 -HostName ${InputHostname}
+                - VaultIpAddress: !If
+                    - DRValueEmpty
+                    - !Sub '${VaultPrivateIP}'
+                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+                  InputHostname: !If
+                    - PVWAHostNameEmpty
+                    - empty
+                    - !Sub '${PVWAHostName}'
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            06-CSTserviceConfig:
+            3-registration:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                ${StoreAdminPassword.SsmId}
+              waitAfterCompletion: '0'
+            4-startAppPool:
+              command: >-
+                powershell -Command "& {&'Import-Module' WebAdministration}"; "&
+                {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "&
+                {&'Set-ItemProperty' -Path
+                IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
+                'true'}"
+              waitAfterCompletion: '0'
+            5-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}'
+            6-restart:
+              command: powershell.exe -Command "Restart-Computer -Force"
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource PVWAMachine --region ${AWS::Region}
+              waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -838,200 +740,108 @@ Resources:
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
     Metadata:
-      AWS::CloudFormation::Init:
-        config:
-          files:
-            C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json:
-              content:
-                Fn::Sub: |-
-                  {
-                    "IsEnabled":true,
-                    "EngineConfiguration":{
-                      "PollInterval":"00:00:05",
-                      "Components":[
-                          {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
-                          }
-                      ],
-                      "Flows":{
-                          "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
-                          ]
-                      }
-                    }
-                  }
-            C:\Set-LocalAccountPassword.ps1:
-              content: |-
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Username,
-                  [Parameter(Mandatory=$true)][string]$Password
-                )
-                $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-                $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $Username }
-                if ($existing -eq $null) {
-                    Write-Error "User $Username does not exist"
-                    return
-                }
-                $existing.SetPassword($Password)
-            C:\Set-ServiceLogon.ps1:
-              content: |
-                [CmdletBinding()]
-                Param(
-                  [Parameter(Mandatory=$true)][string]$Service,
-                  [Parameter(Mandatory=$true)][string]$Password
-                )
-                $filter = 'Name=' + "'" + $Service + "'" + ''
-                $s = Get-WMIObject -class Win32_Service -Filter $filter
-                $s.Change($Null,$Null,$Null,$Null,$Null,$Null,$Null,$Password,$Null,$Null,$Null)
-            C:\deploy.py:
-              content: |
-                import sys
-                import subprocess
-                import argparse
-                
-                parser = argparse.ArgumentParser()
-                parser.add_argument("vaultip", type=str, help="vault ip address")
-                parser.add_argument("vaultuser", type=str, help="vault administrator user")
-                parser.add_argument("vaultpass", type=str, help="vault administrator password")
-                args = parser.parse_args()
-                
-                sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -CPM -CPMVaultIP \'{}\' -CPMVaultPort 1858 -CPMVaultUser {} -CPMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass)))
+      'AWS::CloudFormation::Init':
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
+            1-cloudwatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CPMCfnInitLogStream
+                ${CPMCfnInitLogStream} -CPMConfiguration
+                ${CPMConfigurationsLog} -CPMRegistration
+                ${CPMRegistrationLog} -CPMSetLocalService
+                ${CPMSetLocalServiceLog} -Region ${AWS::Region}
+            2-downloadLatestSSM:
+              command: !Sub >
+                powershell.exe -Command
+                [Net.ServicePointManager]::SecurityProtocol =
+                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
+                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
+                -UseBasicParsing
+              waitAfterCompletion: '0'
               ignoreErrors: 'true'
-            02-deploy:
-              command:
-                Fn::Sub:
-                  - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} Administrator ${VaultAdminPassword}'
-                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            3-updateLatestSSM:
+              command: >
+                powershell.exe -Command Start-Process -FilePath
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
+                -Wait
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            03-configureCPMUser:
-              command: !Sub 'powershell.exe -File C:\Set-LocalAccountPassword.ps1 -Username "PasswordManagerUser" -Password "${CPMSecretString.RandomString}"'
+              ignoreErrors: 'true'
+            4-removeLatestSSM:
+              command: >
+                powershell.exe -Command rm -Force
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            04-configureCPMService:
-              command: !Sub 'powershell.exe -File C:\Set-ServiceLogon.ps1 -Service "CyberArk Password Manager" -Password "${CPMSecretString.RandomString}"'
+              ignoreErrors: 'true'
+            5-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: '60'
+              ignoreErrors: 'true'
+        configServices:
+          commands:
+            1-configuration:
+              command: !Sub
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  1858
+                - VaultIpAddress: !If
+                    - DRValueEmpty
+                    - !Sub '${VaultPrivateIP}'
+                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            05-configureCPMScannerService:
-              command: !Sub 'powershell.exe -File C:\Set-ServiceLogon.ps1 -Service "CyberArk Central Policy Manager Scanner" -Password "${CPMSecretString.RandomString}"'
+            2-registration:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            06-CPMserviceConfig:
+            3-configureCPMService:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Central
+                Policy Manager Scanner"
+              waitAfterCompletion: '0'
+            4-configureCPMService:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Password
+                Manager"
+              waitAfterCompletion: '0'
+            5-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            07-CPMSserviceConfig:
+            6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}'
-    DependsOn:
-      - PVWAMachine
+            7-ChangeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName
+                ${ComponentHostName} -Force -Restart
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource CPMMachine --region ${AWS::Region}
+              waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -1058,161 +868,92 @@ Resources:
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
     Metadata:
-      AWS::CloudFormation::Init:
-        config:
-          files:
-            C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json:
-              content:
-                Fn::Sub: |-
-                  {
-                    "IsEnabled":true,
-                    "EngineConfiguration":{
-                      "PollInterval":"00:00:05",
-                      "Components":[
-                          {
-                            "Id":"EC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\Program Files\\Amazon\\Ec2ConfigService\\Logs",
-                                "TimestampFormat":"yyyy-MM-ddTHH:mm:ss.fffZ:",
-                                "Encoding":"ASCII",
-                                "Filter":"EC2ConfigLog.txt",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"UTC"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-init-cmd.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CustomLog.CustomLogInputComponent,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "LogDirectoryPath":"C:\\cfn\\log",
-                                "TimestampFormat":"yyyy-MM-dd HH:mm:ss,fff",
-                                "Encoding":"ASCII",
-                                "Filter":"cfn-wire.log",
-                                "CultureName":"en-US",
-                                "TimeZoneKind":"Local"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchEC2ConfigLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/EC2ConfigLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnInitCmdLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnInitCmdLog"
-                            }
-                          },
-                          {
-                            "Id":"CloudWatchCfnWireLog",
-                            "FullName":"AWS.EC2.Windows.CloudWatch.CloudWatchLogsOutput,AWS.EC2.Windows.CloudWatch",
-                            "Parameters":{
-                                "AccessKey":"",
-                                "SecretKey":"",
-                                "Region": "${AWS::Region}",
-                                "LogGroup": "${LogGroup}",
-                                "LogStream":"{instance_id}/CfnWireLog"
-                            }
-                          }
-                      ],
-                      "Flows":{
-                          "Flows":[
-                            "EC2ConfigLog,CloudWatchEC2ConfigLog",
-                            "CfnInitLog,CloudWatchCfnInitLog",
-                            "CfnInitCmdLog,CloudWatchCfnInitCmdLog",
-                            "CfnWireLog,CloudWatchCfnWireLog"
-                          ]
-                      }
-                    }
-                  }
-            C:\deploy.py:
-              content: |
-                import sys
-                import subprocess
-                import argparse
-                
-                parser = argparse.ArgumentParser()
-                parser.add_argument("vaultip", type=str, help="vault ip address")
-                parser.add_argument("vaultuser", type=str, help="vault administrator user")
-                parser.add_argument("vaultpass", type=str, help="vault administrator password")
-                args = parser.parse_args()
-                
-                sys.exit(subprocess.call('powershell.exe C:\\CyberArk\\CloudRegisterToVault.ps1 -PSM -PSMAcceptEula Yes -PSMVaultIP \'{}\' -PSMVaultPort 1858 -PSMVaultUser {} -PSMVaultPassword {}'.format(args.vaultip, args.vaultuser, args.vaultpass)))
-
+      'AWS::CloudFormation::Init':
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
-              ignoreErrors: 'true'
-            02-deploy:
-              command:
-                Fn::Sub:
-                  - 'C:\Python27\python.exe C:\deploy.py ${VaultIpAddress} Administrator ${VaultAdminPassword}'
-                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            1-cloudwatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -PSMCfnInitLogStream
+                ${PSMCfnInitLogStreamLog} -PSMConfiguration
+                ${PSMConfigurationsLog} -PSMRegistration
+                ${PSMRegistrationLog} -Region ${AWS::Region}
+            2-downloadLatestSSM:
+              command: >
+                powershell.exe -Command
+                [Net.ServicePointManager]::SecurityProtocol =
+                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
+                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
+                -UseBasicParsing
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            03-PSMserviceConfig:
+              ignoreErrors: 'true'
+            3-updateLatestSSM:
+              command: >
+                powershell.exe -Command Start-Process -FilePath
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
+                -Wait
+              waitAfterCompletion: '0'
+              ignoreErrors: 'true'
+            4-removeLatestSSM:
+              command: >
+                powershell.exe -Command rm -Force
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
+              waitAfterCompletion: '0'
+              ignoreErrors: 'true'
+            5-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: '60'
+              ignoreErrors: 'true'
+        configServices:
+          commands:
+            1-configuration:
+              command: !Sub 
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  1858
+                - VaultIpAddress: !If 
+                    - DRValueEmpty
+                    - !Sub '${VaultPrivateIP}'
+                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+              waitAfterCompletion: '0'
+            2-registration:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                ${StoreAdminPassword.SsmId}
+              waitAfterCompletion: '0'
+            3-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: '0'
-              ignoreErrors: 'false'
-            99-SignalCompletion:
-              command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}'
-    DependsOn:
-      - CPMMachine
+            4-ChangeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName
+                ${ComponentHostName} -Force -Restart
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource PSMMachine --region ${AWS::Region}
+              waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -1717,10 +1458,10 @@ Mappings:
       PSM: ami-09b4ac3bdeae933c0
       PSMP: ami-022c7e173b0e6e7c4
     eu-west-2:
-      Vault: ami-0a559ff9a29efa431
-      CPM: ami-07fd173db280acdd4
-      PVWA: ami-08304728cfc488809
-      PSM: ami-08f851be28facba76
+      Vault: ami-0b83a6c194c1edc4b
+      CPM: ami-065ca6d977248f81e
+      PVWA: ami-03908d8bb7c271659
+      PSM: ami-0e5edb1b9cc8c8423
       PSMP: ami-0e5eb6dfb2ad55e05
     us-west-1:
       Vault: ami-0f1803a9c76472be5
