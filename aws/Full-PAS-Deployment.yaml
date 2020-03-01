@@ -1,11 +1,11 @@
 Resources:
   LogGroup:
-    Type: AWS::Logs::LogGroup
+    Type: 'AWS::Logs::LogGroup'
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
   DeployBucket:
-    Type: AWS::S3::Bucket
+    Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: Private
   CPMCfnInitLogStream:
@@ -75,77 +75,113 @@ Resources:
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
   CfnInitLogStream:
-    Type: AWS::Logs::LogStream
+    Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/CfnInitLog'
+      LogStreamName: VaultDRMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
-    Type: AWS::Logs::LogStream
+    Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultInitLog'
+      LogStreamName: VaultDRMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
-    Type: AWS::Logs::LogStream
+    Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
+      LogStreamName: VaultDRMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   StoreMasterPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultMasterPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultMasterPassword
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultAdminPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultAdminPassword
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultDRPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultDRPassword
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreMasterPassword.SsmId'
+      ServiceToken: !GetAtt DeletePasswordLambda.Arn
+      key: !GetAtt StoreMasterPassword.SsmId
     DependsOn:
       - LambdaDeployRole
       - VaultDRMachine
   CleanAdminPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreAdminPassword.SsmId'
+      ServiceToken: !GetAtt DeletePasswordLambda.Arn
+      key: !GetAtt StoreAdminPassword.SsmId
     DependsOn:
       - LambdaDeployRole
       - VaultDRMachine
   CleanDRPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreDRPassword.SsmId'
+      ServiceToken: !GetAtt DeletePasswordLambda.Arn
+      key: !GetAtt StoreDRPassword.SsmId
     DependsOn:
       - LambdaDeployRole
       - VaultDRMachine
+  LambdaDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+        - PolicyName: SSM
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
   StorePasswordLambda:
-    Type: AWS::Lambda::Function
+    Type: 'AWS::Lambda::Function'
     Properties:
       Description: Saves given password to parameter store as SecureString
       Code:
@@ -179,12 +215,10 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-
-
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt 'LambdaDeployRole.Arn'
+      Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -219,190 +253,166 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-  
-  LambdaDeployRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: CloudWatch
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                  - logs:PutLogEvents
-                Resource:
-                  - '*'
-        - PolicyName: S3
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:DeleteObject
-                  - s3:DeleteObjectVersion
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${DeployBucket}/*'
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-    Condition: EULACondition
   LambdaLogDenyRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - lambda.amazonaws.com
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
       Policies:
         - PolicyName: denyLambdaLogging
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Deny
                 Action:
-                  - logs:*
+                  - 'logs:*'
                 Resource: '*'
   CopyfileFromBucketLambda:
-    Type: AWS::Lambda::Function
+    Type: 'AWS::Lambda::Function'
     Properties:
       Description: Copy files from foreign region to local region
       Code:
-        ZipFile: |-
-         import uuid
-         import boto3
-         import cfnresponse
+        ZipFile: >-
+          import uuid
 
-         def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):
-            s3Client = boto3.client('s3')
-            copy_source = {'Bucket': bucket,'Key': fileKey}
-            s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
+          import boto3
 
-         def DeleteObjectFromBucket(bucket, key):
-            s3Client = boto3.client('s3')
-            s3Client.delete_object(Bucket=bucket, Key=key)
+          import cfnresponse
 
-         def lambda_handler(event, context):
 
-            physicalResourceId = str(uuid.uuid4())
-            if 'PhysicalResourceId' in event:
-               physicalResourceId = event['PhysicalResourceId']
+          def CopyFileFromBucketToBucket(bucket, fileKey, destination,
+          destBucket):
+             s3Client = boto3.client('s3')
+             copy_source = {'Bucket': bucket,'Key': fileKey}
+             s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
 
-            try:
-               if event['RequestType'] == 'Delete':
-                     DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
-                     print 'Object Deleted Successfully'
-                     return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+          def DeleteObjectFromBucket(bucket, key):
+             s3Client = boto3.client('s3')
+             s3Client.delete_object(Bucket=bucket, Key=key)
 
-               if event['RequestType'] == 'Create':
-                     CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
-                     print 'file copied successfully'
-                     return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+          def lambda_handler(event, context):
 
-            except Exception as E:
-               print E
-               return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+             physicalResourceId = str(uuid.uuid4())
+             if 'PhysicalResourceId' in event:
+                physicalResourceId = event['PhysicalResourceId']
+
+             try:
+                if event['RequestType'] == 'Delete':
+                      DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
+                      print 'Object Deleted Successfully'
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+
+                if event['RequestType'] == 'Create':
+                      CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
+                      print 'file copied successfully'
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+
+             except Exception as E:
+                print E
+                return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
       Runtime: python2.7
       Handler: index.lambda_handler
-      Role: !GetAtt 'LambdaDeployRole.Arn'
+      Role: !GetAtt LambdaDeployRole.Arn
   CopyLicenseToBucket:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'LicenseFile'
-      FileName: !Ref 'LicenseFile'
-      DestBucket: !Ref 'DeployBucket'
+      ServiceToken: !GetAtt CopyfileFromBucketLambda.Arn
+      BucketName: !Ref VaultFilesBucket
+      FileKey: !Ref LicenseFile
+      FileName: !Ref LicenseFile
+      DestBucket: !Ref DeployBucket
     Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CopyRecpubToBucket:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'RecoveryPublicKey'
-      FileName: !Ref 'RecoveryPublicKey'
-      DestBucket: !Ref 'DeployBucket'
+      ServiceToken: !GetAtt CopyfileFromBucketLambda.Arn
+      BucketName: !Ref VaultFilesBucket
+      FileKey: !Ref RecoveryPublicKey
+      FileName: !Ref RecoveryPublicKey
+      DestBucket: !Ref DeployBucket
     Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   RandomStringLambdaFunction:
-    Type: AWS::Lambda::Function
+    Type: 'AWS::Lambda::Function'
     Properties:
       Code:
-        ZipFile: |
-         const response = require("./cfn-response");
-         const randomString = (length, chars) => {
-            var result = '';
-            for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-            return result;
-         }
-         exports.handler = (event, context) =>{
+        ZipFile: >
+          const response = require("./cfn-response");
 
-         const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3, '0123456789') + randomString(11, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-         const responseData = {RandomString: str};
-         response.send(event, context, response.SUCCESS, responseData);
+          const randomString = (length, chars) => {
+             var result = '';
+             for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+             return result;
+          }
 
-         };
+          exports.handler = (event, context) =>{
+
+
+          const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') +
+          randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3,
+          '0123456789') + randomString(11,
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+          const responseData = {RandomString: str};
+
+          response.send(event, context, response.SUCCESS, responseData);
+
+
+          };
       Handler: index.handler
       Runtime: nodejs10.x
-      Role: !GetAtt 'LambdaLogDenyRole.Arn'
+      Role: !GetAtt LambdaLogDenyRole.Arn
       MemorySize: 128
       Timeout: 20
   PVWASecretString:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 'RandomStringLambdaFunction.Arn'
+      ServiceToken: !GetAtt RandomStringLambdaFunction.Arn
   CPMSecretString:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
       Length: 15
-      ServiceToken: !GetAtt 'RandomStringLambdaFunction.Arn'
+      ServiceToken: !GetAtt RandomStringLambdaFunction.Arn
   VaultMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'VaultInstanceName'
-      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
-      SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !FindInMap
+          Value: !Ref VaultInstanceName
+      SecurityGroupIds: !Ref VaultInstanceSecurityGroups
+      SubnetId: !Ref VaultInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
-      InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
+      InstanceType: !Ref VaultInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --region
+          ${AWS::Region}
+
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource
+          VaultMachine --region ${AWS::Region}
+
           </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'VaultInstancesProfile'
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
-      AWS::CloudFormation::Init:
+      'AWS::CloudFormation::Init':
         configSets:
           ascending:
             - configSSMAndHostname
@@ -410,21 +420,30 @@ Resources:
             - configSignal
         configSSMAndHostname:
           files:
-            C:\CyberArk\Deployment\KMSPolicy.json:
+            'C:\CyberArk\Deployment\KMSPolicy.json':
               content:
-                Fn::Sub: |-
-                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
+                'Fn::Sub': >-
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"],
+                  "Resource":
+                  "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER",
+                  "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+                -VaultInitLogStream ${VaultInitLogStream}
+                -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region
+                ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
@@ -433,25 +452,37 @@ Resources:
           commands:
             1-downloadLicenseRecpub:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1
+                -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey
+                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
+                ${AWS::Region}
               waitAfterCompletion: 0
             2-fixENE:
-              command: >
+              command: |
                 powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
               waitAfterCompletion: 0
             3-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1
+                -SSMMasterPassParameterID ${StoreMasterPassword.SsmId}
+                -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
+                -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath
+                "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
+                "C:\CyberArk\Deployment\recoveryPublic.key" -Region
+                ${AWS::Region}
               waitAfterCompletion: 0
             4-removePermissions:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+                powershell.exe -File
+                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
+                ${VaultInstancesRole}
               waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource VaultMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -461,28 +492,33 @@ Resources:
       - CopyRecpubToBucket
     DeletionPolicy: Retain
   VaultDRMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
           Value: !Sub '${VaultInstanceName} DR'
-      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
-      SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !FindInMap
+      SecurityGroupIds: !Ref VaultInstanceSecurityGroups
+      SubnetId: !Ref DRInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
-      InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
+      InstanceType: !Ref VaultInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --region
+          ${AWS::Region}
+
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource
+          VaultDRMachine --region ${AWS::Region}
+
           </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'VaultInstancesProfile'
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
-      AWS::CloudFormation::Init:
+      'AWS::CloudFormation::Init':
         configSets:
           ascending:
             - configSSMAndHostname
@@ -490,21 +526,30 @@ Resources:
             - configSignal
         configSSMAndHostname:
           files:
-            C:\CyberArk\Deployment\KMSPolicy.json:
+            'C:\CyberArk\Deployment\KMSPolicy.json':
               content:
-                Fn::Sub: |-
-                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
+                'Fn::Sub': >-
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"],
+                  "Resource":
+                  "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER",
+                  "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+                -VaultInitLogStream ${VaultInitLogStream}
+                -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region
+                ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
@@ -513,29 +558,43 @@ Resources:
           commands:
             1-downloadLicenseRecpub:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1
+                -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey
+                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
+                ${AWS::Region}
               waitAfterCompletion: 0
             2-fixENE:
-              command: !Sub >
+              command: !Sub |
                 powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
               waitAfterCompletion: 0
             3-allowDR:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1 -PrimaryVaultIP ${VaultMachine.PrivateIp}
+                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1
+                -PrimaryVaultIP ${VaultMachine.PrivateIp}
               waitAfterCompletion: 0
             4-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1
+                -SSMMasterPassParameterID ${StoreMasterPassword.SsmId}
+                -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
+                -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR
+                "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath
+                "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
+                "C:\CyberArk\Deployment\recoveryPublic.key" -Region
+                ${AWS::Region}
               waitAfterCompletion: 0
             5-removePermissions:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+                powershell.exe -File
+                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
+                ${VaultInstancesRole}
               waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -547,16 +606,7 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-    DeletionPolicy: Retain
-  ComponentInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Roles:
-        - !Ref 'ComponentInstanceRole'
-    Condition: EULACondition
-    DeletionPolicy: Retain
-  ComponentInstanceRole:
+  VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -568,44 +618,129 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: LogRolePolicy
+        - PolicyName: VaultLogPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
+                  - logs:DescribeLogGroups
                   - logs:DescribeLogStreams
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+        - PolicyName: VaultFilesBucketAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+        - PolicyName: VaultInstancesKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource: '*'
+    DeletionPolicy: Retain
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
+    Condition: EULACondition
+    DeletionPolicy: Retain
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     Condition: EULACondition
     DeletionPolicy: Retain
   PVWAMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'PVWAInstanceName'
-      SecurityGroupIds: !Ref 'PVWAInstanceSecurityGroups'
-      SubnetId: !Ref 'PVWAInstanceSubnetId'
-      ImageId: !FindInMap
+          Value: !Ref PVWAInstanceName
+      SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
+      SubnetId: !Ref PVWAInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - PVWA
-      InstanceType: !Ref 'PVWAInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
+      InstanceType: !Ref PVWAInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
+
+          cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --region
+          ${AWS::Region}
+
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource
+          PVWAMachine --region ${AWS::Region}
+
           </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'ComponentInstanceProfile'
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
       'AWS::CloudFormation::Init':
         configSets:
@@ -667,14 +802,14 @@ Resources:
                 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             2-configuration:
-              command: !Sub
+              command: !Sub 
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort
                   1858 -HostName ${InputHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-                  InputHostname: !If
+                  InputHostname: !If 
                     - PVWAHostNameEmpty
                     - empty
                     - !Sub '${PVWAHostName}'
@@ -711,26 +846,31 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
   CPMMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'CPMInstanceName'
-      SecurityGroupIds: !Ref 'CPMInstanceSecurityGroups'
-      SubnetId: !Ref 'CPMInstanceSubnetId'
-      ImageId: !FindInMap
+          Value: !Ref CPMInstanceName
+      SecurityGroupIds: !Ref CPMInstanceSecurityGroups
+      SubnetId: !Ref CPMInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - CPM
-      InstanceType: !Ref 'CPMInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
+      InstanceType: !Ref CPMInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
+
+          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --region
+          ${AWS::Region}
+
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource
+          CPMMachine --region ${AWS::Region}
+
           </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'ComponentInstanceProfile'
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
       'AWS::CloudFormation::Init':
         configSets:
@@ -753,9 +893,8 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CPMCfnInitLogStream
-                ${CPMCfnInitLogStream} -CPMConfiguration
-                ${CPMConfigurationsLog} -CPMRegistration
-                ${CPMRegistrationLog} -CPMSetLocalService
+                ${CPMCfnInitLogStream} -CPMConfiguration ${CPMConfigurationsLog}
+                -CPMRegistration ${CPMRegistrationLog} -CPMSetLocalService
                 ${CPMSetLocalServiceLog} -Region ${AWS::Region}
             2-downloadLatestSSM:
               command: !Sub >
@@ -787,7 +926,7 @@ Resources:
         configServices:
           commands:
             1-configuration:
-              command: !Sub
+              command: !Sub 
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
@@ -831,26 +970,31 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
   PSMMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'PSMInstanceName'
-      SecurityGroupIds: !Ref 'PSMInstanceSecurityGroups'
-      SubnetId: !Ref 'PSMInstanceSubnetId'
-      ImageId: !FindInMap
+          Value: !Ref PSMInstanceName
+      SecurityGroupIds: !Ref PSMInstanceSecurityGroups
+      SubnetId: !Ref PSMInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - PSM
-      InstanceType: !Ref 'PSMInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
+      InstanceType: !Ref PSMInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
+
+          cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --region
+          ${AWS::Region}
+
+          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource
+          PSMMachine --region ${AWS::Region}
+
           </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'ComponentInstanceProfile'
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
       'AWS::CloudFormation::Init':
         configSets:
@@ -874,8 +1018,8 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PSMCfnInitLogStream
                 ${PSMCfnInitLogStreamLog} -PSMConfiguration
-                ${PSMConfigurationsLog} -PSMRegistration
-                ${PSMRegistrationLog} -Region ${AWS::Region}
+                ${PSMConfigurationsLog} -PSMRegistration ${PSMRegistrationLog}
+                -Region ${AWS::Region}
             2-downloadLatestSSM:
               command: >
                 powershell.exe -Command
@@ -935,27 +1079,31 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
   PSMPMachine:
-    Type: AWS::EC2::Instance
+    Type: 'AWS::EC2::Instance'
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref 'PSMPInstanceName'
-      SecurityGroupIds: !Ref 'PSMPInstanceSecurityGroups'
-      SubnetId: !Ref 'PSMPInstanceSubnetId'
-      ImageId: !FindInMap
+          Value: !Ref PSMPInstanceName
+      SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
+      SubnetId: !Ref PSMPInstanceSubnetId
+      ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - PSMP
-      InstanceType: !Ref 'PSMPInstanceType'
-      UserData: !Base64
-        Fn::Sub: |
+      InstanceType: !Ref PSMPInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >
           #!/bin/bash -e
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'ComponentInstanceProfile'
+
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource
+          PSMPMachine --configsets install_all --region ${AWS::Region}
+
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
+          PSMPMachine --region ${AWS::Region}
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
-      AWS::CloudFormation::Init:
+      'AWS::CloudFormation::Init':
         configSets:
           install_all:
             - install_logs
@@ -1011,108 +1159,88 @@ Resources:
         install_psmp:
           commands:
             01-CreateCredFile:
-              command: !Sub 'sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred Password -Username Administrator -Password ${VaultAdminPassword} -Hostname'
+              command: !Sub >-
+                sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
+                Password -Username Administrator -Password ${VaultAdminPassword}
+                -Hostname
             02-PSMPdeploy:
               command:
-                Fn::Sub:
-                  - '/root/CD-Image/register_and_activation.sh /root/CD-Image/user.cred ${VaultIpAddress} $(curl http://169.254.169.254/latest/meta-data/instance-id) y'
+                'Fn::Sub':
+                  - >-
+                    /root/CD-Image/register_and_activation.sh
+                    /root/CD-Image/user.cred ${VaultIpAddress} $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) y
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             03-PostInstall:
               command: sudo rm -rf /root/CD-Image/
             99-SignalCompletion:
-              command: !Sub '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}'
+              command: !Sub >-
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
+                PSMPMachine --region ${AWS::Region}
     DependsOn:
       - PSMMachine
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
-  VaultInstancesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
-    DeletionPolicy: Retain
   InstancesSSMPolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: InstancesSsmAccess
       PolicyDocument:
         Statement:
           - Effect: Allow
             Action:
-              - ssm:GetParameter
+              - 'ssm:GetParameter'
             Resource:
-              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+              - !Sub >-
+                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
       Roles:
-        - !Ref 'ComponentInstanceRole'
-        - !Ref 'VaultInstancesRole'
+        - !Ref ComponentInstanceRole
+        - !Ref VaultInstancesRole
     Condition: EULACondition
   VaultInstancesKMSPolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: VaultInstancesKMSAccess
       PolicyDocument:
         Statement:
           - Effect: Allow
             Action:
-              - kms:Encrypt
-              - kms:Decrypt
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
             Resource: '*'
       Roles:
-        - !Ref 'VaultInstancesRole'
+        - !Ref VaultInstancesRole
     Condition: EULACondition
     DeletionPolicy: Retain
   VaultInstancesS3VaultFilesBucketPolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: VaultFilesBucketAccess
       PolicyDocument:
         Statement:
           - Effect: Allow
             Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
             Resource: !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
       Roles:
-        - !Ref 'VaultInstancesRole'
+        - !Ref VaultInstancesRole
     Condition: EULACondition
   VaultBootstrapKMSPolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: VaultBootstrapKMSAccess
       PolicyDocument:
         Statement:
           - Effect: Allow
             Action:
-              - kms:CreateKey
-              - kms:GenerateRandom
+              - 'kms:CreateKey'
+              - 'kms:GenerateRandom'
             Resource: '*'
       Roles:
-        - !Ref 'VaultInstancesRole'
+        - !Ref VaultInstancesRole
 Parameters:
   EULA:
     Type: String
@@ -1122,13 +1250,14 @@ Parameters:
       - Decline
     Default: Decline
   KeyName:
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: Enter the name of the bucket containing the license and recovery
-      public key.
+    Description: >-
+      Enter the name of the bucket containing the license and recovery public
+      key.
   LicenseFile:
     Type: String
     Description: Enter the path of the license file within the bucket.
@@ -1146,9 +1275,11 @@ Parameters:
     Description: Enter a password for the Vault Master user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
-    ConstraintDescription: Vault Master password must contain at least 1 lowercase
-      letter, 1 uppercase letter, 1 digit and 1 special character
+    AllowedPattern: >-
+      ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    ConstraintDescription: >-
+      Vault Master password must contain at least 1 lowercase letter, 1
+      uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
     Type: String
     Description: Retype the password for the Vault Master user.
@@ -1159,9 +1290,11 @@ Parameters:
     Description: Enter a password for the Vault Administrator user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
-    ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
-      letter, 1 uppercase letter, 1 digit and 1 special character
+    AllowedPattern: >-
+      ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    ConstraintDescription: >-
+      Vault Administrator password must contain at least 1 lowercase letter, 1
+      uppercase letter, 1 digit and 1 special character
   RetypeAdminPassword:
     Type: String
     Description: Retype the password for the Vault Administrator user.
@@ -1172,9 +1305,11 @@ Parameters:
     Description: Enter a password for the Vault DR user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
-    ConstraintDescription: Vault DR password must contain at least 1 lowercase letter,
-      1 uppercase letter, 1 digit and 1 special character
+    AllowedPattern: >-
+      ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    ConstraintDescription: >-
+      Vault DR password must contain at least 1 lowercase letter, 1 uppercase
+      letter, 1 digit and 1 special character
   RetypeDRPassword:
     Type: String
     Description: Retype the password for the Vault DR user.
@@ -1190,13 +1325,13 @@ Parameters:
       - m5.4xlarge
     Default: m5.large
   VaultInstanceSecurityGroups:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the Vault and Vault DR instances.
   VaultInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the Vault instance will reside.
   DRInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the Vault DR instance will reside.
   CPMInstanceName:
     Type: String
@@ -1212,10 +1347,10 @@ Parameters:
       - c5.4xlarge
     Default: c5.large
   CPMInstanceSecurityGroups:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the CPM instance.
   CPMInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the CPM instance will reside.
   PVWAInstanceName:
     Type: String
@@ -1231,10 +1366,10 @@ Parameters:
       - t3.2xlarge
     Default: t3.medium
   PVWAInstanceSecurityGroups:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PVWA instance.
   PVWAInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PVWA instance will reside.
   PVWAHostName:
     Type: String
@@ -1252,10 +1387,10 @@ Parameters:
       - m5.8xlarge
     Default: m5.2xlarge
   PSMInstanceSecurityGroups:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PSM instance.
   PSMInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM instance will reside.
   PSMPInstanceName:
     Type: String
@@ -1271,35 +1406,35 @@ Parameters:
       - m5.4xlarge
     Default: m5.large
   PSMPInstanceSecurityGroups:
-    Type: List<AWS::EC2::SecurityGroup::Id>
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PSM SSH Proxy instance.
   PSMPInstanceSubnetId:
-    Type: AWS::EC2::Subnet::Id
+    Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
 Conditions:
-  EULACondition: !Equals
+  EULACondition: !Equals 
     - Accept
-    - !Ref 'EULA'
-  PVWAHostNameEmpty: !Equals
+    - !Ref EULA
+  PVWAHostNameEmpty: !Equals 
     - ''
-    - !Ref 'PVWAHostName'
+    - !Ref PVWAHostName
 Rules:
   PasswordConfirmation:
     Assertions:
-      - Assert: !Equals
-          - !Ref 'VaultMasterPassword'
-          - !Ref 'RetypeMasterPassword'
+      - Assert: !Equals 
+          - !Ref VaultMasterPassword
+          - !Ref RetypeMasterPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals
-          - !Ref 'VaultAdminPassword'
-          - !Ref 'RetypeAdminPassword'
+      - Assert: !Equals 
+          - !Ref VaultAdminPassword
+          - !Ref RetypeAdminPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals
-          - !Ref 'VaultDRPassword'
-          - !Ref 'RetypeDRPassword'
+      - Assert: !Equals 
+          - !Ref VaultDRPassword
+          - !Ref RetypeDRPassword
         AssertDescription: The password confirmation does not match.
 Metadata:
-  AWS::CloudFormation::Interface:
+  'AWS::CloudFormation::Interface':
     ParameterGroups:
       - Label:
           default: General parameters
@@ -1520,4 +1655,4 @@ Mappings:
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
-    Value: !Ref 'LogGroup'
+    Value: !Ref LogGroup
