@@ -329,7 +329,6 @@ Resources:
       FileKey: !Ref LicenseFile
       FileName: !Ref LicenseFile
       DestBucket: !Ref DeployBucket
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CopyRecpubToBucket:
@@ -341,7 +340,6 @@ Resources:
       FileKey: !Ref RecoveryPublicKey
       FileName: !Ref RecoveryPublicKey
       DestBucket: !Ref DeployBucket
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   RandomStringLambdaFunction:
@@ -684,7 +682,6 @@ Resources:
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
-    Condition: EULACondition
     DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
@@ -713,7 +710,6 @@ Resources:
                   - 'logs:DescribeLogStreams'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
     DeletionPolicy: Retain
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
@@ -1198,7 +1194,6 @@ Resources:
       Roles:
         - !Ref ComponentInstanceRole
         - !Ref VaultInstancesRole
-    Condition: EULACondition
   VaultInstancesKMSPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -1212,7 +1207,6 @@ Resources:
             Resource: '*'
       Roles:
         - !Ref VaultInstancesRole
-    Condition: EULACondition
     DeletionPolicy: Retain
   VaultInstancesS3VaultFilesBucketPolicy:
     Type: 'AWS::IAM::Policy'
@@ -1227,7 +1221,6 @@ Resources:
             Resource: !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
       Roles:
         - !Ref VaultInstancesRole
-    Condition: EULACondition
   VaultBootstrapKMSPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -1412,9 +1405,6 @@ Parameters:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
 Conditions:
-  EULACondition: !Equals 
-    - Accept
-    - !Ref EULA
   PVWAHostNameEmpty: !Equals 
     - ''
     - !Ref PVWAHostName
@@ -1433,6 +1423,12 @@ Rules:
           - !Ref VaultDRPassword
           - !Ref RetypeDRPassword
         AssertDescription: The password confirmation does not match.
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref 'EULA'
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
