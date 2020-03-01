@@ -636,7 +636,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameters'
+                  - ssm:GetParameters
                 Resource:
                   - !Sub >-
                     arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}
@@ -1180,33 +1180,6 @@ Resources:
                 arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
       Roles:
         - !Ref ComponentInstanceRole
-        - !Ref VaultInstancesRole
-  VaultInstancesKMSPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: VaultInstancesKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'kms:Encrypt'
-              - 'kms:Decrypt'
-            Resource: '*'
-      Roles:
-        - !Ref VaultInstancesRole
-    DeletionPolicy: Retain
-  VaultInstancesS3VaultFilesBucketPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: VaultFilesBucketAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 's3:GetObject'
-              - 's3:GetObjectVersion'
-            Resource: !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-      Roles:
         - !Ref VaultInstancesRole
   VaultBootstrapKMSPolicy:
     Type: 'AWS::IAM::Policy'
