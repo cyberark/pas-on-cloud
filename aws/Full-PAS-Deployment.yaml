@@ -239,7 +239,7 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt LambdaDeployRole.Arn
+      Role: !GetAtt 'LambdaDeployRole.Arn'
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -462,12 +462,6 @@ Resources:
                 "C:\CyberArk\Deployment\recoveryPublic.key" -Region
                 ${AWS::Region}
               waitAfterCompletion: 0
-            4-removePermissions:
-              command: !Sub >
-                powershell.exe -File
-                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
-                ${VaultInstancesRole}
-              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
@@ -604,7 +598,7 @@ Resources:
       Policies:
         - PolicyName: VaultLogPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -1170,7 +1164,7 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
             Resource:
               - !Sub >-
                 arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
