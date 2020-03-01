@@ -145,41 +145,42 @@ Resources:
       - LambdaDeployRole
       - VaultDRMachine
   LambdaDeployRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - lambda.amazonaws.com
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
       Policies:
         - PolicyName: CloudWatch
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                  - logs:PutLogEvents
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
                 Resource:
                   - '*'
         - PolicyName: SSM
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - ssm:PutParameter
-                  - ssm:DeleteParameter
+                  - 'ssm:PutParameter'
+                  - 'ssm:DeleteParameter'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -220,7 +221,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
-    Type: AWS::Lambda::Function
+    Type: 'AWS::Lambda::Function'
     Properties:
       Description: Delete password from parameter store
       Code:
@@ -248,11 +249,10 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt 'LambdaDeployRole.Arn'
+      Role: !GetAtt LambdaDeployRole.Arn
   LambdaLogDenyRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -320,28 +320,6 @@ Resources:
       Runtime: python2.7
       Handler: index.lambda_handler
       Role: !GetAtt LambdaDeployRole.Arn
-  CopyLicenseToBucket:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt CopyfileFromBucketLambda.Arn
-      BucketName: !Ref VaultFilesBucket
-      FileKey: !Ref LicenseFile
-      FileName: !Ref LicenseFile
-      DestBucket: !Ref DeployBucket
-    DependsOn:
-      - LambdaDeployRole
-  CopyRecpubToBucket:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt CopyfileFromBucketLambda.Arn
-      BucketName: !Ref VaultFilesBucket
-      FileKey: !Ref RecoveryPublicKey
-      FileName: !Ref RecoveryPublicKey
-      DestBucket: !Ref DeployBucket
-    DependsOn:
-      - LambdaDeployRole
   RandomStringLambdaFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -485,9 +463,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DependsOn:
-      - CopyLicenseToBucket
-      - CopyRecpubToBucket
     DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
@@ -599,13 +574,13 @@ Resources:
         Timeout: PT20M
     DeletionPolicy: Retain
   VaultInstancesProfile:
-    Type: AWS::IAM::InstanceProfile
+    Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
-        - !Ref 'VaultInstancesRole'
+        - !Ref VaultInstancesRole
   VaultInstancesRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -614,67 +589,77 @@ Resources:
               Service:
                 - ec2.amazonaws.com
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
       Path: /
       Policies:
         - PolicyName: VaultLogPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}
               - Effect: Allow
                 Action:
-                  - logs:PutLogEvents
+                  - 'logs:PutLogEvents'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - ssm:GetParameters
+                  - 'ssm:GetParameters'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+                  - !Sub >-
+                    arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}
+                  - !Sub >-
+                    arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}
         - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - kms:CreateKey
-                  - kms:GenerateRandom
-                  - kms:TagResource
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:EnableKeyRotation
-                  - kms:UpdateKeyDescription
-                  - kms:CreateAlias
+                  - 'kms:CreateKey'
+                  - 'kms:GenerateRandom'
+                  - 'kms:TagResource'
+                  - 'kms:Encrypt'
+                  - 'kms:Decrypt'
+                  - 'kms:EnableKeyRotation'
+                  - 'kms:UpdateKeyDescription'
+                  - 'kms:CreateAlias'
                 Resource: '*'
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
+                  - 'iam:DeleteRolePolicy'
+                  - 'iam:PutRolePolicy'
                 Resource: '*'
     DeletionPolicy: Retain
   ComponentInstanceProfile:
@@ -1425,8 +1410,8 @@ Rules:
         AssertDescription: The password confirmation does not match.
   EULAAcception:
     Assertions:
-      - Assert: !Equals
-          - !Ref 'EULA'
+      - Assert: !Equals 
+          - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
 Metadata:
@@ -1565,11 +1550,11 @@ Mappings:
       PSM: ami-09b4ac3bdeae933c0
       PSMP: ami-022c7e173b0e6e7c4
     eu-west-2:
-      Vault: ami-0b83a6c194c1edc4b
-      CPM: ami-065ca6d977248f81e
-      PVWA: ami-03908d8bb7c271659
-      PSM: ami-0e5edb1b9cc8c8423
-      PSMP: ami-0e5eb6dfb2ad55e05
+      Vault: ami-08e302bd203bff170
+      CPM: ami-0d5a063b7e7768e1e
+      PVWA: ami-00cc2f98a86beb833
+      PSM: ami-00cc2f98a86beb833
+      PSMP: ami-0e04bdb478e01edec
     us-west-1:
       Vault: ami-0f1803a9c76472be5
       CPM: ami-099bcb5ad7933f4ea
