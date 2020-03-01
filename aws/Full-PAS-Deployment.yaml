@@ -117,25 +117,25 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   StoreMasterPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt StorePasswordLambda.Arn
-      Password: !Ref VaultMasterPassword
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultMasterPassword'
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
-      ServiceToken: !GetAtt StorePasswordLambda.Arn
-      Password: !Ref VaultAdminPassword
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultAdminPassword'
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
-      ServiceToken: !GetAtt StorePasswordLambda.Arn
-      Password: !Ref VaultDRPassword
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultDRPassword'
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -169,7 +169,7 @@ Resources:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
@@ -180,7 +180,7 @@ Resources:
       Policies:
         - PolicyName: CloudWatch
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
@@ -193,15 +193,14 @@ Resources:
                   - '*'
         - PolicyName: SSM
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
                   - 'ssm:PutParameter'
                   - 'ssm:DeleteParameter'
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -638,12 +637,9 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
