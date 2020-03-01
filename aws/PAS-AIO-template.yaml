@@ -21,6 +21,72 @@ Resources:
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultPostInstallLog'
+  CPMCfnInitLogStream:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMCfnInitLogStream
+    DeletionPolicy: Retain
+  CPMConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMConfigurations
+    DeletionPolicy: Retain
+  CPMRegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMRegistrationLog
+    DeletionPolicy: Retain
+  CPMSetLocalServiceLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+    DeletionPolicy: Retain
+  PSMCfnInitLogStreamLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMCfnInitLogStreamLog
+    DeletionPolicy: Retain
+  PSMConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMConfigurationsLog
+    DeletionPolicy: Retain
+  PSMRegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMRegistrationLog
+    DeletionPolicy: Retain
+  PVWACfnInitLogStreamLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWACfnInitLogStreamLog
+    DeletionPolicy: Retain
+  PVWAConfigurationsLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+    DeletionPolicy: Retain
+  PVWARegistrationLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWARegistrationLog
+    DeletionPolicy: Retain
+  PVWASetLocalServiceLog:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
+    DeletionPolicy: Retain
     DeletionPolicy: Retain
   DeployBucket:
     Type: AWS::S3::Bucket
@@ -573,31 +639,35 @@ Resources:
                 - powershell.exe -Command -File C:\Set-LocalAccountPassword.ps1 -Username "PVWAReportsUser" -Password !GetAtt 'ComponentSecretString.RandomString'
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
+            05-RunCloudWatch-PVWA:
+              command: !Sub |-
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                -Component "PVWA" -CfnInitLogStream ${PVWACfnInitLogStream} -Configuration ${PVWAConfigurationsLog}
+                -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
+            06-RunCloudWatch-CPM:
+              command: !Sub |-
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                -Component "CPM" -CfnInitLogStream ${CPMCfnInitLogStream} -Configuration ${CPMConfigurationsLog}
+                -SetLocalService ${CPMSetLocalServiceLog} -Registration ${CPMRegistrationLog}
+            06-RunCloudWatch-PSM:
+              command: !Sub |-
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStream} -Configuration ${PSMConfigurationsLog}
+                -SetLocalService "psm" -Registration ${PSMRegistrationLog}
             101-configurePVWAService:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             102-configuration:
-              command: !Sub 
-                - >-
+              command: !Sub >
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
-                  1858 -HostName ${InputHostname}
-                - VaultIpAddress: !If 
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP}'
-                  InputHostname: !If 
-                    - PVWAHostNameEmpty
-                    - empty
-                    - !Sub '${PVWAHostName}'
+                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
+                  1858 -HostName "PVWAhost"
               waitAfterCompletion: '0'
             103-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
-                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                -VaultAdminUser "Administrator" -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             104-startAppPool:
@@ -617,34 +687,23 @@ Resources:
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             201-configuration:
-              command: !Sub 
-                - >-
+              command: !Sub >
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
                   1858
-                - VaultIpAddress: !If 
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP}'
               waitAfterCompletion: '0'
             202-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
-                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                -VaultAdminUser "Administrator" -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             203-configureCPMService:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Central
-                Policy Manager Scanner"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
               waitAfterCompletion: '0'
             204-configureCPMService:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Password
-                Manager"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
               waitAfterCompletion: '0'
             205-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
@@ -653,24 +712,25 @@ Resources:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: '0'
             301-configuration:
-              command: !Sub 
-                - >-
+              command: !Sub >
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
                   1858
-                - VaultIpAddress: !If 
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP}'
               waitAfterCompletion: '0'
-            302-registration:
+            302-Configurtaion:  
+              command: !Sub >
+                    powershell.exe -File
+                    C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
+                    !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
+                    1858
+            303-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
-                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                -VaultAdminUser "Administrator" -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
-            303-PSMserviceConfig:
+              waitAfterCompletion: '0'  
+            304-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: '0'
             98-SignalCompletion:
@@ -857,8 +917,8 @@ Mappings:
       Vault: ami-068bc4ecc92db8199
       Components: ami-0760243808377180b
     eu-west-2:
-      Vault: ami-0a559ff9a29efa431
-      Components: ami-0ab86c6797fe2abf2
+      Vault: ami-08e302bd203bff170
+      Components: ami-0d15cb42135382ddf
     us-west-1:
       Vault: ami-0f1803a9c76472be5
       Components: ami-0863710cb43917155

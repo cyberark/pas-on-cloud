@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 .venv/*
+=======
+.DS_Store
+.idea/
+>>>>>>> d0c87859e645bfcd014d1d196cabb3edaa833da1
