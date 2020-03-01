@@ -74,21 +74,42 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
-  CfnInitLogStream:
+  VaultCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/CfnInitLog
+      LogStreamName: VaultMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/VaultInitLog
+      LogStreamName: VaultMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: VaultMachine/VaultPostInstallLog
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  DRCfnInitLogStream:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: VaultDRMachine/CfnInitLog
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  VaultDRInitLogStream:
+    Type: 'AWS::Logs::LogStream'
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: VaultDRMachine/VaultInitLog
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+  VaultDRPostInstallLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -411,7 +432,7 @@ Resources:
             1-configCloudWatch:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+                -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream}
                 -VaultInitLogStream ${VaultInitLogStream}
                 -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region
                 ${AWS::Region}
@@ -509,9 +530,9 @@ Resources:
             1-configCloudWatch:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
-                -VaultInitLogStream ${VaultInitLogStream}
-                -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region
+                -LogGroup ${LogGroup} -CfnInitLogStream ${DRCfnInitLogStream}
+                -VaultInitLogStream ${VaultDRInitLogStream}
+                -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region
                 ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
@@ -598,11 +619,17 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource:
                   - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${DRCfnInitLogStream}
                   - !Sub >-
                     arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}
                   - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}
+                  - !Sub >-
                     arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
