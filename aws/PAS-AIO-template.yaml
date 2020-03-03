@@ -337,14 +337,18 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} VaultMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+          cfn-init.exe -v -s ${AWS::StackId} --configsets ascending VaultMachine --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          ascending:
+            - configSSMAndHostnames
+            - configServices
+            - configSignal
+        configSSMAndHostname:
           services:
             windows:
               AmazonSSMAgent:
@@ -353,26 +357,11 @@ Resources:
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            1-downloadLatestSSM:
-              command: >
-                powershell.exe -Command [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe" -UseBasicParsing
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            2-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S" -Wait
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            3-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            4-configcw:
+            1-configcw:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
               waitAfterCompletion: '10'
-            5-restartSSM:
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
         configServices:
@@ -389,6 +378,12 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
               waitAfterCompletion: '0'
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
