@@ -87,7 +87,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
-    DeletionPolicy: Retain
   DeployBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -174,49 +173,35 @@ Resources:
           import uuid
           import boto3
           import cfnresponse
-          def storePassword(name, value):
-            ssmClient = boto3.client('ssm')
-            return ssmClient.put_parameter(
-                Name = name,
-                Value = value,
-                Type = 'SecureString'
-            )
-          
-          def deletePassword(name):
-            ssmClient = boto3.client('ssm')
-            return ssmClient.delete_parameter(
-                Name = name
-            )
-          
+
+
           def lambda_handler(event, context):
-          
-            physicalResourceId = str(uuid.uuid4())
-            if 'PhysicalResourceId' in event:
-              physicalResourceId = event['PhysicalResourceId']
-        
-            if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
-              print 'The property Password must not be empty'
-              return cfnresponse.send(event, context, cfnresponse.FAILED,{}, physicalResourceId)
-        
-            try:
-              if event['RequestType'] == 'Delete':
-                deletePassword(physicalResourceId)
-                print 'Password successfully deleted. Id='+physicalResourceId
-                return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-        
-                if event['RequestType'] == 'Create':
-                  storePassword(physicalResourceId, event['ResourceProperties']['Password'])
-                  print 'The store parameter has been created. Id='+physicalResourceId
-                  response = { 'SsmId': physicalResourceId }
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS,response, physicalResourceId)
-          
-              except client.exceptions.ParameterNotFound:
-                print 'Item already removed'
-                return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                  print ('The property Password must not be empty')
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+              try:
+                  if event['RequestType'] == 'Delete':
+                      ssmClient.delete_parameter(Name=physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Create':
+                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = {'SsmId': physicalResourceId}
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
               except Exception as E:
-                print E
-                return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)'
-      Runtime: python2.7
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+
+
+      Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
@@ -230,31 +215,28 @@ Resources:
           import uuid
           import boto3
           import cfnresponse
-          
-          def deletePassword(name):
-            ssmClient = boto3.client('ssm')
-            return ssmClient.delete_parameter( Name = name)
-          
+
+
           def lambda_handler(event, context):
-            physicalResourceId = str(uuid.uuid4())
-            if 'PhysicalResourceId' in event:
-              physicalResourceId = event['PhysicalResourceId']
-            
-            try:
-              if event['RequestType'] == 'Create':
-                deletePassword(event['ResourceProperties']['key'])
-                print 'Password succesfully deleted. Id='+event['ResourceProperties']['key']
-                return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              if event['RequestType'] == 'Delete':
-                return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-        
-            except client.exceptions.ParameterNotFound:
-              print 'Item already removed'
-              return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-            except Exception as E:
-              print E
-              return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)'
-      Runtime: python2.7
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              try:
+                  if event['RequestType'] == 'Create':
+                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+
+      Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
@@ -338,30 +320,7 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - ComponentsMachine
-  CopyLicenseToBucket:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'LicenseFile'
-      FileName: !Ref 'LicenseFile'
-      DestBucket: !Ref 'DeployBucket'
-    Condition: EULACondition
-    DependsOn:
-      - LambdaDeployRole
-  CopyRecpubToBucket:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'CopyfileFromBucketLambda.Arn'
-      BucketName: !Ref 'VaultFilesBucket'
-      FileKey: !Ref 'RecoveryPublicKey'
-      FileName: !Ref 'RecoveryPublicKey'
-      DestBucket: !Ref 'DeployBucket'
-    Condition: EULACondition
-    DependsOn:
-      - LambdaDeployRole
+
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -433,9 +392,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DependsOn:
-      - CopyLicenseToBucket
-      - CopyRecpubToBucket
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -589,6 +545,8 @@ Resources:
       Roles:
         - !Ref 'VaultInstancesRole'
   ComponentsMachine:
+    DependsOn: 
+      - VaultMachine
     Type: AWS::EC2::Instance
     Properties:
       Tags:
@@ -642,7 +600,7 @@ Resources:
             05-RunCloudWatch-PVWA:
               command: !Sub |-
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PVWA" -CfnInitLogStream ${PVWACfnInitLogStream} -Configuration ${PVWAConfigurationsLog}
+                -Component "PVWA" -CfnInitLogStream ${PVWACfnInitLogStreamLog} -Configuration ${PVWAConfigurationsLog}
                 -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
             06-RunCloudWatch-CPM:
               command: !Sub |-
@@ -652,7 +610,7 @@ Resources:
             06-RunCloudWatch-PSM:
               command: !Sub |-
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStream} -Configuration ${PSMConfigurationsLog}
+                -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStreamLog} -Configuration ${PSMConfigurationsLog}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
             101-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
@@ -681,11 +639,6 @@ Resources:
             105-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: '0'
-            200-configureCPMService:
-              command: 
-                - powershell.exe -File C:\Set-LocalService.ps1 -Services "CyberArk Scheduled Tasks" -UserName 
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
             201-configuration:
               command: !Sub >
                   powershell.exe -File
