@@ -471,21 +471,66 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: LogRolePolicy
+        - PolicyName: VaultLogPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
+                  - logs:DescribeLogGroups
                   - logs:DescribeLogStreams
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+        - PolicyName: VaultFilesBucketAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+        - PolicyName: VaultInstancesKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource: '*'
     Condition: EULACondition
   InstancesSSMPolicy:
     Type: AWS::IAM::Policy
