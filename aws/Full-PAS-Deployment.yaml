@@ -117,25 +117,25 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   StoreMasterPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultMasterPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultMasterPassword
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultAdminPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultAdminPassword
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultDRPassword'
+      ServiceToken: !GetAtt StorePasswordLambda.Arn
+      Password: !Ref VaultDRPassword
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -146,6 +146,7 @@ Resources:
       key: !GetAtt StoreMasterPassword.SsmId
     DependsOn:
       - LambdaDeployRole
+      - StorePasswordLambda
       - VaultDRMachine
   CleanAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
@@ -155,7 +156,8 @@ Resources:
       key: !GetAtt StoreAdminPassword.SsmId
     DependsOn:
       - LambdaDeployRole
-      - VaultDRMachine
+      - StorePasswordLambda
+      - PSMPMachine
   CleanDRPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -164,12 +166,13 @@ Resources:
       key: !GetAtt StoreDRPassword.SsmId
     DependsOn:
       - LambdaDeployRole
+      - StorePasswordLambda
       - VaultDRMachine
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
@@ -180,7 +183,7 @@ Resources:
       Policies:
         - PolicyName: CloudWatch
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -193,14 +196,15 @@ Resources:
                   - '*'
         - PolicyName: SSM
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
                   - 'ssm:PutParameter'
                   - 'ssm:DeleteParameter'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -239,7 +243,7 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt 'LambdaDeployRole.Arn'
+      Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -396,10 +400,8 @@ Resources:
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending
-          --region ${AWS::Region}
-          </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine
+          --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -473,6 +475,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - CopyfileFromBucketLambda
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -488,10 +492,8 @@ Resources:
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending
-          --region ${AWS::Region}
-          </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine
+          --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -525,8 +527,8 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CfnInitLogStream ${DRCfnInitLogStream}
                 -VaultInitLogStream ${VaultDRInitLogStream}
-                -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region
-                ${AWS::Region}
+                -VaultPostInstallLogStream ${VaultDRPostInstallLogStream}
+                -Region ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
@@ -598,7 +600,7 @@ Resources:
       Policies:
         - PolicyName: VaultLogPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -625,15 +627,18 @@ Resources:
                     arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - ssm:GetParameters
+                  - 'ssm:GetParameters'
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
@@ -718,10 +723,8 @@ Resources:
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending
-          --region ${AWS::Region}
-          </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine
+          --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -843,10 +846,8 @@ Resources:
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending
-          --region ${AWS::Region}
-          </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets
+          ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -947,6 +948,8 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
+    DependsOn:
+      - PVWAMachine
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -962,10 +965,8 @@ Resources:
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending
-          --region ${AWS::Region}
-          </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets
+          ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1051,6 +1052,8 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
+    DependsOn:
+      - CPMMachine
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1262,11 +1265,11 @@ Parameters:
     Type: String
     Description: Select the instance type of the Vault instance.
     AllowedValues:
-      - m5.large
-      - m5.xlarge
-      - m5.2xlarge
-      - m5.4xlarge
-    Default: m5.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    Default: m4.large
   VaultInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the Vault and Vault DR instances.
@@ -1518,7 +1521,7 @@ Mappings:
       Vault: ami-08e302bd203bff170
       CPM: ami-0d5a063b7e7768e1e
       PVWA: ami-00cc2f98a86beb833
-      PSM: ami-00cc2f98a86beb833
+      PSM: ami-0f2f62a383d81eee7
       PSMP: ami-0e04bdb478e01edec
     us-west-1:
       Vault: ami-0f1803a9c76472be5
