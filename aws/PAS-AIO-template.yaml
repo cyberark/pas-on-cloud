@@ -345,7 +345,7 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           ascending:
-            - configSSMAndHostnames
+            - configSSMAndHostname
             - configServices
             - configSignal
         configSSMAndHostname:
