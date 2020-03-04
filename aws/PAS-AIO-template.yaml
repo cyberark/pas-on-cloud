@@ -638,24 +638,24 @@ Resources:
               waitAfterCompletion: '30'
               ignoreErrors: 'true'
             02-StartAppPool:
-              command: >-
+              command: >
                 powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool'
                 -Name PasswordVaultWebAccessPool}"; "& {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}"
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
             03-RunCloudWatch-PVWA:
-              command: !Sub |-
+              command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
                 -Component "PVWA" -CfnInitLogStream ${PVWACfnInitLogStreamLog} -Configuration ${PVWAConfigurationsLog}
                 -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
             04-RunCloudWatch-CPM:
-              command: !Sub |-
+              command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
                 -Component "CPM" -CfnInitLogStream ${CPMCfnInitLogStream} -Configuration ${CPMConfigurationsLog}
                 -SetLocalService ${CPMSetLocalServiceLog} -Registration ${CPMRegistrationLog}
             05-RunCloudWatch-PSM:
-              command: !Sub |-
+              command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
                 -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStreamLog} -Configuration ${PSMConfigurationsLog}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
