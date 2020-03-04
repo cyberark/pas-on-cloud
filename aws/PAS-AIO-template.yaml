@@ -349,6 +349,11 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostname:
+          files:
+            C:\CyberArk\Deployment\KMSPolicy.json:
+              content:
+                Fn::Sub: |-
+                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"], "Resource": "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER", "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
