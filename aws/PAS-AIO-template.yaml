@@ -611,7 +611,7 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId}-r ComponentsMachine --configsets ascending --region ${AWS::Region}
+          cfn-init.exe -v -s ${AWS::StackId} -r ComponentsMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
@@ -637,10 +637,6 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '30'
               ignoreErrors: 'true'
-            02-PVWAdeploy:
-              command: C:\Python27\python.exe C:\deployPVWA.py
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
             03-StartAppPool:
               command: >-
                 powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool'
