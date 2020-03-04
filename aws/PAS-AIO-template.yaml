@@ -618,14 +618,22 @@ Resources:
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - ConfigPVWA
+            - ConfigCPM
+            - ConfigPSM
+            - configSignal
+          services:
             windows:
               AmazonSSMAgent:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-        commands:
+        configSSMAndHostname:
+          commands:
             01-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '30'
@@ -661,6 +669,8 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
                 -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStreamLog} -Configuration ${PSMConfigurationsLog}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
+        ConfigPVWA:  
+          commands:
             101-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
@@ -688,6 +698,8 @@ Resources:
             105-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: '0'
+        ConfigCPM:  
+          commands:
             201-configuration:
               command: !Sub >
                   powershell.exe -File
@@ -713,6 +725,8 @@ Resources:
             206-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: '0'
+        ConfigPSM:  
+          commands:
             301-configuration:
               command: !Sub >
                   powershell.exe -File
@@ -735,6 +749,8 @@ Resources:
             304-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: '0'
+        configSignal:  
+          commands:
             98-SignalCompletion:
               command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource ComponentsMachine --region ${AWS::Region}'
             99-restart:
