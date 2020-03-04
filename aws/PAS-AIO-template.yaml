@@ -337,6 +337,7 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r ComponentsMachine --configsets ascending --region ${AWS::Region}
           cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
@@ -620,9 +621,9 @@ Resources:
         configSets:
           ascending:
             - configSSMAndHostname
-            - ConfigPVWA
-            - ConfigCPM
-            - ConfigPSM
+            - configPVWA
+            - configCPM
+            - configPSM
             - configSignal
           services:
             windows:
