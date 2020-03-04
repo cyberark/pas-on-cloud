@@ -664,7 +664,7 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
                 -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStreamLog} -Configuration ${PSMConfigurationsLog}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
-        ConfigPVWA:  
+        configPVWA:  
           commands:
             101-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
@@ -693,7 +693,7 @@ Resources:
             105-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: '0'
-        ConfigCPM:  
+        configCPM:  
           commands:
             201-configuration:
               command: !Sub >
@@ -720,7 +720,7 @@ Resources:
             206-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: '0'
-        ConfigPSM:  
+        configPSM:  
           commands:
             301-configuration:
               command: !Sub >
