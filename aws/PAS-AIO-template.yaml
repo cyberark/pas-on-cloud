@@ -484,7 +484,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
+                  - logs:DescribeLogStreamsf
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
               - Effect: Allow
@@ -611,8 +611,7 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId}-r ComponentsMachine --region ${AWS::Region}
-          cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource ComponentsMachine --region ${AWS::Region}
+          cfn-init.exe -v -s ${AWS::StackId}-r ComponentsMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'ComponentInstanceProfile'
