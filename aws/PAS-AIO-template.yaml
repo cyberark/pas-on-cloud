@@ -320,7 +320,6 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - ComponentsMachine
-
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -665,11 +664,13 @@ Resources:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             102-configuration:
-              command: !Sub >
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
-                  1858 -HostName "PVWAhost"
+              command: !Join
+                - ' ' 
+                - 
+                  - powershell.exe -File
+                  - C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
+                  - !GetAtt 'VaultMachine.PrivateIp'
+                  - -VaultAdminUser "Administrator" -VaultPort 1858 -HostName "PVWAhost"
               waitAfterCompletion: '0'
             103-registration:
               command: !Sub >
@@ -691,11 +692,12 @@ Resources:
         configCPM:  
           commands:
             201-configuration:
-              command: !Sub >
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
-                  1858
+              command: !Join
+                - ' ' 
+                - 
+                  - powershell.exe -File C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
+                  - !GetAtt 'VaultMachine.PrivateIp'
+                  - -VaultAdminUser "Administrator" -VaultPort 1858
               waitAfterCompletion: '0'
             202-registration:
               command: !Sub >
@@ -718,23 +720,17 @@ Resources:
         configPSM:  
           commands:
             301-configuration:
-              command: !Sub >
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
-                  1858
+              command: !Join
+                - ' ' 
+                -  
+                  - powershell.exe -File C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
+                  - !GetAtt 'VaultMachine.PrivateIp' 
+                  - -VaultAdminUser "Administrator" -VaultPort 1858
               waitAfterCompletion: '0'
-            302-Configurtaion:  
-              command: !Sub >
-                    powershell.exe -File
-                    C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                    !GetAtt VaultMachine.Properties.PrivateIpAddress -VaultAdminUser "Administrator" -VaultPort
-                    1858
             303-registration:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
-                -VaultAdminUser "Administrator" -SSMAdminPassParameterID
-                ${StoreAdminPassword.SsmId}
+                  powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
+                  -VaultAdminUser "Administrator" -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'  
             304-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
@@ -926,7 +922,7 @@ Mappings:
       Components: ami-0760243808377180b
     eu-west-2:
       Vault: ami-08e302bd203bff170
-      Components: ami-0d15cb42135382ddf
+      Components: ami-01b2e3b1357a7e3f5
     us-west-1:
       Vault: ami-0f1803a9c76472be5
       Components: ami-0863710cb43917155
