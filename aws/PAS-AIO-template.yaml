@@ -21,17 +21,17 @@ Resources:
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultPostInstallLog'
-  CPMCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
-    Properties:
+  VaultCfnInitLogStream:
+    Type: AWS::Logs::LogStream
+    Properties: 
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMCfnInitLogStream
+      LogStreamName: 'ComponentMachine/CfnInitLog'
     DeletionPolicy: Retain
   CPMConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurations
+      LogStreamName: CPMMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
     Type: 'AWS::Logs::LogStream'
@@ -45,12 +45,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
-  PSMCfnInitLogStreamLog:
-    Type: 'AWS::Logs::LogStream'
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMCfnInitLogStreamLog
-    DeletionPolicy: Retain
   PSMConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
@@ -62,12 +56,6 @@ Resources:
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
-    DeletionPolicy: Retain
-  PVWACfnInitLogStreamLog:
-    Type: 'AWS::Logs::LogStream'
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWACfnInitLogStreamLog
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
@@ -632,36 +620,32 @@ Resources:
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
-            01-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '30'
-              ignoreErrors: 'true'
-            02-StartAppPool:
+            01-StartAppPool:
               command: >
                 powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool'
                 -Name PasswordVaultWebAccessPool}"; "& {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}"
               waitAfterCompletion: '0'
               ignoreErrors: 'false'
-            03-RunCloudWatch-PVWA:
+            02-RunCloudWatch-PVWA:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PVWA" -CfnInitLogStream ${PVWACfnInitLogStreamLog} -Configuration ${PVWAConfigurationsLog}
+                -Component "PVWA" -Configuration ${PVWAConfigurationsLog}
                 -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
-            04-RunCloudWatch-CPM:
+            03-RunCloudWatch-CPM:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "CPM" -CfnInitLogStream ${CPMCfnInitLogStream} -Configuration ${CPMConfigurationsLog}
+                -Component "CPM" -Configuration ${CPMConfigurationsLog}
                 -SetLocalService ${CPMSetLocalServiceLog} -Registration ${CPMRegistrationLog}
-            05-RunCloudWatch-PSM:
+            04-RunCloudWatch-PSM:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PSM" -CfnInitLogStream ${PSMCfnInitLogStreamLog} -Configuration ${PSMConfigurationsLog}
+                -Component "PSM" -Configuration ${PSMConfigurationsLog}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
         configPVWA:  
           commands:
             101-configurePVWAService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component "PVWA" -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             102-configuration:
               command: !Join
@@ -706,10 +690,10 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             203-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
               waitAfterCompletion: '0'
             204-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
               waitAfterCompletion: '0'
             205-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
@@ -922,7 +906,7 @@ Mappings:
       Components: ami-0760243808377180b
     eu-west-2:
       Vault: ami-08e302bd203bff170
-      Components: ami-01b2e3b1357a7e3f5
+      Components: ami-03d08891a6821b530
     us-west-1:
       Vault: ami-0f1803a9c76472be5
       Components: ami-0863710cb43917155
