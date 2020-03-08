@@ -308,8 +308,10 @@ Resources:
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine
-          --configsets ascending --region ${AWS::Region} </script>
+          <script>
+           cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine
+          --configsets ascending --region ${AWS::Region} 
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -341,8 +343,7 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream}
                 -VaultInitLogStream ${VaultInitLogStream}
-                -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region
-                ${AWS::Region}
+                -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
@@ -353,8 +354,7 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1
                 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey
-                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
-                ${AWS::Region}
+                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
               waitAfterCompletion: 0
             2-postInstall:
               command: !Sub >
@@ -363,15 +363,13 @@ Resources:
                 -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
                 -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath
                 "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
-                "C:\CyberArk\Deployment\recoveryPublic.key" -Region
-                ${AWS::Region}
+                "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource VaultMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -392,8 +390,7 @@ Resources:
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine
-          --configsets ascending --region ${AWS::Region} </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -425,8 +422,7 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream}
                 -VaultInitLogStream ${VaultDRInitLogStream}
-                -VaultPostInstallLogStream ${VaultDRPostInstallLogStream}
-                -Region ${AWS::Region}
+                -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region ${AWS::Region}
               waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
@@ -437,13 +433,11 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1
                 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey
-                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
-                ${AWS::Region}
+                ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
               waitAfterCompletion: 0
             2-allowDR:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1
-                -PrimaryVaultIP ${VaultMachine.PrivateIp}
+                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1 -PrimaryVaultIP ${VaultMachine.PrivateIp}
               waitAfterCompletion: 0
             3-postInstall:
               command: !Sub >
@@ -453,21 +447,18 @@ Resources:
                 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR
                 "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath
                 "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
-                "C:\CyberArk\Deployment\recoveryPublic.key" -Region
-                ${AWS::Region}
+                "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: 0
             4-removePermissions:
               command: !Sub >
                 powershell.exe -File
-                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
-                ${VaultInstancesRole}
+                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
               waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource VaultDRMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -641,16 +632,14 @@ Resources:
           commands:
             1-configurePVWAService:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             2-configuration:
               command: !Sub 
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort
-                  1858 -HostName ${InputHostname}
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
                   InputHostname: !If 
                     - PVWAHostNameEmpty
@@ -660,8 +649,7 @@ Resources:
             3-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID
-                ${StoreAdminPassword.SsmId}
+                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             4-startAppPool:
               command: >-
@@ -681,8 +669,7 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource PVWAMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
               waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
@@ -703,8 +690,7 @@ Resources:
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets
-          ascending --region ${AWS::Region} </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -741,27 +727,23 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort
-                  1858
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID
-                ${StoreAdminPassword.SsmId}
+                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             3-configureCPMService:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Central
-                Policy Manager Scanner"
+                -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
               waitAfterCompletion: '0'
             4-configureCPMService:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Password
-                Manager"
+                -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
               waitAfterCompletion: '0'
             5-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
@@ -773,8 +755,7 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource CPMMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
               waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
@@ -797,8 +778,7 @@ Resources:
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets
-          ascending --region ${AWS::Region} </script>
+          <script> cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region} </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -834,15 +814,13 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort
-                  1858
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID
-                ${StoreAdminPassword.SsmId}
+                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: '0'
             3-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
@@ -851,8 +829,7 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource PSMMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
               waitAfterCompletion: '0'
     CreationPolicy:
       ResourceSignal:
@@ -943,8 +920,7 @@ Resources:
             01-CreateCredFile:
               command: !Sub >-
                 sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
-                Password -Username Administrator -Password ${VaultAdminPassword}
-                -Hostname
+                Password -Username Administrator -Password ${VaultAdminPassword} -Hostname
             02-PSMPdeploy:
               command:
                 'Fn::Sub':
@@ -957,8 +933,7 @@ Resources:
               command: sudo rm -rf /root/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
-                PSMPMachine --region ${AWS::Region}
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     DependsOn:
       - PSMMachine
     CreationPolicy:
@@ -1321,9 +1296,9 @@ Mappings:
       PSMP: ami-022c7e173b0e6e7c4
     eu-west-2:
       Vault: ami-08e302bd203bff170
-      CPM: ami-0d5a063b7e7768e1e
-      PVWA: ami-00cc2f98a86beb833
-      PSM: ami-0f2f62a383d81eee7
+      CPM: ami-0786741ff2d3da9a7
+      PVWA: ami-03f3e9935101407a5
+      PSM: ami-0a2cefbabba2cd617
       PSMP: ami-0e04bdb478e01edec
     us-west-1:
       Vault: ami-0f1803a9c76472be5
