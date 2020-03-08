@@ -18,7 +18,7 @@ Resources:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurations
+      LogStreamName: CPMMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
     Type: 'AWS::Logs::LogStream'
@@ -32,11 +32,11 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
-  PSMCfnInitLogStreamLog:
+  PSMCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMCfnInitLogStreamLog
+      LogStreamName: PSMMachine/PSMCfnInitLogStream
     DeletionPolicy: Retain
   PSMConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
@@ -50,11 +50,11 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
     DeletionPolicy: Retain
-  PVWACfnInitLogStreamLog:
+  PVWACfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWACfnInitLogStreamLog
+      LogStreamName: PVWAMachine/PVWACfnInitLogStream
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
@@ -298,52 +298,6 @@ Resources:
                 Action:
                   - 'logs:*'
                 Resource: '*'
-  CopyfileFromBucketLambda:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      Description: Copy files from foreign region to local region
-      Code:
-        ZipFile: >-
-          import uuid
-
-          import boto3
-
-          import cfnresponse
-
-
-          def CopyFileFromBucketToBucket(bucket, fileKey, destination,
-          destBucket):
-             s3Client = boto3.client('s3')
-             copy_source = {'Bucket': bucket,'Key': fileKey}
-             s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)
-
-          def DeleteObjectFromBucket(bucket, key):
-             s3Client = boto3.client('s3')
-             s3Client.delete_object(Bucket=bucket, Key=key)
-
-          def lambda_handler(event, context):
-
-             physicalResourceId = str(uuid.uuid4())
-             if 'PhysicalResourceId' in event:
-                physicalResourceId = event['PhysicalResourceId']
-
-             try:
-                if event['RequestType'] == 'Delete':
-                      DeleteObjectFromBucket(event['ResourceProperties']['DestBucket'], event['ResourceProperties']['FileKey'])
-                      print 'Object Deleted Successfully'
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-
-                if event['RequestType'] == 'Create':
-                      CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
-                      print 'file copied successfully'
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-
-             except Exception as E:
-                print E
-                return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python2.7
-      Handler: index.lambda_handler
-      Role: !GetAtt LambdaDeployRole.Arn
   RandomStringLambdaFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -450,11 +404,7 @@ Resources:
                 ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
                 ${AWS::Region}
               waitAfterCompletion: 0
-            2-fixENE:
-              command: !Sub |
-                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
-              waitAfterCompletion: 0
-            3-postInstall:
+            2-postInstall:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1
                 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId}
@@ -475,8 +425,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - CopyfileFromBucketLambda
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -542,16 +490,12 @@ Resources:
                 ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region
                 ${AWS::Region}
               waitAfterCompletion: 0
-            2-fixENE:
-              command: !Sub |
-                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
-              waitAfterCompletion: 0
-            3-allowDR:
+            2-allowDR:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1
                 -PrimaryVaultIP ${VaultMachine.PrivateIp}
               waitAfterCompletion: 0
-            4-postInstall:
+            3-postInstall:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1
                 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId}
@@ -562,7 +506,7 @@ Resources:
                 "C:\CyberArk\Deployment\recoveryPublic.key" -Region
                 ${AWS::Region}
               waitAfterCompletion: 0
-            5-removePermissions:
+            4-removePermissions:
               command: !Sub >
                 powershell.exe -File
                 C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
@@ -749,7 +693,7 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PVWACfnInitLogStream
-                ${PVWACfnInitLogStreamLog} -PVWAConfiguration
+                ${PVWACfnInitLogStream} -PVWAConfiguration
                 ${PVWAConfigurationsLog} -PVWARegistration
                 ${PVWARegistrationLog} -PVWASetLocalService
                 ${PVWASetLocalServiceLog} -Region ${AWS::Region}
@@ -991,7 +935,7 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PSMCfnInitLogStream
-                ${PSMCfnInitLogStreamLog} -PSMConfiguration
+                ${PSMCfnInitLogStream} -PSMConfiguration
                 ${PSMConfigurationsLog} -PSMRegistration ${PSMRegistrationLog}
                 -Region ${AWS::Region}
             2-downloadLatestSSM:
@@ -1093,22 +1037,22 @@ Resources:
                 [/var/log/cloud-init.log]
                 file = /var/log/cloud-init.log
                 log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cloud-init.log
+                log_stream_name = PSMSSHMachine/cloud-init.log
                 datetime_format = 
                 [/var/log/cloud-init-output.log]
                 file = /var/log/cloud-init-output.log
                 log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cloud-init-output.log
+                log_stream_name = PSMSSHMachine/cloud-init-output.log
                 datetime_format = 
                 [/var/log/cfn-init.log]
                 file = /var/log/cfn-init.log
                 log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-init.log
+                log_stream_name = PSMSSHMachine/cfn-init.log
                 datetime_format = 
                 [/var/log/cfn-wire.log]
                 file = /var/log/cfn-wire.log
                 log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-wire.log
+                log_stream_name = PSMSSHMachine/cfn-wire.log
                 datetime_format =               
               mode: '000444'
               owner: root
