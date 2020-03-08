@@ -91,7 +91,7 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  DRCfnInitLogStream:
+  VaultDRCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -427,7 +427,7 @@ Resources:
             1-configCloudWatch:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CfnInitLogStream ${DRCfnInitLogStream}
+                -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream}
                 -VaultInitLogStream ${VaultDRInitLogStream}
                 -VaultPostInstallLogStream ${VaultDRPostInstallLogStream}
                 -Region ${AWS::Region}
@@ -511,7 +511,7 @@ Resources:
                   - 'logs:PutLogEvents'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${DRCfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
                   - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
