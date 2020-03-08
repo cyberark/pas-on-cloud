@@ -199,8 +199,7 @@ Resources:
                   - 'ssm:PutParameter'
                   - 'ssm:DeleteParameter'
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -976,8 +975,7 @@ Resources:
             Action:
               - 'ssm:GetParameters'
             Resource:
-              - !Sub >-
-                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
         - !Ref VaultInstancesRole
