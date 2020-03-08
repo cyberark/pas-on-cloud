@@ -229,46 +229,6 @@ Resources:
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
     Condition: EULACondition
-  CopyfileFromBucketLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: Copy files from foreign region to local region
-      Code:
-        ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
-          
-          def CopyFileFromBucketToBucket(bucket, fileKey, destination, destBucket):
-            s3Client = boto3.client(''s3'')
-            copy_source = {''Bucket'': bucket,''Key'': fileKey}
-            s3Client.copy_object(CopySource=copy_source, Bucket=destBucket, Key=destination)  
-          def DeleteObjectFromBucket(bucket, key):
-            s3Client = boto3.client(''s3'')
-            s3Client.delete_object(Bucket=bucket, Key=key)
-          
-          def lambda_handler(event, context):
-              physicalResourceId = str(uuid.uuid4())
-              if ''PhysicalResourceId'' in event:
-                physicalResourceId = event[''PhysicalResourceId'']
-          
-              try:
-                if event[''RequestType''] == ''Delete'':
-                  DeleteObjectFromBucket(event[''ResourceProperties''][''DestBucket''],event[''ResourceProperties''][''FileKey''])
-                  print ''Object Deleted Successfully''
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS,{}, physicalResourceId)
-          
-                if event[''RequestType''] == ''Create'':
-                  CopyFileFromBucketToBucket(event['ResourceProperties']['BucketName'],event['ResourceProperties']['FileKey'],event['ResourceProperties']['FileName'],event['ResourceProperties']['DestBucket'])
-                  print ''file copied successfully''
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-          
-              except Exception as E:
-                  print E
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)'
-      Runtime: python2.7
-      Handler: index.lambda_handler
-      Role: !GetAtt 'LambdaDeployRole.Arn'
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
