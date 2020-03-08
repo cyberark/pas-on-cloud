@@ -335,8 +335,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program\Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
@@ -420,9 +419,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
@@ -627,9 +624,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-cloudwatch:
               command: !Sub >
@@ -727,9 +722,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-cloudwatch:
               command: !Sub >
@@ -823,8 +816,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program\Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-cloudwatch:
               command: !Sub >
