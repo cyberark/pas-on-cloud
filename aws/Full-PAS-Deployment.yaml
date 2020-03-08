@@ -4,10 +4,6 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
-  DeployBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      AccessControl: Private
   CPMCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
@@ -95,7 +91,7 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultDRCfnInitLogStream:
+  DRCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -298,47 +294,6 @@ Resources:
                 Action:
                   - 'logs:*'
                 Resource: '*'
-  RandomStringLambdaFunction:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      Code:
-        ZipFile: >
-          const response = require("./cfn-response");
-
-          const randomString = (length, chars) => {
-             var result = '';
-             for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-             return result;
-          }
-
-          exports.handler = (event, context) =>{
-
-
-          const str = randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') +
-          randomString(1, 'abcdefghijklmnopqrstuvwxyz') + randomString(3,
-          '0123456789') + randomString(11,
-          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-
-          const responseData = {RandomString: str};
-
-          response.send(event, context, response.SUCCESS, responseData);
-
-
-          };
-      Handler: index.handler
-      Runtime: nodejs10.x
-      Role: !GetAtt LambdaLogDenyRole.Arn
-      MemorySize: 128
-      Timeout: 20
-  PVWASecretString:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Properties:
-      ServiceToken: !GetAtt RandomStringLambdaFunction.Arn
-  CPMSecretString:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Properties:
-      Length: 15
-      ServiceToken: !GetAtt RandomStringLambdaFunction.Arn
   VaultMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -381,8 +336,7 @@ Resources:
                 ensureRunning: 'true'
                 files:
                   - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                    C:\Program\Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
@@ -473,7 +427,7 @@ Resources:
             1-configCloudWatch:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream}
+                -LogGroup ${LogGroup} -CfnInitLogStream ${DRCfnInitLogStream}
                 -VaultInitLogStream ${VaultDRInitLogStream}
                 -VaultPostInstallLogStream ${VaultDRPostInstallLogStream}
                 -Region ${AWS::Region}
@@ -560,7 +514,7 @@ Resources:
                   - !Sub >-
                     arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}
                   - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${DRCfnInitLogStream}
                   - !Sub >-
                     arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}
                   - !Sub >-
@@ -697,30 +651,7 @@ Resources:
                 ${PVWAConfigurationsLog} -PVWARegistration
                 ${PVWARegistrationLog} -PVWASetLocalService
                 ${PVWASetLocalServiceLog} -Region ${AWS::Region}
-            2-downloadLatestSSM:
-              command: >
-                powershell.exe -Command
-                [Net.ServicePointManager]::SecurityProtocol =
-                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
-                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
-                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
-                -UseBasicParsing
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            3-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
-                -Wait
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            4-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            5-restartSSM:
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
               ignoreErrors: 'true'
@@ -819,30 +750,7 @@ Resources:
                 ${CPMCfnInitLogStream} -CPMConfiguration ${CPMConfigurationsLog}
                 -CPMRegistration ${CPMRegistrationLog} -CPMSetLocalService
                 ${CPMSetLocalServiceLog} -Region ${AWS::Region}
-            2-downloadLatestSSM:
-              command: !Sub >
-                powershell.exe -Command
-                [Net.ServicePointManager]::SecurityProtocol =
-                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
-                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
-                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
-                -UseBasicParsing
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            3-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
-                -Wait
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            4-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            5-restartSSM:
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
               ignoreErrors: 'true'
@@ -928,40 +836,15 @@ Resources:
                 ensureRunning: 'true'
                 files:
                   - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                    C:\Program\Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-cloudwatch:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PSMCfnInitLogStream
-                ${PSMCfnInitLogStream} -PSMConfiguration
-                ${PSMConfigurationsLog} -PSMRegistration ${PSMRegistrationLog}
-                -Region ${AWS::Region}
-            2-downloadLatestSSM:
-              command: >
-                powershell.exe -Command
-                [Net.ServicePointManager]::SecurityProtocol =
-                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
-                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
-                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
-                -UseBasicParsing
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            3-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
-                -Wait
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            4-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: '0'
-              ignoreErrors: 'true'
-            5-restartSSM:
+                ${PSMCfnInitLogStream} -PSMConfiguration ${PSMConfigurationsLog}
+                -PSMRegistration ${PSMRegistrationLog} -Region ${AWS::Region}
+            2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: '60'
               ignoreErrors: 'true'
