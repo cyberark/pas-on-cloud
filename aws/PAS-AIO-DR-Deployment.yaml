@@ -656,8 +656,6 @@ Resources:
       Roles:
         - !Ref 'VaultInstancesRole'
   ComponentsMachine:
-    DependsOn: 
-      - VaultMachine
     Type: AWS::EC2::Instance
     Properties:
       Tags:
@@ -920,6 +918,10 @@ Rules:
       - Assert: !Equals
           - !Ref 'VaultMasterPassword'
           - !Ref 'RetypeMasterPassword'
+        AssertDescription: The password confirmation does not match.
+      - Assert: !Equals
+          - !Ref 'VaultDRPassword'
+          - !Ref 'RetypeDRPassword'
         AssertDescription: The password confirmation does not match.
       - Assert: !Equals
           - !Ref 'VaultAdminPassword'
