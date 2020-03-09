@@ -476,40 +476,6 @@ Resources:
       Roles:
         - !Ref 'VaultInstancesRole'
     Condition: EULACondition
-  ComponentInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Roles:
-        - !Ref 'ComponentInstanceRole'
-    Condition: EULACondition
-  ComponentInstanceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
   VaultInstancesRole:
     Type: 'AWS::IAM::Role'
     Properties:
