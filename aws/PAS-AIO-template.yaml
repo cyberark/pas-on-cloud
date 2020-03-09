@@ -508,8 +508,6 @@ Resources:
       Roles:
         - !Ref 'VaultInstancesRole'
   ComponentsMachine:
-    DependsOn: 
-      - VaultMachine
     Type: AWS::EC2::Instance
     Properties:
       Tags:
