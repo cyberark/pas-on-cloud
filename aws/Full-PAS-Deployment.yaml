@@ -307,8 +307,10 @@ Resources:
         - Vault
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
-        'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region} </script>
+        'Fn::Sub': >
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -387,7 +389,9 @@ Resources:
       InstanceType: !Ref VaultInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region} </script>
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref VaultInstancesProfile
     Metadata:
@@ -593,7 +597,9 @@ Resources:
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending --region ${AWS::Region} </script>
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending --region ${AWS::Region}
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -686,7 +692,9 @@ Resources:
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region} </script>
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region}
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -774,7 +782,9 @@ Resources:
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64 
         'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region} </script>
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region}
+          </script>
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
