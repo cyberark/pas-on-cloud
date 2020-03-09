@@ -32,26 +32,28 @@ pipeline {
     stage('Syntax Validation') {
       steps {
         script {
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.json", returnStdout: true)
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Full-PAS-Deployment.json", returnStdout: true)
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Full-PAS-Deployment.yaml", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.yaml", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.yaml", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.yaml", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-template.json", returnStdout: true)
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-dr-Deployment.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/pta/PTA-Single-Deployment.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-NAT.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-PrivateLink.json", returnStdout: true)
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/Vault-Single-Deployment.json", returnStdout: true)
         }
       }
     }
     stage('cfn-lint') {
       steps {
         script {
-          sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.json --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.json --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.json --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.json --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.yaml --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-template.json --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-dr-Deployment.json --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/pta/PTA-Single-Deployment.json --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-PrivateLink.json --ignore-checks W1001", returnStdout: true)
         }
