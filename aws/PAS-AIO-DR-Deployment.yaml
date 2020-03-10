@@ -725,7 +725,7 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName "PVWAhost"
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             103-registration:
