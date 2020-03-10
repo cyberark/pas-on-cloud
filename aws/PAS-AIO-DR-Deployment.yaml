@@ -721,13 +721,12 @@ Resources:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component "PVWA" -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: '0'
             102-configuration:
-              command: !Join
-                - ' ' 
-                - 
-                  - powershell.exe -File
-                  - C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  - !GetAtt 'VaultMachine.PrivateIp'
-                  - -VaultAdminUser "Administrator" -VaultPort 1858 -HostName "PVWAhost"
+              command: !Sub 
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
+                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             103-registration:
               command: !Sub >
@@ -749,12 +748,12 @@ Resources:
         configCPM:  
           commands:
             201-configuration:
-              command: !Join
-                - ' ' 
-                - 
-                  - powershell.exe -File C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  - !GetAtt 'VaultMachine.PrivateIp'
-                  - -VaultAdminUser "Administrator" -VaultPort 1858
+              command: !Sub 
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
+                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             202-registration:
               command: !Sub >
@@ -777,12 +776,12 @@ Resources:
         configPSM:  
           commands:
             301-configuration:
-              command: !Join
-                - ' ' 
-                -  
-                  - powershell.exe -File C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  - !GetAtt 'VaultMachine.PrivateIp' 
-                  - -VaultAdminUser "Administrator" -VaultPort 1858
+              command: !Sub 
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
+                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: '0'
             303-registration:
               command: !Sub >
