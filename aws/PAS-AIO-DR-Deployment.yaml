@@ -950,7 +950,6 @@ Metadata:
           - VaultInstanceType
           - VaultInstanceSecurityGroups
           - VaultInstanceSubnetId
-          - InstanceSubnetId
           - DRInstanceSubnetId
       - Label:
           default: Components Configuration
