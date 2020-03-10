@@ -939,9 +939,9 @@ Mappings:
       PSM: ami-09b4ac3bdeae933c0
       PSMP: ami-022c7e173b0e6e7c4
     eu-west-2:
-      CPM: ami-065ca6d977248f81e
-      PVWA: ami-03908d8bb7c271659
-      PSM: ami-0e5edb1b9cc8c8423
+      CPM: ami-0786741ff2d3da9a7
+      PVWA: ami-03f3e9935101407a5
+      PSM: ami-0a2cefbabba2cd617
       PSMP: ami-0e5eb6dfb2ad55e05
     us-west-1:
       CPM: ami-00da51dd2a6eff4ab
