@@ -938,16 +938,20 @@ Metadata:
           - LicenseFile
           - RecoveryPublicKey
       - Label:
-          default: Vault Configuration
+          default: Vault and DR Configuration
         Parameters:
           - VaultInstanceName
           - VaultMasterPassword
           - RetypeMasterPassword
           - VaultAdminPassword
           - RetypeAdminPassword
+          - VaultDRPassword
+          - RetypeDRPassword
           - VaultInstanceType
           - VaultInstanceSecurityGroups
           - VaultInstanceSubnetId
+          - InstanceSubnetId
+          - DRInstanceSubnetId
       - Label:
           default: Components Configuration
         Parameters:
@@ -977,15 +981,17 @@ Metadata:
       RetypeAdminPassword:
         default: Retype Admin Password
       VaultDRPassword:
-        default: DR Password
+        default: Vault DR Password
       RetypeDRPassword:
-        default: Retype DR Password
+        default: Retype Vault DR Password
       VaultInstanceType:
         default: Vault Instance Type
       VaultInstanceSecurityGroups:
         default: Vault Instance Security Groups
       VaultInstanceSubnetId:
         default: Vault Instance Subnet Id
+      DRInstanceSubnetId:
+        default: Vault DR Instance Subnet Id
       ComponentsInstanceName:
         default: Components Instance Name
       ComponentsInstanceType:
