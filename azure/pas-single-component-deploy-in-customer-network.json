@@ -125,7 +125,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template_new.json",
+                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.3.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
