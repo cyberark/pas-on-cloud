@@ -436,6 +436,12 @@ Parameters:
   DRInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Vault DR instance will reside.
+  Secret:
+    Type: String
+    Description: Enter a Secret for DR registration.
+    MinLength: 8
+    NoEcho: true
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$)
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -478,6 +484,7 @@ Metadata:
           - VaultInstanceType
           - VaultInstanceSecurityGroups
           - DRInstanceSubnetId
+          - Secret
     ParameterLabels:
       EULA:
         default: License Agreement
@@ -511,6 +518,8 @@ Metadata:
         default: Vault DR Instance Security Groups
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
+      Secret:
+        default: Secret for DR registration
 Mappings:
   RegionMap:
     us-east-1:
