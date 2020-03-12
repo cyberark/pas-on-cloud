@@ -315,7 +315,7 @@ Resources:
               waitAfterCompletion: 0
             2-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} -Secret ${Secret}
               waitAfterCompletion: 0
             3-removePermissions:
               command: !Sub >
@@ -411,6 +411,9 @@ Parameters:
     Type: String
     Description: Enter a Secret for DR registration(Optional).
     NoEcho: true
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase
+      letter, 1 uppercase letter, 1 digit and 1 special character
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -490,7 +493,7 @@ Mappings:
     us-east-2:
       Vault: ami-068bc4ecc92db8199
     eu-west-2:
-      Vault: ami-08e302bd203bff170
+      Vault: ami-0be1c88985ba5c3da
     us-west-1:
       Vault: ami-0f1803a9c76472be5
     us-west-2:

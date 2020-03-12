@@ -336,7 +336,7 @@ Resources:
               waitAfterCompletion: 0
             4-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultPrivateIP} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultPrivateIP} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} -Secret ${Secret}
               waitAfterCompletion: 0
             5-removePermissions:
               command: !Sub >
@@ -441,7 +441,7 @@ Parameters:
     Description: Enter a Secret for DR registration.
     MinLength: 8
     NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$)
+#    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$)
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -527,7 +527,7 @@ Mappings:
     us-east-2:
       Vault: ami-068bc4ecc92db8199
     eu-west-2:
-      Vault: ami-08e302bd203bff170
+      Vault: ami-0be1c88985ba5c3da
     us-west-1:
       Vault: ami-0f1803a9c76472be5
     us-west-2:
