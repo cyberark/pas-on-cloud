@@ -119,28 +119,6 @@ Resources:
                   - s3:DeleteObjectVersion
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-    Condition: EULACondition
-  LambdaLogDenyRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: denyLambdaLogging
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Deny
-                Action:
-                  - logs:*
-                Resource: '*'
   StorePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -182,7 +160,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -217,14 +194,12 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-    Condition: EULACondition
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultMasterPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
@@ -232,7 +207,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
       Password: !Ref 'VaultAdminPassword'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -241,7 +215,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreMasterPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
@@ -252,7 +225,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreAdminPassword.SsmId'
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
@@ -338,13 +310,11 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
   ComponentInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref 'ComponentInstanceRole'
-    Condition: EULACondition
   ComponentInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -445,7 +415,6 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
-    Condition: EULACondition
   InstancesSSMPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -459,49 +428,6 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref 'ComponentInstanceRole'
-        - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-  VaultInstancesKMSPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultInstancesKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:Encrypt
-              - kms:Decrypt
-            Resource: '*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-  VaultInstancesS3VaultFilesBucketPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultFilesBucketAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
-            Resource: !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
-  VaultBootstrapKMSPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultBootstrapKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:CreateKey
-              - kms:GenerateRandom
-            Resource: '*'
-      Roles:
-        - !Ref 'VaultInstancesRole'
   ComponentsMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -737,10 +663,6 @@ Parameters:
   ComponentsInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PAS Components instance will reside.
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref 'EULA'
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -752,6 +674,12 @@ Rules:
           - !Ref 'VaultAdminPassword'
           - !Ref 'RetypeAdminPassword'
         AssertDescription: The password confirmation does not match.
+  EULAAcception:
+     Assertions:
+       - Assert: !Equals
+           - !Ref 'EULA'
+           - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
