@@ -342,7 +342,6 @@ Resources:
                   - logs:DescribeLogStreams
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -675,7 +674,7 @@ Rules:
           - !Ref 'RetypeAdminPassword'
         AssertDescription: The password confirmation does not match.
   EULAAcception:
-     Assertions:
+    Assertions:
       - Assert: !Equals
           - !Ref 'EULA'
           - Accept
