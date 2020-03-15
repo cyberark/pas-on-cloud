@@ -354,14 +354,13 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
               waitAfterCompletion: '0'
-            2-fixENE:
-              command: >
-                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
-              waitAfterCompletion: 0
-            3-postInstall:
+            2-postInstall:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: '0'
+            3-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -372,26 +371,27 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
   VaultDRMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
           Value: !Sub '${VaultInstanceName} DR'
-      SecurityGroupIds: !Ref VaultInstanceSecurityGroups
-      SubnetId: !Ref DRInstanceSubnetId
+      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
+      SubnetId: !Ref 'DRInstanceSubnetId'
       ImageId: !FindInMap 
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
-      InstanceType: !Ref VaultInstanceType
+      InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64 
-        'Fn::Sub': >-
-          <script> cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine
-          --configsets ascending --region ${AWS::Region} </script>
-      KeyName: !Ref KeyName
-      IamInstanceProfile: !Ref VaultInstancesProfile
+        Fn::Sub: |-
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
+          </script>
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'VaultInstancesProfile'
     Metadata:
-      'AWS::CloudFormation::Init':
+      AWS::CloudFormation::Init:
         configSets:
           ascending:
             - configSSM
@@ -399,9 +399,9 @@ Resources:
             - configSignal
         configSSM:
           files:
-            'C:\CyberArk\Deployment\KMSPolicy.json':
+            C:\CyberArk\Deployment\KMSPolicy.json:
               content:
-                'Fn::Sub': >-
+                Fn::Sub: >-
                   {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"],
                   "Resource":
                   "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER",
@@ -412,9 +412,7 @@ Resources:
                 enabled: 'true'
                 ensureRunning: 'true'
                 files:
-                  - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
@@ -458,6 +456,9 @@ Resources:
                 C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role
                 ${VaultInstancesRole}
               waitAfterCompletion: 0
+            5-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -468,16 +469,14 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    Condition: EULACondition
   VaultInstancesRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -486,85 +485,72 @@ Resources:
               Service:
                 - ec2.amazonaws.com
             Action:
-              - 'sts:AssumeRole'
+              - sts:AssumeRole
       Path: /
       Policies:
         - PolicyName: VaultLogPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - 'logs:DescribeLogGroups'
-                  - 'logs:DescribeLogStreams'
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
               - Effect: Allow
                 Action:
-                  - 'logs:PutLogEvents'
+                  - logs:PutLogEvents
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}
-                  - !Sub >-
-                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameters'
+                  - ssm:GetParameters
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}
-                  - !Sub >-
-                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - 's3:GetObject'
-                  - 's3:GetObjectVersion'
+                  - s3:GetObject
+                  - s3:GetObjectVersion
                 Resource:
-                  - !Sub >-
-                    arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}
-                  - !Sub >-
-                    arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
         - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'kms:CreateKey'
-                  - 'kms:GenerateRandom'
-                  - 'kms:TagResource'
-                  - 'kms:Encrypt'
-                  - 'kms:Decrypt'
-                  - 'kms:EnableKeyRotation'
-                  - 'kms:UpdateKeyDescription'
-                  - 'kms:CreateAlias'
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
                 Resource: '*'
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'iam:DeleteRolePolicy'
-                  - 'iam:PutRolePolicy'
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
                 Resource: '*'
-    DeletionPolicy: Retain
   ComponentInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
