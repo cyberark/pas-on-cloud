@@ -410,7 +410,8 @@ Resources:
                   - kms:EnableKeyRotation
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
-                Resource: '*'
+                Resource:
+                  - '*'
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
             Statement:
@@ -418,7 +419,8 @@ Resources:
                 Action:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
-                Resource: '*'
+                Resource:
+                  - '*'
   InstancesSSMPolicy:
     Type: AWS::IAM::Policy
     Properties:
