@@ -93,8 +93,7 @@ Resources:
                   - logs:DescribeLogGroups
                   - logs:DescribeLogStreams
                   - logs:PutLogEvents
-                Resource:
-                  - '*'
+                Resource: *
         - PolicyName: SSM
           PolicyDocument:
             Version: '2012-10-17'
@@ -410,8 +409,7 @@ Resources:
                   - kms:EnableKeyRotation
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
-                Resource:
-                  - '*'
+                Resource: *
         - PolicyName: VaultBootstrapIAMPolicy
           PolicyDocument:
             Statement:
