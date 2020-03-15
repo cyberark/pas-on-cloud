@@ -676,9 +676,9 @@ Rules:
         AssertDescription: The password confirmation does not match.
   EULAAcception:
      Assertions:
-       - Assert: !Equals
-           - !Ref 'EULA'
-           - Accept
+      - Assert: !Equals
+          - !Ref 'EULA'
+          - Accept
         AssertDescription: You must accept EULA to continue.
 Metadata:
   AWS::CloudFormation::Interface:
