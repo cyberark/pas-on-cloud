@@ -345,7 +345,7 @@ Resources:
               waitAfterCompletion: 0
             5-removePermissions:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+                powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
             6-ChangeHostName:
               command: !Sub >
