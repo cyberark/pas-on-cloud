@@ -90,10 +90,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
-  DeployBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: Private
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
@@ -143,7 +139,6 @@ Resources:
                   - s3:DeleteObject
                   - s3:DeleteObjectVersion
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${DeployBucket}/*'
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
     Condition: EULACondition
   LambdaLogDenyRole:
