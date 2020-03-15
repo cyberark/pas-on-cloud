@@ -395,7 +395,7 @@ Resources:
                 Action:
                   - s3:GetBucketLocation
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}'
         - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
