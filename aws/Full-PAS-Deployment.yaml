@@ -332,8 +332,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -413,8 +413,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -618,8 +618,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -633,13 +633,13 @@ Resources:
                 ${PVWASetLocalServiceLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-configuration:
               command: !Sub 
                 - >-
@@ -651,12 +651,12 @@ Resources:
                     - PVWAHostNameEmpty
                     - empty
                     - !Sub '${PVWAHostName}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             4-startAppPool:
               command: >-
                 powershell -Command "& {&'Import-Module' WebAdministration}"; "&
@@ -664,10 +664,10 @@ Resources:
                 {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
                 'true'}"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             5-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             6-restart:
               command: powershell.exe -Command "Restart-Computer -Force"
               waitAfterCompletion: forever
@@ -676,7 +676,7 @@ Resources:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -712,8 +712,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -726,8 +726,8 @@ Resources:
                 ${CPMSetLocalServiceLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configuration:
@@ -737,30 +737,30 @@ Resources:
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             4-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             5-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -798,8 +798,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -811,8 +811,8 @@ Resources:
                 -PSMRegistration ${PSMRegistrationLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configuration:
@@ -822,21 +822,21 @@ Resources:
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -917,8 +917,8 @@ Resources:
           services:
             sysvinit:
               awslogs:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - /etc/awslogs/awslogs.conf
         install_psmp:

@@ -296,8 +296,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:

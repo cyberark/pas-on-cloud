@@ -324,32 +324,28 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configcw:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: '10'
+              waitAfterCompletion: 10
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
+              waitAfterCompletion: 60
         configServices:
           commands:
             1-download:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
-              waitAfterCompletion: '0'
-            2-fixENE:
-              command: >
-                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
               waitAfterCompletion: 0
-            3-postInstall:
+            2-postInstall:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -IsPrimaryOrDR "Primary" -PrimaryVaultIP "1.1.1.1" -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
@@ -397,8 +393,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - >-
                     C:\Program
@@ -625,8 +621,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -635,8 +631,8 @@ Resources:
                 powershell -command "& {&'Import-Module' WebAdministration}"; "& {&'Start-WebAppPool'
                 -Name PasswordVaultWebAccessPool}"; "& {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value 'true'}"
-              waitAfterCompletion: '0'
-              ignoreErrors: 'false'
+              waitAfterCompletion: 0
+              ignoreErrors: false
             02-RunCloudWatch-PVWA:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
@@ -656,7 +652,7 @@ Resources:
           commands:
             101-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component "PVWA" -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             102-configuration:
               command: !Sub 
                 - >-
@@ -664,13 +660,13 @@ Resources:
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName "PVWAhost"
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             103-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
                 -VaultAdminUser "Administrator" -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             104-startAppPool:
               command: >-
                 powershell -Command "& {&'Import-Module' WebAdministration}"; "&
@@ -678,10 +674,10 @@ Resources:
                 {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
                 'true'}"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             105-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configCPM:  
           commands:
             201-configuration:
@@ -691,25 +687,25 @@ Resources:
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             202-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
                 -VaultAdminUser "Administrator" -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             203-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             204-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             205-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             206-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configPSM:  
           commands:
             301-configuration:
@@ -719,15 +715,15 @@ Resources:
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             303-registration:
               command: !Sub >
                   powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
                   -VaultAdminUser "Administrator" -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'  
+              waitAfterCompletion: 0
             304-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:  
           commands:
             98-restart:
