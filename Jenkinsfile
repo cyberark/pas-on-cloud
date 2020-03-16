@@ -15,8 +15,8 @@ pipeline {
     stage('Install virtual environment') {
       steps {
         script {
-          sh(script: 'python -m pip install --user virtualenv')
-          sh(script: 'python -m virtualenv testenv')
+          sh(script: 'python3 -m pip install --user virtualenv')
+          sh(script: 'python3 -m virtualenv testenv')
           sh(script: 'source ./testenv/bin/activate')
           sh(script: 'testenv/bin/pip install -r tests/requirements.txt')
         }

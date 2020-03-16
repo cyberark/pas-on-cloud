@@ -364,6 +364,9 @@ Resources:
                 "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
                 "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: 0
+            3-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -373,7 +376,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -455,6 +457,9 @@ Resources:
                 powershell.exe -File
                 C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
+            5-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -464,7 +469,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:

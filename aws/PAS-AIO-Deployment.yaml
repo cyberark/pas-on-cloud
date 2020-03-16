@@ -296,6 +296,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
+            4-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -304,7 +307,7 @@ Resources:
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -579,7 +582,7 @@ Resources:
               command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource ComponentsMachine --region ${AWS::Region}'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
 Parameters:
   EULA:
     Type: String
