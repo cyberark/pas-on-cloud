@@ -296,6 +296,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
+            4-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
