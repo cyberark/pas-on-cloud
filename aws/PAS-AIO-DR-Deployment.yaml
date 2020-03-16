@@ -659,7 +659,7 @@ Resources:
         configPVWA:  
           commands:
             101-configurePVWAService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component "PVWA" -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: 0
             102-configuration:
               command: !Sub 
@@ -703,10 +703,10 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             203-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
               waitAfterCompletion: 0
             204-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Component 'CPM' -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
+              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
               waitAfterCompletion: 0
             205-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
