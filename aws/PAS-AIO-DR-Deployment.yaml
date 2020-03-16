@@ -8,19 +8,19 @@ Resources:
     Type: AWS::Logs::LogStream
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/CfnInitLog'
+      LogStreamName: VaultMachine/CfnInitLog
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultInitLog'
+      LogStreamName: VaultMachine/VaultInitLog
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultPostInstallLog'
+      LogStreamName: VaultMachine/VaultPostInstallLog
   VaultDRCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
@@ -42,53 +42,59 @@ Resources:
       LogStreamName: VaultDRMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+  ComponentsCfnInitLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: ComponentsMachine/CfnInitLog
+    DeletionPolicy: Retain
   CPMConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurationsLog
+      LogStreamName: ComponentsMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMRegistrationLog
+      LogStreamName: ComponentsMachine/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+      LogStreamName: ComponentsMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMConfigurationsLog
+      LogStreamName: ComponentsMachine/PSMConfigurationsLog
     DeletionPolicy: Retain
   PSMRegistrationLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMRegistrationLog
+      LogStreamName: ComponentsMachine/PSMRegistrationLog
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+      LogStreamName: ComponentsMachine/PVWAConfigurationsLog
     DeletionPolicy: Retain
   PVWARegistrationLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWARegistrationLog
+      LogStreamName: ComponentsMachine/PVWARegistrationLog
     DeletionPolicy: Retain
   PVWASetLocalServiceLog:
     Type: 'AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
+      LogStreamName: ComponentsMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
@@ -636,17 +642,17 @@ Resources:
             02-RunCloudWatch-PVWA:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PVWA" -Configuration ${PVWAConfigurationsLog}
+                -Component "PVWA" -Configuration ${PVWAConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
             03-RunCloudWatch-CPM:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "CPM" -Configuration ${CPMConfigurationsLog}
+                -Component "CPM" -Configuration ${CPMConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService ${CPMSetLocalServiceLog} -Registration ${CPMRegistrationLog}
             04-RunCloudWatch-PSM:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
-                -Component "PSM" -Configuration ${PSMConfigurationsLog}
+                -Component "PSM" -Configuration ${PSMConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
         configPVWA:  
           commands:
