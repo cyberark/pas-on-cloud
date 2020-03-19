@@ -999,14 +999,14 @@ Mappings:
       PSM: ami-0150ca7b39788fac1
       PSMP: ami-02129f1be6a069a69
     us-gov-west-1:
-      CPM: ami-e94e6a88
-      PVWA: ami-f2e2c693
-      PSM: ami-13406472
+      CPM: ami-c1cbe1a0
+      PVWA: ami-decbe1bf
+      PSM: ami-68cee409
       PSMP: ami-2c23044d
     us-gov-east-1:
-      CPM: ami-084456b03a3ed8ab2
-      PVWA: ami-062952a36194ca27e
-      PSM: ami-07858426bb4179bfc
+      CPM: ami-002e97d888c3565c2
+      PVWA: ami-04ccbea94d44a3fe7
+      PSM: ami-0f1d61fab72952996
       PSMP: ami-06569e3bb5ab0cf98
 Outputs:
   CloudWatchLogGroupName:

@@ -512,6 +512,6 @@ Mappings:
     sa-east-1:
       Vault: ami-07ffe2d83bd424a77
     us-gov-west-1:
-      Vault: ami-0e87a36f
+      Vault: ami-90c9e3f1
     us-gov-east-1:
-      Vault: ami-00268514ee37890b9
+      Vault: ami-00c9a6d3aafc67170

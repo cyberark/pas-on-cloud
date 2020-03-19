@@ -987,11 +987,11 @@ Mappings:
       Vault: ami-07ffe2d83bd424a77
       Components: ami-002d6669da9ac3aa8
     us-gov-west-1:
-      Vault: ami-0e87a36f
-      Components: ami-e1220580
+      Vault: ami-90c9e3f1
+      Components: ami-99c8e2f8
     us-gov-east-1:
-      Vault: ami-00268514ee37890b9
-      Components: ami-0311b01fc5b67d05f
+      Vault: ami-00c9a6d3aafc67170
+      Components: ami-00516afd43298c59e
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
