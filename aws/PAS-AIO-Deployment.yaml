@@ -761,8 +761,8 @@ Mappings:
       Vault: ami-0651f06c9ea096567
       Components: ami-07845cc5e4c1e804d
     eu-west-2:
-      Vault: ami-07515bfd47210af44
-      Components: ami-05bd7e3ad21c03926
+      Vault: ami-0b886b00c23b3d0ff
+      Components: ami-05b5f4e3eba979a02
     us-west-1:
       Vault: ami-017f6cf4a4e519907
       Components: ami-0009e014fe22b4f0c
