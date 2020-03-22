@@ -488,7 +488,7 @@ Mappings:
     us-east-2:
       Vault: ami-0651f06c9ea096567
     eu-west-2:
-      Vault: ami-0b886b00c23b3d0ff
+      Vault: ami-07515bfd47210af44
     us-west-1:
       Vault: ami-017f6cf4a4e519907
     us-west-2:
