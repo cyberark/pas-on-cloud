@@ -1000,12 +1000,12 @@ Mappings:
       PSMP: ami-02129f1be6a069a69
     us-gov-west-1:
       CPM: ami-c1cbe1a0
-      PVWA: ami-decbe1bf
+      PVWA: ami-23e8dd42
       PSM: ami-68cee409
       PSMP: ami-2c23044d
     us-gov-east-1:
       CPM: ami-002e97d888c3565c2
-      PVWA: ami-04ccbea94d44a3fe7
+      PVWA: ami-0f677c97d556096dc
       PSM: ami-0f1d61fab72952996
       PSMP: ami-06569e3bb5ab0cf98
 Outputs:
