@@ -262,8 +262,7 @@
          },
          "Condition":"EULACondition",
          "DependsOn":[
-            "LambdaDeployRole",
-            "StorePasswordLambda"
+            "LambdaDeployRole"
          ]
       },
       "CleanAdminPassword":{
