@@ -94,7 +94,7 @@
             "name": "Allow1858ComponentsIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "1858",
               "destinationPortRange": "1858",
               "sourceAddressPrefix": "",
               "destinationAddressPrefix": "",
@@ -136,7 +136,7 @@
             "name": "AllowStorageVaultOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "",
               "destinationAddressPrefix": "Storage",
@@ -152,7 +152,7 @@
             "name": "AllowKeyVaultOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "",
               "destinationAddressPrefix": "AzureKeyVault",
@@ -210,7 +210,7 @@
             "name": "AllowHttpsComponentsSubnetIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefixes": [
                 "[parameters('PVWA Subnet CIDR')]",
@@ -232,7 +232,7 @@
             "name": "AllowHttpsUserAccessIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "[parameters('User Access CIDR')]",
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
@@ -245,7 +245,7 @@
             "name": "AllowRDPAdministrativeAccessIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "3389",
               "destinationPortRange": "3389",
               "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
@@ -258,7 +258,7 @@
             "name": "Allow1858VaultOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "1858",
               "destinationPortRange": "1858",
               "sourceAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
@@ -339,7 +339,7 @@
             "name": "AllowRDPAdministrativeAccessIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "3389",
               "destinationPortRange": "3389",
               "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
               "destinationAddressPrefix": "[parameters('CPM Subnet CIDR')]",
@@ -352,7 +352,7 @@
             "name": "Allow1858VaultSubnetOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "1858",
               "destinationPortRange": "1858",
               "sourceAddressPrefix": "[parameters('CPM Subnet CIDR')]",
               "destinationAddressPrefix": "",
@@ -368,7 +368,7 @@
             "name": "AllowHttpsWebSubnetOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "[parameters('CPM Subnet CIDR')]",
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
@@ -423,7 +423,7 @@
             "name": "AllowRDPAdministrativeAccessIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "3389",
               "destinationPortRange": "3389",
               "sourceAddressPrefix": "[parameters('Administrative Access CIDR')]",
               "destinationAddressPrefix": "[parameters('PSM Subnet CIDR')]",
@@ -436,7 +436,7 @@
             "name": "Allow1858VaultSubnetOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "1858",
               "destinationPortRange": "1858",
               "sourceAddressPrefix": "[parameters('PSM Subnet CIDR')]",
               "destinationAddressPrefix": "",
@@ -452,7 +452,7 @@
             "name": "AllowHttpsWebSubnetOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "[parameters('PSM Subnet CIDR')]",
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
@@ -507,7 +507,7 @@
             "name": "PVWAout",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "443",
               "destinationPortRange": "443",
               "sourceAddressPrefixes": [
                 "[parameters('PSMP Subnet CIDR')]"
@@ -522,7 +522,7 @@
             "name": "AllowSshUserAccessIn",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "22",
               "destinationPortRange": "22",
               "sourceAddressPrefix": "[parameters('User Access CIDR')]",
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
@@ -535,7 +535,7 @@
             "name": "AllowSshOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "22",
               "destinationPortRange": "22",
               "sourceAddressPrefix": "[parameters('PSMP Subnet CIDR')]",
               "destinationAddressPrefix": "0.0.0.0/0",
@@ -548,7 +548,7 @@
             "name": "Allow1858VaultOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "*",
+              "sourcePortRange": "1858",
               "destinationPortRange": "1858",
               "sourceAddressPrefix": "[parameters('PSMP Subnet CIDR')]",
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
