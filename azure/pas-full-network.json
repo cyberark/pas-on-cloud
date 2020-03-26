@@ -69,17 +69,17 @@
   "variables": {
     "virtualNetworks_Solution_VNet_name": "PAS-VNet",
     "Vault_Subnet_name": "Vault-Subnet",
-    "Vault_NSG_name": "NSG-Vault",
+    "Vault_NSG_name": "Vault-NSG",
     "PVWA_Subnet_name": "PVWA-Subnet",
-    "PVWA_NSG_name": "NSG-PVWA",
+    "PVWA_NSG_name": "PVWA-NSG",
     "CPM_Subnet_name": "CPM-Subnet",
-    "CPM_NSG_name": "NSG-CPM",
+    "CPM_NSG_name": "CPM-NSG",
     "PSM_Subnet_name": "PSM-Subnet",
-    "PSM_NSG_name": "NSG-PSM",
+    "PSM_NSG_name": "PSM-NSG",
     "PSMP_Subnet_name": "PSMP-Subnet",
-    "PSMP_NSG_name": "NSG-PSMP",
+    "PSMP_NSG_name": "PSMP-NSG",
     "PTA_Subnet_name": "PTA-Subnet",
-    "PTA_NSG_name": "NSG-PTA"
+    "PTA_NSG_name": "PTA-NSG"
   },
   "resources": [
     {
