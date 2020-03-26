@@ -172,6 +172,41 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - VaultMachine
+  LambdaRemovePermissionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource:
+                  - !GetAtt 'VaultInstancesRole.Arn'
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -246,14 +281,6 @@ Resources:
                   - kms:EnableKeyRotation
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
-                Resource: '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
                 Resource: '*'
   VaultMachine:
     Type: AWS::EC2::Instance
