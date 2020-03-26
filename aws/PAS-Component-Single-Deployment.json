@@ -2382,5 +2382,13 @@
             "PSMP": "ami-00040d83d93d7cbd6"
          }
       }
+   },	
+   "Outputs":{	
+      "CloudWatchLogGroupName":{	
+         "Description":"The name of the CloudWatch log group",	
+         "Value":{	
+            "Ref":"LogGroup"	
+         }	
+      }
    }
 }
