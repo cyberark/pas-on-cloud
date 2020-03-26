@@ -207,6 +207,68 @@ Resources:
                   - iam:PutRolePolicy
                 Resource:
                   - !GetAtt 'VaultInstancesRole.Arn'
+  RemovePermissionLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Change Policies of VaultInstancesRole IAM Role
+      Code:
+        ZipFile: |-
+          import json
+          import boto3
+          
+          def lambda_handler(event, context):
+            client = boto3.client('iam')
+            
+            # Get vault role info
+            vault_role = client.get_role(RoleName=event['ResourceProperties']['role_name'])['Role']
+            print("Retrive IAM Role ID: {0}".format(vault_role["RoleId"]))
+            
+            # Delete old Policies
+            inline_policies = ["VaultBootstrapIAMPolicy","VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
+            print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+            for inline_policy in inline_policies:
+              try:
+                delete = client.delete_role_policy(RoleName=vault_role['RoleName'], PolicyName=inline_policy)
+                print("Delete policy: {0}".format(inline_policy))
+              except:
+                print("Didn\'t find policy: {0}".format(inline_policy))
+            print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+            
+            # Get KMS ID
+            kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
+            kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
+            print("Retrive KMS ARN: {0}".format(kms_arn))
+            
+            # Create inline policy
+            kms_policy =  {
+              "Statement": [
+                {
+                  "Action": [
+                    "kms:Encrypt",
+                    "kms:Decrypt"
+                    ],
+                    "Resource":
+                      kms_arn,
+                    "Effect":
+                      "Allow"
+                }
+              ]
+            }
+            
+            response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
+            print("Add inline policy VaultInstancesKMSPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
+  RemovePermissionVault:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
+      role_name: !GetAtt 'StoreMasterPassword.Name'
+      instance: !Ref 'VaultMachine'
+      region: !Ref 'AWS::Region'
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
