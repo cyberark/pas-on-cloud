@@ -169,7 +169,6 @@
           {
             "name": "DenyAllInBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all inbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -299,7 +298,6 @@
           {
             "name": "DenyAllInBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all inbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -314,7 +312,6 @@
           {
             "name": "DenyAllOutBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all outbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -399,7 +396,6 @@
           {
             "name": "DenyAllOutBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all outbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -484,7 +480,6 @@
           {
             "name": "DenyAllOutBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all outbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -567,7 +562,6 @@
           {
             "name": "DenyAllInBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all inbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -582,7 +576,6 @@
           {
             "name": "DenyAllOutBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all outbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -800,7 +793,6 @@
           {
             "name": "DenyAllInBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all inbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -815,7 +807,6 @@
           {
             "name": "DenyAllOutBound",
             "properties": {
-              "provisioningState": "Succeeded",
               "description": "Deny all outbound traffic",
               "protocol": "*",
               "sourcePortRange": "*",
@@ -911,7 +902,6 @@
         },
         "serviceEndpoints": [
             {
-                "provisioningState": "Succeeded",
                 "service": "Microsoft.KeyVault",
                 "locations": [
                     "*"
