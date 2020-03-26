@@ -342,16 +342,16 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
               waitAfterCompletion: 0
-            6-ChangeHostName:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
-              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
+            6-ChangeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
+              waitAfterCompletion: forever
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M

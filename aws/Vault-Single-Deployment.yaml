@@ -321,16 +321,16 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
               waitAfterCompletion: 0
-            4-changeHostName:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
-              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
               waitAfterCompletion: 0
+            4-changeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
+              waitAfterCompletion: forever
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
@@ -411,9 +411,9 @@ Parameters:
     Type: String
     Description: Enter a Secret for DR registration(Optional).
     NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
-    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase
-      letter, 1 uppercase letter, 1 digit and 1 special character
+    #AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    #ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase
+    #  letter, 1 uppercase letter, 1 digit and 1 special character
 Rules:
   PasswordConfirmation:
     Assertions:

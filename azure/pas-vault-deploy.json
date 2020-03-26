@@ -97,6 +97,12 @@
             "description":"Enter Vault Image ID."
          }
       },
+      "Secret":{
+         "type":"SecureString",
+         "metadata":{
+            "description":"Secret for DR activation (Optional)"
+         }
+      },
       "Vault AvailablitySet Name":{
          "type":"String",
          "metadata":{
