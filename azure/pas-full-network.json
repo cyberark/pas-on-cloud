@@ -101,8 +101,6 @@
               "access": "Allow",
               "priority": 100,
               "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
               "sourceAddressPrefixes": [
                 "[parameters('PVWA Subnet CIDR')]",
                 "[parameters('CPM Subnet CIDR')]",
@@ -126,8 +124,6 @@
               "access": "Allow",
               "priority": 400,
               "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
               "sourceAddressPrefixes": [
                 "[parameters('PVWA Subnet CIDR')]"
               ],
@@ -147,12 +143,9 @@
               "access": "Allow",
               "priority": 110,
               "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
               "sourceAddressPrefixes": [
                 "[parameters('Vault Subnet CIDR')]"
-              ],
-              "destinationAddressPrefixes": []
+              ]
             }
           },
           {
@@ -166,12 +159,9 @@
               "access": "Allow",
               "priority": 120,
               "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
               "sourceAddressPrefixes": [
                 "[parameters('Vault Subnet CIDR')]"
-              ],
-              "destinationAddressPrefixes": []
+              ]
             }
           }
         ],
@@ -188,11 +178,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -206,11 +192,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
@@ -242,8 +224,8 @@
               "access": "Allow",
               "priority": 100,
               "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
+              
+              
               "destinationAddressPrefixes": []
             }
           },
@@ -257,11 +239,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 130,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -274,11 +252,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 150,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -291,11 +265,7 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 130,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -308,11 +278,7 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 410,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -325,11 +291,7 @@
               "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
               "access": "Allow",
               "priority": 140,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ],
@@ -346,11 +308,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -365,11 +323,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
@@ -394,11 +348,7 @@
               "destinationAddressPrefix": "[parameters('CPM Subnet CIDR')]",
               "access": "Allow",
               "priority": 100,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -412,9 +362,6 @@
               "access": "Allow",
               "priority": 100,
               "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
               "destinationAddressPrefixes": [
                 "[parameters('Vault Subnet CIDR')]"
               ]
@@ -430,11 +377,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 110,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ],
@@ -450,11 +393,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -469,11 +408,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
@@ -498,11 +433,7 @@
               "destinationAddressPrefix": "[parameters('PSM Subnet CIDR')]",
               "access": "Allow",
               "priority": 100,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -516,9 +447,6 @@
               "access": "Allow",
               "priority": 100,
               "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
               "destinationAddressPrefixes": [
                 "[parameters('Vault Subnet CIDR')]"
               ]
@@ -534,11 +462,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 110,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ],
@@ -554,11 +478,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -573,11 +493,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
@@ -604,10 +520,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 100,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -620,11 +533,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 120,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -637,11 +546,7 @@
               "destinationAddressPrefix": "0.0.0.0/0",
               "access": "Allow",
               "priority": 110,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -654,11 +559,7 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 130,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ],
@@ -675,11 +576,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -694,11 +591,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
@@ -728,8 +621,7 @@
               "priority": 100,
               "direction": "Inbound",
               "sourcePortRanges": ["80","8080","8443","443"],
-              "destinationPortRanges": ["80","8080","8443","443"],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["80","8080","8443","443"]
             }
           },
           {
@@ -744,9 +636,7 @@
               "priority": 130,
               "direction": "Inbound",
               "sourcePortRanges": ["7514","6514","11514"],
-              "destinationPortRanges": ["7514","6514","11514"],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["7514","6514","11514"]
             }
           },
           {
@@ -760,8 +650,6 @@
               "access": "Allow",
               "priority": 140,
               "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
               "sourceAddressPrefixes": [
                 "[parameters('PTA Subnet CIDR')]",
                 "[parameters('Administrative Access CIDR')]"
@@ -781,9 +669,7 @@
               "priority": 150,
               "direction": "Inbound",
               "sourcePortRanges": ["67","68","11514"],
-              "destinationPortRanges": ["67","68","11514"],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["67","68","11514"]
             }
           },
           {
@@ -796,11 +682,7 @@
               "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
               "access": "Allow",
               "priority": 160,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -813,11 +695,7 @@
               "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
               "access": "Allow",
               "priority": 170,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -830,11 +708,7 @@
               "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
               "access": "Allow",
               "priority": 180,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -849,9 +723,7 @@
               "priority": 200,
               "direction": "Outbound",
               "sourcePortRanges": ["389","443","514","3268","3269","636","587","25"],
-              "destinationPortRanges": ["389","443","514","3268","3269","636","587","25"],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["389","443","514","3268","3269","636","587","25"]
             }
           },
           {
@@ -866,9 +738,7 @@
               "priority": 210,
               "direction": "Outbound",
               "sourcePortRanges": ["22","27017"],
-              "destinationPortRanges": ["22","27017"],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["22","27017"]
             }
           },
           {
@@ -881,11 +751,7 @@
               "destinationAddressPrefix": "[parameters('PVWA Subnet CIDR')]",
               "access": "Allow",
               "priority": 220,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -898,11 +764,7 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 230,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           },
           {
@@ -917,9 +779,7 @@
               "priority": 240,
               "direction": "Outbound",
               "sourcePortRanges": ["53","123","514"],
-              "destinationPortRanges": ["53","123","514"],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "destinationPortRanges": ["53","123","514"]
             }
           },
           {
@@ -932,11 +792,7 @@
               "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
               "access": "Allow",
               "priority": 250,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ],
@@ -953,11 +809,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Inbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Inbound"
             }
           },
           {
@@ -972,11 +824,7 @@
               "destinationAddressPrefix": "*",
               "access": "Deny",
               "priority": 65500,
-              "direction": "Outbound",
-              "sourcePortRanges": [],
-              "destinationPortRanges": [],
-              "sourceAddressPrefixes": [],
-              "destinationAddressPrefixes": []
+              "direction": "Outbound"
             }
           }
         ]
