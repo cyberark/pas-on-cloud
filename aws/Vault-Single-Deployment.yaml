@@ -405,46 +405,45 @@ Resources:
         configSSMAndHostname:
           files:
             C:\CyberArk\Deployment\VaultTagKMS.ps1:
-              content:
-                Fn::Sub: |-
-                  [CmdletBinding()]
-                  param(
-                    [Parameter(Mandatory = $true)] [string]$Role,
-                    [Parameter(Mandatory = $true)] [string]$Region
-                  )
+              content: |-
+                [CmdletBinding()]
+                param(
+                  [Parameter(Mandatory = $true)] [string]$Role,
+                  [Parameter(Mandatory = $true)] [string]$Region
+                )
+                
+                . "$PSScriptRoot\Common.ps1"
+                $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
+                
+                try {
+                  # Retrieve KMS Key ID
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
+                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
+                  $KMSKeyID = $DBParmLine.Split('=')[1]
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
                   
-                  . "$PSScriptRoot\Common.ps1"
-                  $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
+                  # Get Instance ID
+                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
                   
-                  try {
-                    # Retrieve KMS Key ID
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
-                    $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
-                    $KMSKeyID = $DBParmLine.Split('=')[1]
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
-                    
-                    # Get Instance ID
-                    $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
-                    
-                    # Load AWS powershell assemblies
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
-                    Get-AWSPowerShellVersion | Out-Null
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
-                  
-                    # Tag KMS Key with Vault instance id and enable key rotation
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
-                    $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
-                    $InstanceTag.TagKey = "VaultInstance"
-                    $InstanceTag.TagValue = $InstanceId
-                    Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
-                    Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
-                    New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
-                    WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
-                    exit 0
-                  } catch {
-                    WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
-                    exit 1
-                  }
+                  # Load AWS powershell assemblies
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
+                  Get-AWSPowerShellVersion | Out-Null
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
+                
+                  # Tag KMS Key with Vault instance id and enable key rotation
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
+                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
+                  $InstanceTag.TagKey = "VaultInstance"
+                  $InstanceTag.TagValue = $InstanceId
+                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
+                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
+                  exit 0
+                } catch {
+                  WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
+                  exit 1
+                }
           services:
             windows:
               AmazonSSMAgent:
