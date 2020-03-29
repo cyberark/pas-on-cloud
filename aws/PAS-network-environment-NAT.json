@@ -261,11 +261,11 @@
         ]
       }
     },
-    "PSMPMainSubnet": {
+    "PSMSSHMainSubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "CidrBlock": {
-          "Ref": "PSMPMainSubnetCIDR"
+          "Ref": "PSMSSHMainSubnetCIDR"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -283,16 +283,16 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PSMP Main"
+            "Value": "PSM-SSH Main"
           }
         ]
       }
     },
-    "PSMPSecondarySubnet": {
+    "PSMSSHSecondarySubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "CidrBlock": {
-          "Ref": "PSMPSecondarySubnetCIDR"
+          "Ref": "PSMSSHSecondarySubnetCIDR"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -310,7 +310,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PSMP Secondary"
+            "Value": "PSM-SSH Secondary"
           }
         ]
       }
@@ -731,7 +731,7 @@
           "Ref": "PASPrivateRT"
         },
         "SubnetId": {
-          "Ref": "PSMPMainSubnet"
+          "Ref": "PSMSSHMainSubnet"
         }
       }
     },
@@ -742,7 +742,7 @@
           "Ref": "PASPrivateRT"
         },
         "SubnetId": {
-          "Ref": "PSMPSecondarySubnet"
+          "Ref": "PSMSSHSecondarySubnet"
         }
       }
     },
@@ -1293,7 +1293,7 @@
         "FromPort": 443,
         "ToPort": 443,
         "CidrIp": {
-          "Ref": "PSMPMainSubnetCIDR"
+          "Ref": "PSMSSHMainSubnetCIDR"
         }
       }
     },
@@ -1307,7 +1307,7 @@
         "FromPort": 443,
         "ToPort": 443,
         "CidrIp": {
-          "Ref": "PSMPSecondarySubnetCIDR"
+          "Ref": "PSMSSHSecondarySubnetCIDR"
         }
       }
     },
@@ -1891,8 +1891,8 @@
             "PVWASecondarySubnetCIDR",
             "PSMMainSubnetCIDR",
             "PSMSecondarySubnetCIDR",
-            "PSMPMainSubnetCIDR",
-            "PSMPSecondarySubnetCIDR",
+            "PSMSSHMainSubnetCIDR",
+            "PSMSSHSecondarySubnetCIDR",
             "PTAMainSubnetCIDR",
             "PTADRSubnetCIDR"
           ]
@@ -1938,10 +1938,10 @@
         "PSMSecondarySubnetCIDR": {
           "default": "PSM Secondary Subnet CIDR"
         },
-        "PSMPMainSubnetCIDR": {
+        "PSMSSHMainSubnetCIDR": {
           "default": "PSMP Main Subnet CIDR"
         },
-        "PSMPSecondarySubnetCIDR": {
+        "PSMSSHSecondarySubnetCIDR": {
           "default": "PSMP Secondary Subnet CIDR"
         },
         "PTAMainSubnetCIDR": {
@@ -2050,8 +2050,8 @@
       "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "PSMPMainSubnetCIDR": {
-      "Description": "IPv4 address range for the PSMP Main subnet",
+    "PSMSSHMainSubnetCIDR": {
+      "Description": "IPv4 address range for the PSM-SSH Main subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
@@ -2059,8 +2059,8 @@
       "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "PSMPSecondarySubnetCIDR": {
-      "Description": "IPv4 address range for the PSMP Secondary subnet",
+    "PSMSSHSecondarySubnetCIDR": {
+      "Description": "IPv4 address range for the PSM-SSH Secondary subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
