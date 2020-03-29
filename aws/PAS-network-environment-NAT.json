@@ -873,7 +873,7 @@
         "SourceSecurityGroupId": {
           "Ref": "VaultSG"
         },
-        "Description": "Vault to Vault icmp connection"
+        "Description": "Vault to Vault DR ICMP connection"
       }
     },
     "VaultSGIngress8": {
@@ -888,7 +888,7 @@
         "SourceSecurityGroupId": {
           "Ref": "PVWASG"
         },
-        "Description": "Vault to PVWA  connection"
+        "Description": "Vault to PVWA connection"
       }
     },
     "VaultSGIngress9": {
@@ -902,8 +902,7 @@
         "ToPort": 5671,
         "SourceSecurityGroupId": {
           "Ref": "VaultSG"
-        },
-        "Description": "Vault to Vault icmp connection"
+        }
       }
     },
     "VaultSGEgress1": {
@@ -918,7 +917,7 @@
         "DestinationSecurityGroupId": {
           "Ref": "VaultSG"
         },
-        "Description": "Vault to Vault connection"
+        "Description": "Vault to Vault DR connection"
       }
     },
     "VaultSGEgress2": {
@@ -933,7 +932,7 @@
         "DestinationSecurityGroupId": {
           "Ref": "VaultSG"
         },
-        "Description": "Vault to Vault icmp connection"
+        "Description": "Vault to Vault DR ICMP connection"
       }
     },
     "VaultSGEgress3": {

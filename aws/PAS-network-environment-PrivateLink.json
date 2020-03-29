@@ -342,6 +342,17 @@
         ]
       }
     },
+    "PASIGW": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "PAS IGW"
+          }
+        ]
+      }
+    },
     "PASVaultNACL": {
       "Type": "AWS::EC2::NetworkAcl",
       "Properties": {
@@ -536,6 +547,17 @@
         }
       }
     },
+    "PASGWAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PASVPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "PASIGW"
+        }
+      }
+    },
     "VaultMainRTAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
@@ -667,6 +689,19 @@
           "Ref": "PSMSSHSecondarySubnet"
         }
       }
+    },
+    "PASPublicIGWRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "PASPublicRT"
+        },
+        "GatewayId": {
+          "Ref": "PASIGW"
+        }
+      },
+      "DependsOn": "PASGWAttachment"
     },
     "VaultSGIngress1": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -842,9 +877,9 @@
         "IpProtocol": "tcp",
         "FromPort": 443,
         "ToPort": 443,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Vault to AWS resources connection"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Vault to AWS resources connection"
+      }
     },
     "VaultSGEgress4": {
       "Type": "AWS::EC2::SecurityGroupEgress",
@@ -1374,9 +1409,9 @@
         "IpProtocol": "udp",
         "FromPort": 67,
         "ToPort": 68,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Allow incoming data from the DHCP server"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow incoming data from the DHCP server"
+      }
     },
     "PTASGIngress6": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1402,9 +1437,9 @@
         "IpProtocol": "tcp",
         "FromPort": 6514,
         "ToPort": 6514,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
+      }
     },
     "PTASGIngress8": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1415,9 +1450,9 @@
         "IpProtocol": "tcp",
         "FromPort": 7514,
         "ToPort": 7514,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
+      }
     },
     "PTASGIngress9": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1449,7 +1484,7 @@
         "Description": "Allow remote access to the machine (SSH), for both secure telnet and SFTP"
       }
     },
-    "PTASGInress11": {
+    "PTASGIngress19": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -1488,9 +1523,9 @@
         "IpProtocol": "tcp",
         "FromPort": 11514,
         "ToPort": 11514,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Allow incoming syslog messages"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow incoming syslog messages"
+      }
     },
     "PTASGIngress15": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1501,9 +1536,9 @@
         "IpProtocol": "udp",
         "FromPort": 11514,
         "ToPort": 11514,
-        "CidrIp": "0.0.0.0/0"
-      },
-      "Description": "Allow incoming syslog messages"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow incoming syslog messages"
+      }
     },
     "PTASGIngress16": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -1559,7 +1594,8 @@
         "IpProtocol": "tcp",
         "FromPort": 443,
         "ToPort": 443,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "PTA to AWS Resources connection"
       }
     },
     "PTASGEgress2": {
@@ -1571,7 +1607,8 @@
         "IpProtocol": "tcp",
         "FromPort": 514,
         "ToPort": 514,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow sending syslog messages in port 514"
       }
     },
     "PTASGEgress3": {
@@ -1583,7 +1620,8 @@
         "IpProtocol": "udp",
         "FromPort": 514,
         "ToPort": 514,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow sending syslog messages in port 514"
       }
     },
     "PTASGEgress4": {
@@ -1597,7 +1635,8 @@
         "ToPort": 80,
         "DestinationSecurityGroupId": {
           "Ref": "PVWASG"
-        }
+        },
+        "Description": "Allow an outgoing HTTP connection to CyberArk PVWA for a specific IP address"
       }
     },
     "PTASGEgress5": {
@@ -1609,7 +1648,8 @@
         "IpProtocol": "udp",
         "FromPort": 53,
         "ToPort": 53,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow outgoing DNS requests"
       }
     },
     "PTASGEgress6": {
@@ -1621,7 +1661,8 @@
         "IpProtocol": "udp",
         "FromPort": 123,
         "ToPort": 123,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow outgoing NTP requests"
       }
     },
     "PTASGEgress7": {
@@ -1635,7 +1676,8 @@
         "ToPort": 27017,
         "DestinationSecurityGroupId": {
           "Ref": "PTASG"
-        }
+        },
+        "Description": "Allow outgoing replication to the Secondary PTA Server from the Primary PTA Server in a disaster recovery environment"
       }
     },
     "PTASGEgress8": {
@@ -1647,7 +1689,8 @@
         "IpProtocol": "tcp",
         "FromPort": 25,
         "ToPort": 25,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow sending SMTP (email) messages for specific IP address"
       }
     },
     "PTASGEgress9": {
@@ -1659,7 +1702,8 @@
         "IpProtocol": "tcp",
         "FromPort": 587,
         "ToPort": 587,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "Allow sending SMTP (email) messages for specific IP address"
       }
     },
     "PTASGEgress10": {
@@ -1671,7 +1715,8 @@
         "IpProtocol": "tcp",
         "FromPort": 389,
         "ToPort": 389,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "LDAP for specific IP address"
       }
     },
     "PTASGEgress11": {
@@ -1683,7 +1728,8 @@
         "IpProtocol": "tcp",
         "FromPort": 636,
         "ToPort": 636,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "LDAP for specific IP address"
       }
     },
     "PTASGEgress12": {
@@ -1695,7 +1741,8 @@
         "IpProtocol": "tcp",
         "FromPort": 3268,
         "ToPort": 3269,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": "0.0.0.0/0",
+        "Description": "LDAP for specific IP address"
       }
     },
     "PTASGEgress13": {
@@ -1709,7 +1756,8 @@
         "ToPort": 1858,
         "CidrIp": {
           "Ref": "VaultMainSubnetCIDR"
-        }
+        },
+        "Description": "Allow outgoing connection to the CyberArk Vault for specific IP address"
       }
     },
     "PTASGEgress14": {
@@ -1723,7 +1771,8 @@
         "ToPort": 1858,
         "CidrIp": {
           "Ref": "VaultMainSubnetCIDR"
-        }
+        },
+        "Description": "Allow outgoing connection to the CyberArk Vault for specific IP address"
       }
     },
     "PTASGEgress16": {
@@ -1737,7 +1786,8 @@
         "ToPort": 1858,
         "CidrIp": {
           "Ref": "VaultDRSubnetCIDR"
-        }
+        },
+        "Description": "Allow outgoing connection to the CyberArk Vault for specific IP address"
       }
     },
     "PTASGEgress17": {
@@ -1751,7 +1801,8 @@
         "ToPort": 1858,
         "CidrIp": {
           "Ref": "VaultDRSubnetCIDR"
-        }
+        },
+        "Description": "Allow outgoing connection to the CyberArk Vault for specific IP address"
       }
     },
     "PTASGEgress15": {
@@ -1765,7 +1816,8 @@
         "ToPort": 22,
         "DestinationSecurityGroupId": {
           "Ref": "PTASG"
-        }
+        },
+        "Description": "Allow outgoing connection to the PTA Network Sensor for a specific IP address. Enable outgoing SSH connection in a disaster recovery environment"
       }
     },
     "PrivateLinkPASSGIngress1": {
@@ -1865,8 +1917,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "VaultCFNEndpoint": {
@@ -1900,8 +1951,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PVWACFNEndpoint": {
@@ -1935,8 +1985,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "CPMCFNEndpoint": {
@@ -1970,8 +2019,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMCFNEndpoint": {
@@ -2005,8 +2053,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMSSHCFNEndpoint": {
@@ -2040,8 +2087,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PTACFNEndpoint": {
@@ -2075,8 +2121,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "VaultSSMEndpoint": {
@@ -2110,8 +2155,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PVWASSMEndpoint": {
@@ -2145,8 +2189,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "CPMSSMEndpoint": {
@@ -2180,8 +2223,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMSSMEndpoint": {
@@ -2215,8 +2257,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMSSHSSMEndpoint": {
@@ -2250,8 +2291,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PTASSMEndpoint": {
@@ -2285,8 +2325,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "VaultCWEndpoint": {
@@ -2320,8 +2359,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PVWACWEndpoint": {
@@ -2355,8 +2393,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "CPMCWEndpoint": {
@@ -2390,8 +2427,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMCWEndpoint": {
@@ -2425,8 +2461,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PSMSSHCWEndpoint": {
@@ -2460,8 +2495,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     },
     "PTACWEndpoint": {
@@ -2495,8 +2529,7 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ],
-        "PrivateDnsEnabled": true
+        ]
       }
     }
   },
