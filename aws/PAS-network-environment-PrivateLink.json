@@ -1827,14 +1827,6 @@
         "VpcId": {
           "Ref": "PASVPC"
         },
-        "SubnetIds": [
-          {
-            "Ref": "VaultMainSubnet"
-          },
-          {
-            "Ref": "VaultDRSubnet"
-          }
-        ],
         "RouteTableIds": [
           {
             "Ref": "PASPrivateRT"
