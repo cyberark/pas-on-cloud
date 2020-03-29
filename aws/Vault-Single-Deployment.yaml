@@ -216,7 +216,7 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource:
-                  - !GetAtt 'VaultInstancesRole.Arn'
+                  - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-*'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -237,19 +237,8 @@ Resources:
               client = boto3.client('iam')
               
               # Get vault role info
-              vault_role = client.get_role(RoleName=event['ResourceProperties']['role_name'])['Role']
+              vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
               print("Retrive IAM Role ID: {0}".format(vault_role["RoleId"]))
-              
-              # Delete old Policies
-              inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
-              print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-              for inline_policy in inline_policies:
-                try:
-                  delete = client.delete_role_policy(RoleName=vault_role['RoleName'], PolicyName=inline_policy)
-                  print("Delete policy: {0}".format(inline_policy))
-                except:
-                  print("Didn\'t find policy: {0}".format(inline_policy))
-              print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
               
               # Get KMS ID
               kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
@@ -272,22 +261,38 @@ Resources:
                 ]
               }
               
-              response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
-              print("Add inline policy VaultInstancesKMSPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+              response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSRestrictedPolicy", PolicyDocument=json.dumps(kms_policy))
+              print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+              
+              # Delete old Policies
+              list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
+              inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
+              print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+              for role in list:
+                print("Delete policies in {0} IAM Role".format(role))
+                for inline_policy in inline_policies:
+                  try:
+                    delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
+                    print("Delete policy: {0}".format(inline_policy))
+                  except:
+                    print("Didn\'t find policy: {0}".format(inline_policy))
+              print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+              
               return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
             except Exception as E:
               print(E)
               return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
       Runtime: python3.7
       Handler: index.lambda_handler
-      Timeout: 6
+      Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
   RemovePermissionVault:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
-      role_name: !Ref 'VaultInstancesRole'
+      vault_role_name: !Ref 'VaultInstancesRole'
+      lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultMachine'
       region: !Ref 'AWS::Region'
   VaultInstancesProfile:
