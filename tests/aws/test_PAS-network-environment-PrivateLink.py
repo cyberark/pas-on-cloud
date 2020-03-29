@@ -63,7 +63,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert len(self.resources) == 16
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroups(self, region):
-      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkComponentsSG', 'PrivateLinkVaultSG', 'VaultSG', 'PTASG'}
+      expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkPASSG', 'VaultSG', 'PTASG'}
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsEgress(self):
@@ -72,7 +72,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                       'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'VaultSGEgress4', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
                       'PTASGEgress4', 'PTASGEgress5', 'PTASGEgress6', 'PTASGEgress7', 'PTASGEgress8', 'PTASGEgress9',
                       'PTASGEgress10', 'PTASGEgress11', 'PTASGEgress12', 'PTASGEgress13','PTASGEgress14', 'PTASGEgress15', 'PTASGEgress5',
-                      'PVWASGEgress6','PVWASGEgress4','PTASGEgress16','VaultSGEgress5','PSMSSHSGEgress4','CPMSGEgress3','PVWASGEgress5','PSMSGEgress5','PTASGEgress17'
+                      'PVWASGEgress6','PVWASGEgress4','PTASGEgress16','VaultSGEgress5','PSMSSHSGEgress4','CPMSGEgress3','PVWASGEgress5','PTASGEgress17', 'PrivateLinkPASSGEngress1'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupEgress']) == expected_SecurityGroupsEgress
 
@@ -83,7 +83,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                       'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGIngress11', 'PTASGIngress13',
                       'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18',
                       'VaultSGIngress9','PVWASGIngress7','VaultSGIngress7','PTASGIngress19','VaultSGIngress4','PVWASGIngress3',
-                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6'
+                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6','PrivateLinkPASSGIngress1'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
@@ -92,8 +92,8 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::SubnetNetworkAclAssociation']) == expected_SubnetNetworkAclAssociation
 
   def test_PASNetworkEnvironmentPrivateLink_SubnetRouteTableAssociation(self):
-      expected_SubnetRouteTableAssociation = {'PSMSecondaryRTAssociation','PSMPMainRTAssociation','PASNatRTAssociation','PSMMainRTAssociation',
-      'PSMPSecondaryRTAssociation','PTAMainRTAssociation','PVWAMainRTAssociation','CPMDRRTAssociation','PVWASecondaryRTAssociation','PTADRRTAssociation','CPMMainRTAssociation'}
+      expected_SubnetRouteTableAssociation = {'VaultDRRTAssociation','VaultMainRTAssociation','PSMSecondaryRTAssociation','PSMPMainRTAssociation','VaultDRRTAssociation','PSMMainRTAssociation',
+      'PSMPSecondaryRTAssociation','PTAMainRTAssociation','PVWAMainRTAssociation','CPMDRRTAssociation','PVWASecondaryRTAssociation','PTADRRTAssociation','CPMMainRTAssociation','VaultMainRTAssociation'}
       assert set(self.resources['AWS::EC2::SubnetRouteTableAssociation']) == expected_SubnetRouteTableAssociation
 
   def test_PASNetworkEnvironmentPrivateLink_Route(self):
@@ -101,12 +101,14 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::Route']) == expected_Route
 
   def test_PASNetworkEnvironmentPrivateLink_NetworkAclEntry(self):
-      expected_NetworkAclEntry = {'PASVaultAclEntry2', 'PASVaultAclEntry1'}
+      expected_NetworkAclEntry = {'PASAclEntry1', 'PASAclEntry2'}
       assert set(self.resources['AWS::EC2::NetworkAclEntry']) == expected_NetworkAclEntry
 
   def test_PASNetworkEnvironmentPrivateLink_VPCEndpoint(self):
       expected_VPCEndpoint = {'CPMCFNEndpoint','PTACWEndpoint','PTASSMEndpoint','CPMSSMEndpoint','PSMSSHCFNEndpoint','PSMSSMEndpoint',
-      'PTACFNEndpoint','PSMCFNEndpoint','CPMCWEndpoint','PVWACFNEndpoint','PVWACWEndpoint','PVWASSMEndpoint','PSMSSHSSMEndpoint','PSMCWEndpoint','PSMSSHCWEndpoint'}
+      'PTACFNEndpoint','PSMCFNEndpoint','CPMCWEndpoint','PVWACFNEndpoint','PVWACWEndpoint','PVWASSMEndpoint','PSMSSHSSMEndpoint','PSMCWEndpoint','PSMSSHCWEndpoint','VaultS3Endpoint'
+        'VaultSSMEndpoint','VaultKMSEndpoint','VaultCWEndpoint','VaultCFNEndpoint'
+      }
       assert set(self.resources['AWS::EC2::VPCEndpoint']) == expected_VPCEndpoint
 
   def test_PASNetworkEnvironmentPrivateLink_VPCGatewayAttachment(self):
@@ -118,7 +120,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::InternetGateway']) == expected_InternetGateway
 
   def test_PASNetworkEnvironmentPrivateLink_Subnet(self):
-      expected_Subnet = {'PSMSSHSecondarySubnet','PVWASecondarySubnet','PTAMainSubnet','PSMSSHMainSubnet','PTADRSubnet','CPMDRSubnet',
+      expected_Subnet = {'VaultDRSubnet','VaultMainSubnet','PSMSSHSecondarySubnet','PVWASecondarySubnet','PTAMainSubnet','PSMSSHMainSubnet','PTADRSubnet','CPMDRSubnet',
       'PSMSecondarySubnet','PVWAMainSubnet','PSMMainSubnet','CPMMainSubnet','PASNATSubnet'}
       assert set(self.resources['AWS::EC2::Subnet']) == expected_Subnet
 
@@ -126,16 +128,16 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       expected_NetworkAcl = {'PASVaultNACL'}
       assert set(self.resources['AWS::EC2::NetworkAcl']) == expected_NetworkAcl
 
-  def test_PASNetworkEnvironmentPrivateLink_EIP(self):
-      expected_EIP = {'PASNATEIP'}
-      assert set(self.resources['AWS::EC2::EIP']) == expected_EIP
+  # def test_PASNetworkEnvironmentPrivateLink_EIP(self):
+  #     expected_EIP = {'PASNATEIP'}
+  #     assert set(self.resources['AWS::EC2::EIP']) == expected_EIP
 
   def test_PASNetworkEnvironmentPrivateLink_RouteTable(self):
       expected_RouteTable = {'PASPublicRT', 'PASPrivateRT'}
       assert set(self.resources['AWS::EC2::RouteTable']) == expected_RouteTable
 
   def test_PASNetworkEnvironmentPrivateLink_VPC(self):
-      expected_VPC= {'ComponentsVPC', 'VaultVPC'}
+      expected_VPC= {'PASVPC'}
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
 
   def test_CleanupEnvironment(self, region, branch, commitid, templateurl):
