@@ -280,7 +280,7 @@ Resources:
               return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
       Runtime: python3.7
       Handler: index.lambda_handler
-      Timeout: 6
+      Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
   RemovePermissionVault:
     Type: AWS::CloudFormation::CustomResource
@@ -394,10 +394,10 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           ascending:
-            - configSSMAndHostname
+            - configSSMAndHostnameAndTagKMS
             - configServices
             - configSignal
-        configSSMAndHostname:
+        configSSMAndHostnameAndTagKMS:
           files:
             C:\CyberArk\Deployment\VaultTagKMS.ps1:
               content:
