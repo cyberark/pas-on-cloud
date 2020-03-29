@@ -106,7 +106,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
 
   def test_PASNetworkEnvironmentPrivateLink_VPCEndpoint(self):
       expected_VPCEndpoint = {'CPMCFNEndpoint','PTACWEndpoint','PTASSMEndpoint','CPMSSMEndpoint','PSMSSHCFNEndpoint','PSMSSMEndpoint',
-      'PTACFNEndpoint','PSMCFNEndpoint','CPMCWEndpoint','PVWACFNEndpoint','PVWACWEndpoint','PVWASSMEndpoint','PSMSSHSSMEndpoint','PSMCWEndpoint','PSMSSHCWEndpoint','VaultS3Endpoint'
+      'PTACFNEndpoint','PSMCFNEndpoint','CPMCWEndpoint','PVWACFNEndpoint','PVWACWEndpoint','PVWASSMEndpoint','PSMSSHSSMEndpoint','PSMCWEndpoint','PSMSSHCWEndpoint','VaultS3Endpoint',
         'VaultSSMEndpoint','VaultKMSEndpoint','VaultCWEndpoint','VaultCFNEndpoint'
       }
       assert set(self.resources['AWS::EC2::VPCEndpoint']) == expected_VPCEndpoint
@@ -121,7 +121,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
 
   def test_PASNetworkEnvironmentPrivateLink_Subnet(self):
       expected_Subnet = {'VaultDRSubnet','VaultMainSubnet','PSMSSHSecondarySubnet','PVWASecondarySubnet','PTAMainSubnet','PSMSSHMainSubnet','PTADRSubnet','CPMDRSubnet',
-      'PSMSecondarySubnet','PVWAMainSubnet','PSMMainSubnet','CPMMainSubnet','PASNATSubnet'}
+      'PSMSecondarySubnet','PVWAMainSubnet','PSMMainSubnet','CPMMainSubnet'}
       assert set(self.resources['AWS::EC2::Subnet']) == expected_Subnet
 
   def test_PASNetworkEnvironmentPrivateLink_NetworkAcl(self):
