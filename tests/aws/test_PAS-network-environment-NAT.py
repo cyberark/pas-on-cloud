@@ -60,7 +60,7 @@ class TestPASNetworkEnvironmentNatTemplate():
                   resource['ResourceChange']['LogicalResourceId'])
 
       # Validate expected number of elements
-      assert len(self.resources) == 16
+      assert len(self.resources) == 15
 
   def test_PASNetworkEnvironmentNat_SecurityGroups(self, region):
       expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG', 'PTASG'}

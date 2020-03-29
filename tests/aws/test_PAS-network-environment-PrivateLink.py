@@ -60,7 +60,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                   resource['ResourceChange']['LogicalResourceId'])
 
       # Validate expected number of elements
-      assert len(self.resources) == 16
+      assert len(self.resources) == 14
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroups(self, region):
       expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'PrivateLinkPASSG', 'VaultSG', 'PTASG'}
