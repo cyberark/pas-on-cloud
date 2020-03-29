@@ -67,7 +67,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::SecurityGroup']) == expected_SecurityGroups
 
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsEgress(self):
-       expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
+      expected_SecurityGroupsEgress = {'CPMSGEgress1', 'CPMSGEgress2', 'PSMSGEgress1', 'PSMSGEgress2', 'PSMSGEgress3', 'PSMSGEgress4',
                       'PSMSSHSGEgress1', 'PSMSSHSGEgress2', 'PSMSSHSGEgress3', 'PVWASGEgress1', 'PVWASGEgress2', 'PVWASGEgress3',
                       'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'VaultSGEgress4', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
                       'PTASGEgress4', 'PTASGEgress5', 'PTASGEgress6', 'PTASGEgress7', 'PTASGEgress8', 'PTASGEgress9',
