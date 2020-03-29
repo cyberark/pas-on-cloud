@@ -1939,10 +1939,10 @@
           "default": "PSM Secondary Subnet CIDR"
         },
         "PSMSSHMainSubnetCIDR": {
-          "default": "PSMP Main Subnet CIDR"
+          "default": "PSM-SSH Main Subnet CIDR"
         },
         "PSMSSHSecondarySubnetCIDR": {
-          "default": "PSMP Secondary Subnet CIDR"
+          "default": "PSM-SSH Secondary Subnet CIDR"
         },
         "PTAMainSubnetCIDR": {
           "default": "PTA Main Subnet CIDR"
