@@ -91,6 +91,45 @@
       "properties": {
         "securityRules": [
           {
+            "name": "AllowICMPIn",
+            "properties": {
+              "protocol": "ICMP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "AllowICMPOut",
+            "properties": {
+              "protocol": "ICMP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Allow443Out",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "443",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Outbound"
+            }
+          },
+          {
             "name": "Allow1858ComponentsIn",
             "properties": {
               "protocol": "TCP",
