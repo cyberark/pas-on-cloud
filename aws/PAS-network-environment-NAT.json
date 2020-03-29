@@ -521,7 +521,7 @@
         "RuleAction": "allow",
         "RuleNumber": 100,
         "NetworkAclId": {
-          "Ref": "PASNACL"
+          "Ref": "PASVaultNACL"
         }
       }
     },
@@ -533,7 +533,7 @@
         "RuleAction": "allow",
         "RuleNumber": 100,
         "NetworkAclId": {
-          "Ref": "PASNACL"
+          "Ref": "PASVaultNACL"
         }
       }
     },
