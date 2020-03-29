@@ -995,7 +995,7 @@
         "Description": "Access from User Access CIDR"
       }
     },
-    "PSMSGEgress2": {
+    "PSMSGEgress1": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -1009,7 +1009,7 @@
         }
       }
     },
-    "PSMSGEgress3": {
+    "PSMSGEgress2": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -1021,7 +1021,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "PSMSGEgress4": {
+    "PSMSGEgress3": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
@@ -1033,7 +1033,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "PSMSGEgress5": {
+    "PSMSGEgress4": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
