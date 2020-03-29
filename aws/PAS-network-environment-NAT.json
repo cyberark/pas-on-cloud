@@ -380,7 +380,7 @@
         ]
       }
     },
-    "PASNACL": {
+    "PASVaultNACL": {
       "Type": "AWS::EC2::NetworkAcl",
       "Properties": {
         "VpcId": {
@@ -389,7 +389,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PAS NACL"
+            "Value": "PAS Vault NACL"
           }
         ]
       }
@@ -512,7 +512,7 @@
         ]
       }
     },
-    "PASAclEntry1": {
+    "PASVaultAclEntry1": {
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
         "CidrBlock": "0.0.0.0/0",
@@ -525,7 +525,7 @@
         }
       }
     },
-    "PASAclEntry2": {
+    "PASVaultAclEntry2": {
       "Type": "AWS::EC2::NetworkAclEntry",
       "Properties": {
         "CidrBlock": "0.0.0.0/0",
@@ -534,6 +534,28 @@
         "RuleNumber": 100,
         "NetworkAclId": {
           "Ref": "PASNACL"
+        }
+      }
+    },
+    "PASVaultMainNACLAssociation": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "PASVaultNACL"
+        },
+        "SubnetId": {
+          "Ref": "VaultMainSubnet"
+        }
+      }
+    },
+    "PASVaultDRNACLAssociation": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "PASVaultNACL"
+        },
+        "SubnetId": {
+          "Ref": "VaultDRSubnet"
         }
       }
     },
