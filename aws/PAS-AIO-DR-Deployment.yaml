@@ -511,7 +511,6 @@ Resources:
             - configSignal
         configSSM:
           files:
-             files:
             C:\CyberArk\Deployment\VaultTagKMS.ps1:
               content: |-
                 [CmdletBinding()]
