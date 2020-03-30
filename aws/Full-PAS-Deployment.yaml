@@ -1088,6 +1088,19 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
+  InstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: InstancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+      Roles:
+        - !Ref ComponentInstanceRole
 Parameters:
   EULA:
     Type: String
