@@ -278,7 +278,7 @@ Resources:
               
               return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
             except Exception as E:
-              print(E)
+              print("Error in Lambda execution: {0}".format(E))
               return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
       Runtime: python3.7
       Handler: index.lambda_handler
