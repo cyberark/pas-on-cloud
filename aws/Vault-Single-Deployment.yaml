@@ -238,12 +238,12 @@ Resources:
               
               # Get vault role info
               vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
-              print("Retrive IAM Role ID: {0}".format(vault_role["RoleId"]))
+              print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
               
               # Get KMS ID
               kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
               kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
-              print("Retrive KMS ARN: {0}".format(kms_arn))
+              print("Retrieve KMS ARN: {0}".format(kms_arn))
               
               # Create inline policy
               kms_policy =  {
@@ -253,10 +253,8 @@ Resources:
                       "kms:Encrypt",
                       "kms:Decrypt"
                       ],
-                      "Resource":
-                        kms_arn,
-                      "Effect":
-                        "Allow"
+                      "Resource": kms_arn,
+                      "Effect": "Allow"
                   }
                 ]
               }
