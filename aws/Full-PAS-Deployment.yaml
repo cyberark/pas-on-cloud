@@ -1101,6 +1101,19 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
+  InstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: InstancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+      Roles:
+        - !Ref ComponentInstanceRole
 Parameters:
   EULA:
     Type: String
