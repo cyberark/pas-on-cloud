@@ -1917,7 +1917,8 @@
           {
             "Ref": "PrivateLinkPASSG"
           }
-        ]
+        ],
+        "PrivateDnsEnabled" : true
       }
     },
     "VaultCFNEndpoint": {
