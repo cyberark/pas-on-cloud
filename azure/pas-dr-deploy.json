@@ -50,7 +50,7 @@
             "defaultValue": "CyberArkVaultAKV",
             "type": "String",
             "metadata": {
-                "description": "Enter the name of the Key Vault that you entered in Vault deployment"
+                "description": "Enter the name of the Key Vault that you entered in Primary Vault deployment"
             }
         },
         "Primary Vault Private IP": {
