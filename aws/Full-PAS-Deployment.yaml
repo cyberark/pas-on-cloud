@@ -349,54 +349,59 @@ Resources:
             physicalResourceId = str(uuid.uuid4())
             if 'PhysicalResourceId' in event:
               physicalResourceId = event['PhysicalResourceId']
-            try:
-              print("Start RemovePermissionLambda execution")
-              client = boto3.client('iam')
-              
-              # Get vault role info
-              vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
-              print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-              
-              # Get KMS ID
-              kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
-              kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
-              print("Retrieve KMS ARN: {0}".format(kms_arn))
-              
-              # Create inline policy
-              kms_policy =  {
-                "Statement": [
-                  {
-                    "Action": [
-                      "kms:Encrypt",
-                      "kms:Decrypt"
-                      ],
-                      "Resource": kms_arn,
-                      "Effect": "Allow"
-                  }
-                ]
-              }
-              
-              response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSRestrictedPolicy", PolicyDocument=json.dumps(kms_policy))
-              print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-              
-              # Delete old Policies
-              list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
-              inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
-              print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-              for role in list:
-                print("Delete policies in {0} IAM Role".format(role))
-                for inline_policy in inline_policies:
-                  try:
-                    delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
-                    print("Delete policy: {0}".format(inline_policy))
-                  except:
-                    print("Didn\'t find policy: {0}".format(inline_policy))
-              print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-              
-              return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
-            except Exception as E:
-              print("Error in Lambda execution: {0}".format(E))
-              return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
+            if event['RequestType'] == 'Create':
+              try:
+                print("Creating AWS CloudFormation")
+                print("Start RemovePermissionLambda execution")
+                client = boto3.client('iam')
+                
+                # Get vault role info
+                vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
+                print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
+                
+                # Delete old Policies
+                list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
+                print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+                for role in list:
+                  print("Delete policies in {0} IAM Role".format(role))
+                  for inline_policy in inline_policies:
+                    try:
+                      delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
+                      print("Delete policy: {0}".format(inline_policy))
+                    except:
+                      print("Didn\'t find policy: {0}".format(inline_policy))
+                print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+  
+                # Get KMS ID
+                kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
+                kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
+                print("Retrieve KMS ARN: {0}".format(kms_arn))
+                
+                # Create inline policy
+                kms_policy =  {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "kms:Encrypt",
+                        "kms:Decrypt"
+                        ],
+                        "Resource": kms_arn,
+                        "Effect": "Allow"
+                    }
+                  ]
+                }
+                
+                response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
+                print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+                
+                return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
+              except Exception as E:
+                print("Error in Lambda execution: {0}".format(E))
+                return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
+            elif event['RequestType'] == 'Delete':
+              print("Deleting AWS CloudFormation")
+              return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
