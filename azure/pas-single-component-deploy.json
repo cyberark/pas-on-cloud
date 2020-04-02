@@ -81,7 +81,8 @@
             "type": "String",
             "metadata": {
                 "description": "Enter the VNet name."
-            }
+            },
+            "defaultValue": "PAS-VNet"
         },
         "Component Subnet": {
             "type": "String",
