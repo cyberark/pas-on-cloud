@@ -485,10 +485,25 @@
         ]
       }
     },
+    "PrivateLinkVaultSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for Vault to access AWS resources by VPC Endpoint",
+        "VpcId": {
+          "Ref": "PASVPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "PrivateLink-Vault-SG"
+          }
+        ]
+      }
+    },
     "PrivateLinkPASSG": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Security group for PrivateLink to access AWS resources",
+        "GroupDescription": "Security group for PAS to access AWS resources by VPC Endpoint",
         "VpcId": {
           "Ref": "PASVPC"
         },
@@ -1820,11 +1835,11 @@
         "Description": "Allow outgoing connection to the PTA Network Sensor for a specific IP address. Enable outgoing SSH connection in a disaster recovery environment"
       }
     },
-    "PrivateLinkPASSGIngress1": {
+    "PrivateLinkVaultSGIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "PrivateLinkPASSG"
+          "Ref": "PrivateLinkVaultSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 443,
@@ -1832,11 +1847,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "PrivateLinkPASSGEngress1": {
+    "PrivateLinkVaultSGEgress": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "PrivateLinkPASSG"
+          "Ref": "PrivateLinkVaultSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 443,
@@ -1915,7 +1930,7 @@
         ],
         "SecurityGroupIds": [
           {
-            "Ref": "PrivateLinkPASSG"
+            "Ref": "PrivateLinkVaultSG"
           }
         ],
         "PrivateDnsEnabled" : true
@@ -1950,7 +1965,7 @@
         ],
         "SecurityGroupIds": [
           {
-            "Ref": "PrivateLinkPASSG"
+            "Ref": "PrivateLinkVaultSG"
           }
         ]
       }
@@ -2154,7 +2169,7 @@
         ],
         "SecurityGroupIds": [
           {
-            "Ref": "PrivateLinkPASSG"
+            "Ref": "PrivateLinkVaultSG"
           }
         ]
       }
@@ -2358,7 +2373,7 @@
         ],
         "SecurityGroupIds": [
           {
-            "Ref": "PrivateLinkPASSG"
+            "Ref": "PrivateLinkVaultSG"
           }
         ]
       }
