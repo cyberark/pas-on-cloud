@@ -429,17 +429,20 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   ComponentInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref 'ComponentInstanceRole'
+    DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -467,6 +470,7 @@ Resources:
                   - logs:DescribeLogStreams
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -536,6 +540,7 @@ Resources:
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
                 Resource: '*'
+    DeletionPolicy: Retain
   InstancesSSMPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -696,6 +701,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT25M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
