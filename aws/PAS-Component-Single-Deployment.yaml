@@ -241,6 +241,7 @@ Resources:
       Roles:
         - !Ref ComponentInstanceRole
     Condition: EULACondition
+    DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -269,6 +270,7 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     Condition: EULACondition
+    DeletionPolicy: Retain
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -642,151 +644,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DeletionPolicy: Retain
-  PSMPMachine:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref ComponentInstanceName
-      SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
-      SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap 
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PSMP
-      InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64 
-        'Fn::Sub': >
-          #!/bin/bash -e
-
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource
-          PSMPMachine --configsets ascending --region ${AWS::Region}
-
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
-          PSMPMachine --region ${AWS::Region}
-      KeyName: !Ref KeyName
-      IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          ascending:
-            - update_ssmagent
-            - install_cwlogs
-            - install_psmp
-        update_ssmagent:
-          commands:
-            01_download_ssmagent_update:
-              command: sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
-              ignoreErrors: true
-              waitAfterCompletion: 0
-        install_cwlogs:
-          files:
-            /etc/awslogs/awslogs.conf:
-              content: !Sub |
-                [general]
-                state_file= /var/awslogs/state/agent-state
-                [/var/log/cloud-init.log]
-                file = /var/log/cloud-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cloud-init.log
-                datetime_format = 
-                [/var/log/cloud-init-output.log]
-                file = /var/log/cloud-init-output.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cloud-init-output.log
-                datetime_format = 
-                [/var/log/cfn-init.log]
-                file = /var/log/cfn-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-init.log
-                datetime_format = 
-                [/var/log/cfn-wire.log]
-                file = /var/log/cfn-wire.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-wire.log
-                datetime_format =               
-              mode: '000444'
-              owner: root
-              group: root
-            /etc/awslogs/awscli.conf:
-              content: !Sub |
-                [plugins]
-                cwlogs = cwlogs
-                [default]
-                region = ${AWS::Region}
-              mode: '000444'
-              owner: root
-              group: root
-          commands:
-            01_create_state_directory:
-              command: mkdir -p /var/awslogs/state
-              waitAfterCompletion: 0
-          services:
-            sysvinit:
-              awslogs:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/awslogs/awslogs.conf
-        install_psmp:
-          files:
-            /root/CD-Image/preinstall.sh:
-              content: >
-                #!/bin/bash -e
-
-                hostname $1
-
-                sed -i "s/localhost\\./$1./g" /etc/hosts
-
-                sed -i "s/localhost /$1 /g" /etc/hosts
-
-                chmod 646 /etc/sysconfig/network
-
-                sed -i "s/HOSTNAME=localhost.localdomain/HOSTNAME=$1/g"
-                /etc/sysconfig/network
-
-                chmod 644 /etc/hosts
-
-                chmod 644 /etc/sysconfig/network
-            /root/CD-Image/createCredFile.sh:
-              content: >
-                #!/bin/bash -e
-
-                adminpassword=`aws ssm get-parameters --names $2 --region $3
-                --with-decryption --output text --query Parameters[0].Value`
-
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
-                Password -Username $1 -Password $adminpassword -HostName
-          commands:
-            1-ScriptsPermissions:
-              command: sudo chmod 700 /root/CD-Image/preinstall.sh /root/CD-Image/createCredFile.sh
-              waitAfterCompletion: 0
-            2-PreInstall:
-              command: !Sub >
-                sudo /root/CD-Image/preinstall.sh ${ComponentHostName}
-                waitAfterCompletion: 0
-            3-CreateCredFile:
-              command: !Sub >
-                sudo /root/CD-Image/createCredFile.sh ${VaultAdminUser}
-                ${StoreAdminPassword.SsmId} ${AWS::Region} ${ComponentHostName}
-                waitAfterCompletion: 0
-            4-PSMPdeploy:
-              command: !Sub 
-                - >-
-                  hostname=`curl
-                  http://169.254.169.254/latest/meta-data/instance-id` &&
-                  /root/CD-Image/register_and_activation.sh
-                  /root/CD-Image/user.cred ${VaultIpAddress} $hostname y
-                - VaultIpAddress: !If 
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-              waitAfterCompletion: 0
-    Condition: CreatePSMPCondition
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT10M
     DeletionPolicy: Retain
 Parameters:
   EULA:

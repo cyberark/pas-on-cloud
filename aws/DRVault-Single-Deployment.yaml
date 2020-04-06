@@ -320,6 +320,7 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -390,6 +391,7 @@ Resources:
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -473,6 +475,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
