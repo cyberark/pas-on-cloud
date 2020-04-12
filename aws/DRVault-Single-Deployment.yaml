@@ -11,21 +11,21 @@ Resources:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'DRVaultMachine/CfnInitLog'
+      LogStreamName: 'VaultDRMachine/CfnInitLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'DRVaultMachine/VaultInitLog'
+      LogStreamName: 'VaultDRMachine/VaultInitLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'DRVaultMachine/VaultPostInstallLog'
+      LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   LambdaDeployRole:
@@ -169,7 +169,7 @@ Resources:
       key: !GetAtt 'StoreMasterPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - DRVaultMachine
+      - VaultDRMachine
   CleanAdminPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -178,7 +178,7 @@ Resources:
       key: !GetAtt 'StoreAdminPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - DRVaultMachine
+      - VaultDRMachine
   CleanDRPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -187,7 +187,7 @@ Resources:
       key: !GetAtt 'StoreDRPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - DRVaultMachine
+      - VaultDRMachine
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -312,7 +312,7 @@ Resources:
       ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
       vault_role_name: !Ref 'VaultInstancesRole'
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
-      instance: !Ref 'DRVaultMachine'
+      instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -320,7 +320,6 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -391,8 +390,7 @@ Resources:
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
                 Resource: '*'
-    DeletionPolicy: Retain
-  DRVaultMachine:
+  VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
       Tags:
@@ -413,7 +411,7 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r DRVaultMachine --configsets ascending --region ${AWS::Region}
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
@@ -425,6 +423,47 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostnameAndTagKMS:
+          files:
+            C:\CyberArk\Deployment\VaultTagKMS.ps1:
+              content: |-
+                [CmdletBinding()]
+                param(
+                  [Parameter(Mandatory = $true)] [string]$Role,
+                  [Parameter(Mandatory = $true)] [string]$Region
+                )
+
+                . "$PSScriptRoot\Common.ps1"
+                $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
+
+                try {
+                  # Retrieve KMS Key ID
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
+                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
+                  $KMSKeyID = $DBParmLine.Split('=')[1]
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
+
+                  # Get Instance ID
+                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
+
+                  # Load AWS powershell assemblies
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
+                  Get-AWSPowerShellVersion | Out-Null
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
+
+                  # Tag KMS Key with Vault instance id and enable key rotation
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
+                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
+                  $InstanceTag.TagKey = "VaultInstance"
+                  $InstanceTag.TagValue = $InstanceId
+                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
+                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
+                  exit 0
+                } catch {
+                  WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
+                  exit 1
+                }
           services:
             windows:
               AmazonSSMAgent:
@@ -470,12 +509,11 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource DRVaultMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String

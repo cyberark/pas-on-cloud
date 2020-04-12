@@ -490,7 +490,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -519,6 +518,47 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostnameAndTagKMS:
+          files:
+            C:\CyberArk\Deployment\VaultTagKMS.ps1:
+              content: |-
+                [CmdletBinding()]
+                param(
+                  [Parameter(Mandatory = $true)] [string]$Role,
+                  [Parameter(Mandatory = $true)] [string]$Region
+                )
+
+                . "$PSScriptRoot\Common.ps1"
+                $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
+
+                try {
+                  # Retrieve KMS Key ID
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
+                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
+                  $KMSKeyID = $DBParmLine.Split('=')[1]
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
+
+                  # Get Instance ID
+                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
+
+                  # Load AWS powershell assemblies
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
+                  Get-AWSPowerShellVersion | Out-Null
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
+
+                  # Tag KMS Key with Vault instance id and enable key rotation
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
+                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
+                  $InstanceTag.TagKey = "VaultInstance"
+                  $InstanceTag.TagValue = $InstanceId
+                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
+                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
+                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
+                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
+                  exit 0
+                } catch {
+                  WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
+                  exit 1
+                }
           services:
             windows:
               AmazonSSMAgent:
@@ -576,14 +616,12 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref VaultInstancesRole
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -869,9 +907,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
+    DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
-    DeletionPolicy: Retain
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -945,9 +983,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
+    DeletionPolicy: Retain
     DependsOn:
       - CPMMachine
-    DeletionPolicy: Retain
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1064,7 +1102,6 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
-    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -1092,11 +1129,11 @@ Parameters:
     Default: recpub.key
   VaultInstanceName:
     Type: String
-    Description: Enter a name for the Primary Vault instance.
+    Description: Enter a name for the Vault instance.
     Default: CyberArk Vault
   VaultMasterPassword:
     Type: String
-    Description: Enter a password for the Primary Vault Master user.
+    Description: Enter a password for the Vault Master user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -1105,12 +1142,12 @@ Parameters:
       uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
     Type: String
-    Description: Retype the password for the Primary Vault Master user.
+    Description: Retype the password for the Vault Master user.
     NoEcho: true
     MinLength: 8
   VaultAdminPassword:
     Type: String
-    Description: Enter a password for the Primary Vault Administrator user.
+    Description: Enter a password for the Vault Administrator user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -1119,12 +1156,12 @@ Parameters:
       uppercase letter, 1 digit and 1 special character
   RetypeAdminPassword:
     Type: String
-    Description: Retype the password for the Primary Vault Administrator user.
+    Description: Retype the password for the Vault Administrator user.
     NoEcho: true
     MinLength: 8
   VaultDRPassword:
     Type: String
-    Description: Enter a password for the DR Vault DR user.
+    Description: Enter a password for the Vault DR user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -1133,12 +1170,12 @@ Parameters:
       letter, 1 digit and 1 special character
   RetypeDRPassword:
     Type: String
-    Description: Retype the password for the DR Vault DR user.
+    Description: Retype the password for the Vault DR user.
     NoEcho: true
     MinLength: 8
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Primary Vault instance.
+    Description: Select the instance type of the Vault instances.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -1147,7 +1184,7 @@ Parameters:
     Default: m4.large
   VaultInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the Primary Vault and DR Vault instances.
+    Description: Assign Security Groups to the Vault instances.
   VaultInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the Primary Vault instance will reside.
@@ -1323,23 +1360,23 @@ Metadata:
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultInstanceName:
-        default: Primary Vault Instance Name
+        default: Vault Instance Name
       VaultMasterPassword:
-        default: Primary Vault Master Password
+        default: Vault Master Password
       RetypeMasterPassword:
-        default: Retype Primary Vault Master Password
+        default: Retype Master Password
       VaultAdminPassword:
-        default: Primary Vault Admin Password
+        default: Vault Admin Password
       RetypeAdminPassword:
-        default: Retype Primary Vault Admin Password
+        default: Retype Admin Password
       VaultDRPassword:
-        default: DR Vault DR User Password
+        default: DR Password
       RetypeDRPassword:
-        default: Retype DR Vault DR User Password
+        default: Retype DR Password
       VaultInstanceType:
-        default: Primary Vault and DR Vault Instance Type
+        default: Primary Vault and Vault DR Instance Type
       VaultInstanceSecurityGroups:
-        default: Primary Vault and DR Vault Security Groups
+        default: Vault Security Groups
       VaultInstanceSubnetId:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:

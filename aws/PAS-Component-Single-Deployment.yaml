@@ -241,7 +241,6 @@ Resources:
       Roles:
         - !Ref ComponentInstanceRole
     Condition: EULACondition
-    DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -270,7 +269,6 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     Condition: EULACondition
-    DeletionPolicy: Retain
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -317,9 +315,9 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CPMCfnInitLogStream
                 ${CPMCfnInitLogStream} -CPMConfiguration
-                ${CPMConfigurationsLog} -CPMRegistration
-                ${CPMRegistrationLog} -CPMSetLocalService
-                ${CPMSetLocalServiceLog} -Region ${AWS::Region}
+                ${CPMConfigurationsLog} -CPMRegistration  ${CPMRegistrationLog}
+                -CPMSetLocalService ${CPMSetLocalServiceLog} -Region
+                ${AWS::Region}
             2-downloadLatestSSM:
               command: >
                 powershell.exe -Command
@@ -374,7 +372,10 @@ Resources:
                 Policy Manager Scanner"
               waitAfterCompletion: 0
             4-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
+              command: >-
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Password
+                Manager"
               waitAfterCompletion: 0
             5-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
@@ -483,7 +484,9 @@ Resources:
         configServices:
           commands:
             1-configurePVWAService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
+              command: >-
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: 0
             2-configuration:
               command: !Sub
@@ -579,8 +582,8 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -PSMCfnInitLogStream
                 ${PSMCfnInitLogStreamLog} -PSMConfiguration
-                ${PSMConfigurationsLog} -PSMRegistration
-                ${PSMRegistrationLog} -Region ${AWS::Region}
+                ${PSMConfigurationsLog} -PSMRegistration ${PSMRegistrationLog}
+                -Region ${AWS::Region}
             2-downloadLatestSSM:
               command: >
                 powershell.exe -Command
@@ -615,7 +618,8 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort 1858
+                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  1858
                 - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
@@ -632,13 +636,15 @@ Resources:
               waitAfterCompletion: 0
             4-ChangeHostName:
               command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${ComponentHostName} -Force -Restart
+                powershell.exe -Command Rename-Computer -NewName
+                ${ComponentHostName} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
+                --resource PSMMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     Condition: CreatePSMCondition
     CreationPolicy:
@@ -679,7 +685,9 @@ Resources:
         update_ssmagent:
           commands:
             01_download_ssmagent_update:
-              command: sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+              command: >-
+                sudo yum install -y
+                https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
               ignoreErrors: true
               waitAfterCompletion: 0
         install_cwlogs:
@@ -736,24 +744,35 @@ Resources:
             /root/CD-Image/preinstall.sh:
               content: >
                 #!/bin/bash -e
+
                 hostname $1
+
                 sed -i "s/localhost\\./$1./g" /etc/hosts
+
                 sed -i "s/localhost /$1 /g" /etc/hosts
+
                 chmod 646 /etc/sysconfig/network
+
                 sed -i "s/HOSTNAME=localhost.localdomain/HOSTNAME=$1/g"
                 /etc/sysconfig/network
+
                 chmod 644 /etc/hosts
+
                 chmod 644 /etc/sysconfig/network
             /root/CD-Image/createCredFile.sh:
               content: >
                 #!/bin/bash -e
+
                 adminpassword=`aws ssm get-parameters --names $2 --region $3
                 --with-decryption --output text --query Parameters[0].Value`
+
                 /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
                 Password -Username $1 -Password $adminpassword -HostName
           commands:
             1-ScriptsPermissions:
-              command: sudo chmod 700 /root/CD-Image/preinstall.sh /root/CD-Image/createCredFile.sh
+              command: >-
+                sudo chmod 700 /root/CD-Image/preinstall.sh
+                /root/CD-Image/createCredFile.sh
               waitAfterCompletion: 0
             2-PreInstall:
               command: !Sub >
