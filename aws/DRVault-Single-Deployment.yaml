@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: This template handles the deployment of CyberArk Vault DR to an existing network infrastructure
+Description: This template handles the deployment of CyberArk DR Vault to an existing network infrastructure
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -11,21 +11,21 @@ Resources:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/CfnInitLog'
+      LogStreamName: 'DRVaultMachine/CfnInitLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultInitLog'
+      LogStreamName: 'DRVaultMachine/VaultInitLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
+      LogStreamName: 'DRVaultMachine/VaultPostInstallLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   LambdaDeployRole:
@@ -169,7 +169,7 @@ Resources:
       key: !GetAtt 'StoreMasterPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - VaultDRMachine
+      - DRVaultMachine
   CleanAdminPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -178,7 +178,7 @@ Resources:
       key: !GetAtt 'StoreAdminPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - VaultDRMachine
+      - DRVaultMachine
   CleanDRPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -187,7 +187,7 @@ Resources:
       key: !GetAtt 'StoreDRPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - VaultDRMachine
+      - DRVaultMachine
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -243,7 +243,7 @@ Resources:
           import boto3
           import uuid
           import cfnresponse
-          
+
           def lambda_handler(event, context):
             physicalResourceId = str(uuid.uuid4())
             if 'PhysicalResourceId' in event:
@@ -253,11 +253,11 @@ Resources:
                 print("Creating AWS CloudFormation")
                 print("Start RemovePermissionLambda execution")
                 client = boto3.client('iam')
-                
+
                 # Get vault role info
                 vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-                
+
                 # Delete old Policies
                 list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
                 inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
@@ -271,12 +271,12 @@ Resources:
                     except:
                       print("Didn\'t find policy: {0}".format(inline_policy))
                 print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-  
+
                 # Get KMS ID
                 kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
                 kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
                 print("Retrieve KMS ARN: {0}".format(kms_arn))
-                
+
                 # Create inline policy
                 kms_policy =  {
                   "Statement": [
@@ -290,10 +290,10 @@ Resources:
                     }
                   ]
                 }
-                
+
                 response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
                 print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-                
+
                 return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
               except Exception as E:
                 print("Error in Lambda execution: {0}".format(E))
@@ -312,7 +312,7 @@ Resources:
       ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
       vault_role_name: !Ref 'VaultInstancesRole'
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
-      instance: !Ref 'VaultDRMachine'
+      instance: !Ref 'DRVaultMachine'
       region: !Ref 'AWS::Region'
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -392,7 +392,7 @@ Resources:
                   - kms:CreateAlias
                 Resource: '*'
     DeletionPolicy: Retain
-  VaultDRMachine:
+  DRVaultMachine:
     Type: AWS::EC2::Instance
     Properties:
       Tags:
@@ -413,7 +413,7 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
+          cfn-init.exe -v -s ${AWS::StackId} -r DRVaultMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
@@ -470,7 +470,7 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource DRVaultMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -502,7 +502,7 @@ Parameters:
     Default: recpub.key
   VaultPrivateIP:
     Type: String
-    Description: Enter the Vault Private IP.
+    Description: Enter the Primary Vault Private IP.
   VaultAdminPassword:
     Type: String
     Description: Enter a password for the Vault Administrator user.
@@ -510,7 +510,7 @@ Parameters:
     MinLength: 8
   VaultMasterPassword:
     Type: String
-    Description: Enter a password for the Vault DR Master user.
+    Description: Enter a password for the DR Vault Master user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -518,12 +518,12 @@ Parameters:
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
     Type: String
-    Description: Retype the password for the Vault DR Master user.
+    Description: Retype the password for the DR Vault Master user.
     NoEcho: true
     MinLength: 8
   VaultDRPassword:
     Type: String
-    Description: Enter a password for the Vault DR user.
+    Description: Enter a password for the DR Vault DR user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -531,20 +531,20 @@ Parameters:
       1 uppercase letter, 1 digit and 1 special character
   RetypeDRPassword:
     Type: String
-    Description: Retype the password for the Vault DR user.
+    Description: Retype the password for the DR Vault DR user.
     NoEcho: true
     MinLength: 8
   VaultInstanceName:
     Type: String
-    Description: Enter a name for the Vault DR instance.
-    Default: CyberArk Vault
+    Description: Enter a name for the DR Vault instance.
+    Default: CyberArk DR Vault
   VaultHostName:
     Type: String
-    Description: Enter the host name for the Vault DR instance.
+    Description: Enter the host name for the DR Vault instance.
     MinLength: 4
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Vault DR instance.
+    Description: Select the instance type of the DR Vault instance.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -553,10 +553,10 @@ Parameters:
     Default: m4.large
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Assign Security Groups to the Vault DR instance.
+    Description: Assign Security Groups to the DR Vault instance.
   DRInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
-    Description: Select the Subnet Id where the Vault DR instance will reside.
+    Description: Select the Subnet Id where the DR Vault instance will reside.
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -611,27 +611,27 @@ Metadata:
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultPrivateIP:
-        default: Vault Private IP
+        default: Primary Vault Private IP
       VaultAdminPassword:
         default: Vault Admin Password
       VaultMasterPassword:
-        default: Vault DR Master Password
+        default: DR Vault Master Password
       RetypeMasterPassword:
-        default: Retype Vault DR Master Password
+        default: Retype DR Vault Master Password
       VaultDRPassword:
-        default: Vault DR Password
+        default: DR Vault DR User Password
       RetypeDRPassword:
-        default: Retype Vault DR Password
+        default: Retype DR Vault DR User Password
       VaultInstanceName:
-        default: Vault DR Instance Name
+        default: DR Vault Instance Name
       VaultHostName:
-        default: Vault DR Host Name
+        default: DR Vault Host Name
       VaultInstanceType:
-        default: Vault DR Instance Type
+        default: DR Vault Instance Type
       VaultInstanceSecurityGroups:
-        default: Vault DR Instance Security Groups
+        default: DR Vault Instance Security Groups
       DRInstanceSubnetId:
-        default: Vault DR Instance Subnet Id
+        default: DR Vault Instance Subnet Id
 Mappings:
   RegionMap:
     us-east-1:

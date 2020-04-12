@@ -105,10 +105,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::NetworkAclEntry']) == expected_NetworkAclEntry
 
   def test_PASNetworkEnvironmentPrivateLink_VPCEndpoint(self):
-      expected_VPCEndpoint = {'CPMCFNEndpoint','PTACWEndpoint','PTASSMEndpoint','CPMSSMEndpoint','PSMSSHCFNEndpoint','PSMSSMEndpoint',
-      'PTACFNEndpoint','PSMCFNEndpoint','CPMCWEndpoint','PVWACFNEndpoint','PVWACWEndpoint','PVWASSMEndpoint','PSMSSHSSMEndpoint','PSMCWEndpoint','PSMSSHCWEndpoint','VaultS3Endpoint',
-        'VaultSSMEndpoint','VaultKMSEndpoint','VaultCWEndpoint','VaultCFNEndpoint'
-      }
+      expected_VPCEndpoint = {'VaultS3Endpoint','VaultKMSEndpoint','PASCFNEndpoint','PASSSMEndpoint','PASCWEndpoint'}
       assert set(self.resources['AWS::EC2::VPCEndpoint']) == expected_VPCEndpoint
 
   def test_PASNetworkEnvironmentPrivateLink_VPCGatewayAttachment(self):

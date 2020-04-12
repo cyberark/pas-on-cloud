@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: This template handles the deployment of CyberArk Vault to an existing network infrastructure
+Description: This template handles the deployment of CyberArk Primary Vault to an existing network infrastructure
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -227,7 +227,7 @@ Resources:
           import boto3
           import uuid
           import cfnresponse
-          
+
           def lambda_handler(event, context):
             physicalResourceId = str(uuid.uuid4())
             if 'PhysicalResourceId' in event:
@@ -237,11 +237,11 @@ Resources:
                 print("Creating AWS CloudFormation")
                 print("Start RemovePermissionLambda execution")
                 client = boto3.client('iam')
-                
+
                 # Get vault role info
                 vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-                
+
                 # Delete old Policies
                 list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
                 inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
@@ -255,12 +255,12 @@ Resources:
                     except:
                       print("Didn\'t find policy: {0}".format(inline_policy))
                 print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-  
+
                 # Get KMS ID
                 kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
                 kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
                 print("Retrieve KMS ARN: {0}".format(kms_arn))
-                
+
                 # Create inline policy
                 kms_policy =  {
                   "Statement": [
@@ -274,10 +274,10 @@ Resources:
                     }
                   ]
                 }
-                
+
                 response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
                 print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-                
+
                 return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
               except Exception as E:
                 print("Error in Lambda execution: {0}".format(E))
@@ -481,7 +481,7 @@ Parameters:
     Default: recpub.key
   VaultMasterPassword:
     Type: String
-    Description: Enter a password for the Vault Master user.
+    Description: Enter a password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -489,12 +489,12 @@ Parameters:
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
     Type: String
-    Description: Retype the password for the Vault Master user.
+    Description: Retype the password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
   VaultAdminPassword:
     Type: String
-    Description: Enter a password for the Vault Administrator user.
+    Description: Enter a password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -502,20 +502,20 @@ Parameters:
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeAdminPassword:
     Type: String
-    Description: Retype the password for the Vault Administrator user.
+    Description: Retype the password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
   VaultInstanceName:
     Type: String
-    Description: Enter a name for the Vault instance.
-    Default: CyberArk Vault
+    Description: Enter a name for the Primary Vault instance.
+    Default: CyberArk Primary Vault
   VaultHostName:
     Type: String
-    Description: Enter the host name for the Vault instance.
+    Description: Enter the host name for the Primary Vault instance.
     MinLength: 4
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Vault instance.
+    Description: Select the instance type of the Primary Vault instance.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -524,10 +524,10 @@ Parameters:
     Default: m4.large
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Assign Security Groups to the Vault instance.
+    Description: Assign Security Groups to the Primary Vault instance.
   VaultInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
-    Description: Select the Subnet Id where the Vault instance will reside.
+    Description: Select the Subnet Id where the Primary Vault instance will reside.
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -557,7 +557,7 @@ Metadata:
           - LicenseFile
           - RecoveryPublicKey
       - Label:
-          default: Vault information
+          default: Primary Vault information
         Parameters:
           - VaultAdminPassword
           - RetypeAdminPassword
@@ -580,23 +580,23 @@ Metadata:
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultMasterPassword:
-        default: Vault Master Password
+        default: Primary Vault Master Password
       RetypeMasterPassword:
-        default: Retype Master Password
+        default: Retype Primary Vault Master Password
       VaultAdminPassword:
-        default: Vault Admin Password
+        default: Primary Vault Admin Password
       RetypeAdminPassword:
-        default: Retype Admin Password
+        default: Retype Primary Vault Admin Password
       VaultInstanceName:
-        default: Vault Instance Name
+        default: Primary Vault Instance Name
       VaultHostName:
-        default: Vault Host Name
+        default: Primary Vault Host Name
       VaultInstanceType:
-        default: Vault Instance Type
+        default: Primary Vault Instance Type
       VaultInstanceSecurityGroups:
-        default: Vault Instance Security Groups
+        default: Primary Vault Instance Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id
+        default: Primary Vault Instance Subnet Id
 Mappings:
   RegionMap:
     us-east-1:

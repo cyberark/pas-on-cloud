@@ -156,7 +156,7 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt 
+      Role: !GetAtt
         - LambdaDeployRole
         - Arn
     Condition: EULACondition
@@ -192,14 +192,14 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt 
+      Role: !GetAtt
         - LambdaDeployRole
         - Arn
     Condition: EULACondition
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-      ServiceToken: !GetAtt 
+      ServiceToken: !GetAtt
         - StorePasswordLambda
         - Arn
       Password: !Ref VaultAdminPassword
@@ -210,28 +210,28 @@ Resources:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-      ServiceToken: !GetAtt 
+      ServiceToken: !GetAtt
         - DeletePasswordLambda
         - Arn
-      key: !GetAtt 
+      key: !GetAtt
         - StoreAdminPassword
         - SsmId
-      dummyDependency: !If 
+      dummyDependency: !If
         - CreateCPMCondition
-        - !GetAtt 
+        - !GetAtt
           - CPMMachine
           - PrivateIp
-        - !If 
+        - !If
           - CreatePVWACondition
-          - !GetAtt 
+          - !GetAtt
             - PVWAMachine
             - PrivateIp
-          - !If 
+          - !If
             - CreatePSMCondition
-            - !GetAtt 
+            - !GetAtt
               - PSMMachine
               - PrivateIp
-            - !GetAtt 
+            - !GetAtt
               - PSMPMachine
               - PrivateIp
     Condition: EULACondition
@@ -279,17 +279,17 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - CPM
       InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
 
           cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets
-          ascending --region ${AWS::Region} 
+          ascending --region ${AWS::Region}
 
           </script>
       KeyName: !Ref KeyName
@@ -316,8 +316,8 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
                 -LogGroup ${LogGroup} -CPMCfnInitLogStream
-                ${CPMCfnInitLogStream} -CPMConfiguration 
-                ${CPMConfigurationsLog} -CPMRegistration 
+                ${CPMCfnInitLogStream} -CPMConfiguration
+                ${CPMConfigurationsLog} -CPMRegistration
                 ${CPMRegistrationLog} -CPMSetLocalService
                 ${CPMSetLocalServiceLog} -Region ${AWS::Region}
             2-downloadLatestSSM:
@@ -350,13 +350,13 @@ Resources:
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
                   1858
-                - VaultIpAddress: !If 
+                - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
@@ -407,12 +407,12 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PVWA
       InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
 
@@ -486,17 +486,17 @@ Resources:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: 0
             2-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
                   1858 -HostName ${InputHostname}
-                - VaultIpAddress: !If 
+                - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-                  InputHostname: !If 
+                  InputHostname: !If
                     - PVWAHostNameEmpty
                     - empty
                     - !Sub '${PVWAHostName}'
@@ -541,12 +541,12 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSM
       InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
 
@@ -611,12 +611,12 @@ Resources:
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort 1858
-                - VaultIpAddress: !If 
+                - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
@@ -653,12 +653,12 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSMP
       InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >
           #!/bin/bash -e
 
@@ -692,22 +692,22 @@ Resources:
                 file = /var/log/cloud-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = {instance_id}/cloud-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cloud-init-output.log]
                 file = /var/log/cloud-init-output.log
                 log_group_name = ${LogGroup}
                 log_stream_name = {instance_id}/cloud-init-output.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-init.log]
                 file = /var/log/cfn-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = {instance_id}/cfn-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-wire.log]
                 file = /var/log/cfn-wire.log
                 log_group_name = ${LogGroup}
                 log_stream_name = {instance_id}/cfn-wire.log
-                datetime_format =               
+                datetime_format =
               mode: '000444'
               owner: root
               group: root
@@ -765,13 +765,13 @@ Resources:
                 ${StoreAdminPassword.SsmId} ${AWS::Region} ${ComponentHostName}
                 waitAfterCompletion: 0
             4-PSMPdeploy:
-              command: !Sub 
+              command: !Sub
                 - >-
                   hostname=`curl
                   http://169.254.169.254/latest/meta-data/instance-id` &&
                   /root/CD-Image/register_and_activation.sh
                   /root/CD-Image/user.cred ${VaultIpAddress} $hostname y
-                - VaultIpAddress: !If 
+                - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
@@ -795,10 +795,10 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultPrivateIP:
     Type: String
-    Description: Enter the IP of the Vault instance.
+    Description: Enter the IP of the Primary Vault instance.
   DRPrivateIP:
     Type: String
-    Description: Enter the IP of the Vault DR instance. (Optional)
+    Description: Enter the IP of the DR Vault instance. (Optional)
   VaultAdminUser:
     Type: String
     Description: Enter the Administrator Vault user.
@@ -821,7 +821,7 @@ Parameters:
   ComponentInstanceName:
     Type: String
     Description: Enter a name for the PAS Component instance.
-    Default: Components
+    Default: CyberArk Component
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
@@ -841,30 +841,30 @@ Parameters:
     Description: Assign Security Groups to the Component instance.
   ComponentInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the Component instance will reside.
+    Description: Select the Subnet ID where the Component instance will reside.
   PVWAHostName:
     Type: String
     Description: IP or FQDN of PVWA server
 Conditions:
-  EULACondition: !Equals 
+  EULACondition: !Equals
     - Accept
     - !Ref EULA
-  CreateCPMCondition: !Equals 
+  CreateCPMCondition: !Equals
     - CPM
     - !Ref ComponentToInstall
-  CreatePVWACondition: !Equals 
+  CreatePVWACondition: !Equals
     - PVWA
     - !Ref ComponentToInstall
-  CreatePSMCondition: !Equals 
+  CreatePSMCondition: !Equals
     - PSM
     - !Ref ComponentToInstall
-  CreatePSMPCondition: !Equals 
+  CreatePSMPCondition: !Equals
     - PSMP
     - !Ref ComponentToInstall
-  DRValueEmpty: !Equals 
+  DRValueEmpty: !Equals
     - ''
     - !Ref DRPrivateIP
-  PVWAHostNameEmpty: !Equals 
+  PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
 Metadata:
@@ -898,9 +898,9 @@ Metadata:
       KeyName:
         default: Key Pair
       VaultPrivateIP:
-        default: Vault Private IP
+        default: Primary Vault Private IP
       DRPrivateIP:
-        default: Vault DR Private IP
+        default: DR Vault Private IP
       VaultAdminUser:
         default: Vault Admin User
       VaultAdminPassword:
@@ -916,7 +916,7 @@ Metadata:
       ComponentInstanceSecurityGroups:
         default: Component Instance Security Groups
       ComponentInstanceSubnetId:
-        default: Component Instance Subnet Id
+        default: Component Instance Subnet ID
       PVWAHostName:
         default: PVWA FQDN (Optional)
 Mappings:
