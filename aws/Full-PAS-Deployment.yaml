@@ -1133,7 +1133,7 @@ Parameters:
       letter, 1 digit and 1 special character
   RetypeDRPassword:
     Type: String
-    Description: Retype the password for the DR user.
+    Description: Retype the password for the DR Vault DR user.
     NoEcho: true
     MinLength: 8
   VaultInstanceType:
@@ -1333,9 +1333,9 @@ Metadata:
       RetypeAdminPassword:
         default: Retype Primary Vault Admin Password
       VaultDRPassword:
-        default: DR User Password
+        default: DR Vault DR User Password
       RetypeDRPassword:
-        default: Retype DR User Password
+        default: Retype DR Vault DR User Password
       VaultInstanceType:
         default: Primary Vault and DR Vault Instance Type
       VaultInstanceSecurityGroups:
