@@ -72,7 +72,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                       'VaultSGEgress1', 'VaultSGEgress2', 'VaultSGEgress3', 'VaultSGEgress4', 'PTASGEgress1', 'PTASGEgress2', 'PTASGEgress3',
                       'PTASGEgress4', 'PTASGEgress5', 'PTASGEgress6', 'PTASGEgress7', 'PTASGEgress8', 'PTASGEgress9',
                       'PTASGEgress10', 'PTASGEgress11', 'PTASGEgress12', 'PTASGEgress13','PTASGEgress14', 'PTASGEgress15', 'PTASGEgress5',
-                      'PVWASGEgress6','PVWASGEgress4','PTASGEgress16','VaultSGEgress5','PSMSSHSGEgress4','CPMSGEgress3','PVWASGEgress5','PTASGEgress17', 'PrivateLinkPASSGEngress1'
+                      'PVWASGEgress6','PVWASGEgress4','PTASGEgress16','VaultSGEgress5','PSMSSHSGEgress4','CPMSGEgress3','PVWASGEgress5','PTASGEgress17', 'PrivateLinkPASSGEgress'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupEgress']) == expected_SecurityGroupsEgress
 
@@ -83,7 +83,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
                       'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGIngress11', 'PTASGIngress13',
                       'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18',
                       'VaultSGIngress9','PVWASGIngress7','VaultSGIngress7','PTASGIngress19','VaultSGIngress4','PVWASGIngress3',
-                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6','PrivateLinkPASSGIngress1'
+                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6','PrivateLinkPASSGIngress'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
