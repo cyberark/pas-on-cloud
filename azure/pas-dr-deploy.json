@@ -93,19 +93,19 @@
         "DR Vault VM Admin User": {
             "type": "String",
             "metadata": {
-                "description": "Enter DR Vault  VM Administrator user."
+                "description": "Enter DR Vault VM Administrator user."
             }
         },
         "DR Vault VM Admin Password": {
             "type": "SecureString",
             "metadata": {
-                "description": "Enter DR Vault  VM Administrator password."
+                "description": "Enter DR Vault VM Administrator password."
             }
         },
         "ImageID": {
             "type": "String",
             "metadata": {
-                "description": "Enter DR Vault  Image ID."
+                "description": "Enter DR Vault Image ID."
             }
         },
         "Availability Zone":{
