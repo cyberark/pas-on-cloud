@@ -29,6 +29,9 @@
         "VaultAdminPassword": {
             "type": "SecureString"
         },
+		"AvailablitySetName": {
+            "type": "string"
+        },
         "VaultPrivateIP": {
             "type": "string"
         }
@@ -61,6 +64,9 @@
                             "storageAccountType": "Premium_LRS"
                         }
                     }
+                },
+				"availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
