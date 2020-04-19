@@ -324,16 +324,22 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-*'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
