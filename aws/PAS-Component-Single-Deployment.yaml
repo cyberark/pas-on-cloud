@@ -734,22 +734,22 @@ Resources:
         install_psmp:
           files:
             /root/CD-Image/preinstall.sh:
-              content: >
+              content: |-
                 #!/bin/bash -e
                 hostname $1
                 sed -i "s/localhost\\./$1./g" /etc/hosts
                 sed -i "s/localhost /$1 /g" /etc/hosts
                 chmod 646 /etc/sysconfig/network
-                sed -i "s/HOSTNAME=localhost.localdomain/HOSTNAME=$1/g"
+                sed -i "s/HOSTNAME=localhost.localdomain/HOSTNAME=$1/g" \
                 /etc/sysconfig/network
                 chmod 644 /etc/hosts
                 chmod 644 /etc/sysconfig/network
             /root/CD-Image/createCredFile.sh:
-              content: >
+              content: |-
                 #!/bin/bash -e
-                adminpassword=`aws ssm get-parameters --names $2 --region $3
+                adminpassword=`aws ssm get-parameters --names $2 --region $3 \
                 --with-decryption --output text --query Parameters[0].Value`
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
+                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred \
                 Password -Username $1 -Password $adminpassword -HostName
           commands:
             1-ScriptsPermissions:
