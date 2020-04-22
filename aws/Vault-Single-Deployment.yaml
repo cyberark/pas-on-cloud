@@ -634,6 +634,6 @@ Mappings:
     sa-east-1:
       Vault: ami-006243a6d82fbdc60
     us-gov-west-1:
-      Vault: ami-90c9e3f1
+      Vault: ami-680b3809
     us-gov-east-1:
-      Vault: ami-00c9a6d3aafc67170
+      Vault: ami-0c3f9622c3fe2d74a
