@@ -223,16 +223,22 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-*'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -320,6 +326,7 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -390,6 +397,7 @@ Resources:
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -423,47 +431,6 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostnameAndTagKMS:
-          files:
-            C:\CyberArk\Deployment\VaultTagKMS.ps1:
-              content: |-
-                [CmdletBinding()]
-                param(
-                  [Parameter(Mandatory = $true)] [string]$Role,
-                  [Parameter(Mandatory = $true)] [string]$Region
-                )
-                
-                . "$PSScriptRoot\Common.ps1"
-                $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
-                
-                try {
-                  # Retrieve KMS Key ID
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
-                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
-                  $KMSKeyID = $DBParmLine.Split('=')[1]
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
-                  
-                  # Get Instance ID
-                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
-                  
-                  # Load AWS powershell assemblies
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
-                  Get-AWSPowerShellVersion | Out-Null
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
-                
-                  # Tag KMS Key with Vault instance id and enable key rotation
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
-                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
-                  $InstanceTag.TagKey = "VaultInstance"
-                  $InstanceTag.TagValue = $InstanceId
-                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
-                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
-                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
-                  exit 0
-                } catch {
-                  WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
-                  exit 1
-                }
           services:
             windows:
               AmazonSSMAgent:
@@ -514,6 +481,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -673,34 +641,34 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-0c2500a8152313412
+      Vault: ami-067d67ca1445a5209
     us-east-2:
-      Vault: ami-0651f06c9ea096567
+      Vault: ami-0dbe87c3a37082b4d
     eu-west-2:
-      Vault: ami-07515bfd47210af44
+      Vault: ami-078d2d55d71ec32d3
     us-west-1:
-      Vault: ami-017f6cf4a4e519907
+      Vault: ami-01b6d3607b9c455a5
     us-west-2:
-      Vault: ami-066a0a079b58b898d
+      Vault: ami-0cd4e3ad8aad42a51
     ca-central-1:
-      Vault: ami-0e1657c46b4879709
+      Vault: ami-05164390c672c1172
     eu-west-1:
-      Vault: ami-0c13c30badd167ec4
+      Vault: ami-0cf822f2a8c89ca7d
     eu-central-1:
-      Vault: ami-0857d4653bc70ed8a
+      Vault: ami-03a9f45466c8b1745
     ap-southeast-1:
-      Vault: ami-04dffa3cbc0c7a2eb
+      Vault: ami-01a195c73e8f3da53
     ap-southeast-2:
-      Vault: ami-067da16b2b1614688
+      Vault: ami-07b0aa6bb69361b91
     ap-northeast-2:
-      Vault: ami-0da0ebf7137add23c
+      Vault: ami-04a79126206649385
     ap-northeast-1:
-      Vault: ami-038b5624075367ed6
+      Vault: ami-00ba6baa337bb4579
     ap-south-1:
-      Vault: ami-0f473cf734303a296
+      Vault: ami-027b213ba79561465
     sa-east-1:
-      Vault: ami-07ffe2d83bd424a77
+      Vault: ami-006243a6d82fbdc60
     us-gov-west-1:
-      Vault: ami-90c9e3f1
+      Vault: ami-680b3809
     us-gov-east-1:
-      Vault: ami-00c9a6d3aafc67170
+      Vault: ami-0c3f9622c3fe2d74a

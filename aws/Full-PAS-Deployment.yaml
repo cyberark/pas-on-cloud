@@ -324,16 +324,22 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-*'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -490,6 +496,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -518,47 +525,6 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostnameAndTagKMS:
-          files:
-            C:\CyberArk\Deployment\VaultTagKMS.ps1:
-              content: |-
-                [CmdletBinding()]
-                param(
-                  [Parameter(Mandatory = $true)] [string]$Role,
-                  [Parameter(Mandatory = $true)] [string]$Region
-                )
-                
-                . "$PSScriptRoot\Common.ps1"
-                $LogFile = "C:\CyberArk\Deployment\Logs\VaultInit.log"
-                
-                try {
-                  # Retrieve KMS Key ID
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrieving KMS Key ID"
-                  $DBParmLine = Get-Content -Path "C:\Program Files (x86)\PrivateArk\Server\Conf\dbparm.ini" | Where-Object { $_ -match 'CloudKeyUUID=' }
-                  $KMSKeyID = $DBParmLine.Split('=')[1]
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Retrievied KMS Key ID successfully"
-                  
-                  # Get Instance ID
-                  $InstanceId = Invoke-WebRequest http://169.254.169.254/latest/meta-data/instance-id
-                  
-                  # Load AWS powershell assemblies
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Loading AWS PowerShell assemblies"
-                  Get-AWSPowerShellVersion | Out-Null
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AWS PowerShell assemblies loaded successfully"
-                
-                  # Tag KMS Key with Vault instance id and enable key rotation
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "trying to tag KMS Key with Vault instance ID and add alias"
-                  $InstanceTag = New-Object Amazon.KeyManagementService.Model.Tag
-                  $InstanceTag.TagKey = "VaultInstance"
-                  $InstanceTag.TagValue = $InstanceId
-                  Add-KMSResourceTag -KeyId $KMSKeyID -Tag $InstanceTag -Force
-                  Update-KMSKeyDescription -KeyId $KMSKeyID -Description "CyberArk Digital Vault KMS Key for Vault Instance $InstanceId" -Force
-                  New-KMSAlias -TargetKeyId $KMSKeyID -AliasName "alias/vault/$InstanceId" -Force
-                  WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "KMS Key tagged successfully"
-                  exit 0
-                } catch {
-                  WriteLog -LogFile $LogFile -LogLevel "ERROR" -Log $_.Exception.Message
-                  exit 1
-                }
           services:
             windows:
               AmazonSSMAgent:
@@ -616,12 +582,14 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref VaultInstancesRole
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -907,9 +875,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
+    DeletionPolicy: Retain
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -983,9 +951,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DeletionPolicy: Retain
     DependsOn:
       - CPMMachine
+    DeletionPolicy: Retain
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1102,6 +1070,7 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -1418,101 +1387,101 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-0c2500a8152313412
-      CPM: ami-0556fc9ac9bfe3fff
-      PVWA: ami-0fb481dd87b431475
-      PSM: ami-01a260224b45c5093
-      PSMP: ami-0bb8f4622a32ccbbe
+      Vault: ami-067d67ca1445a5209
+      CPM: ami-00f590af64ade8748
+      PVWA: ami-076593dcd726c23f5
+      PSM: ami-00afadacdf17657f0
+      PSMP: ami-0ff7d290a0a59e9af
     us-east-2:
-      Vault: ami-0651f06c9ea096567
-      CPM: ami-0d6cdac5e613c938c
-      PVWA: ami-03fa2bb548ce9ab97
-      PSM: ami-02c086830ebe7747c
-      PSMP: ami-022c7e173b0e6e7c4
+      Vault: ami-0dbe87c3a37082b4d
+      CPM: ami-08034c344a821dfe3
+      PVWA: ami-01043d67e3e6169d2
+      PSM: ami-0a47c55cf14be9f7b
+      PSMP: ami-0d4b5aae1aa552bfe
     eu-west-2:
-      Vault: ami-07515bfd47210af44
-      CPM: ami-08c57504c38859539
-      PVWA: ami-0d2fcfb14524944ef
-      PSM: ami-0b8acc5914ff23fc5
-      PSMP: ami-0e04bdb478e01edec
+      Vault: ami-078d2d55d71ec32d3
+      CPM: ami-017a1d7c1d31faf98
+      PVWA: ami-0f2db7e10644798a9
+      PSM: ami-0ba248bd61d9355eb
+      PSMP: ami-0e1313459871ac044
     us-west-1:
-      Vault: ami-017f6cf4a4e519907
-      CPM: ami-0a837cd17ae65ba49
-      PVWA: ami-08c188e0f07b1dfc8
-      PSM: ami-09714162073144ec5
-      PSMP: ami-056229e9b60431969
+      Vault: ami-01b6d3607b9c455a5
+      CPM: ami-009902f6f4b0a60e9
+      PVWA: ami-09b12de7c7fd321ab
+      PSM: ami-00d4afe69a4959435
+      PSMP: ami-0c4ca8b74492dca58
     us-west-2:
-      Vault: ami-066a0a079b58b898d
-      CPM: ami-0ba75cb58978d93fc
-      PVWA: ami-09fa42b0ffe2d1656
-      PSM: ami-01a962a19e1695a77
-      PSMP: ami-02643903bb58ccd9b
+      Vault: ami-0cd4e3ad8aad42a51
+      CPM: ami-04c6ae8963c5763c3
+      PVWA: ami-08aa2108685ac5ffd
+      PSM: ami-08ace74fec7fa1293
+      PSMP: ami-09cbbc97bd7632288
     ca-central-1:
-      Vault: ami-0e1657c46b4879709
-      CPM: ami-066f68560f7430439
-      PVWA: ami-061fad9464a6f4d2b
-      PSM: ami-07ea157f1aa2a26c9
-      PSMP: ami-0169b158e5aedf114
+      Vault: ami-05164390c672c1172
+      CPM: ami-0a083494453bfaa00
+      PVWA: ami-0484b045a1b2df41d
+      PSM: ami-0a1899f2db7879820
+      PSMP: ami-0b7ee1d6dc4d46749
     eu-west-1:
-      Vault: ami-0c13c30badd167ec4
-      CPM: ami-0db4b8b44fee7bc92
-      PVWA: ami-0ad3c36bdaac27bcc
-      PSM: ami-078ddd3e998234007
-      PSMP: ami-0fcc0e1d2a564297c
+      Vault: ami-0cf822f2a8c89ca7d
+      CPM: ami-00b9312293746ddc7
+      PVWA: ami-0123945a30b4397a0
+      PSM: ami-055797a51fd69f87a
+      PSMP: ami-002907bd8a065f6d7
     eu-central-1:
-      Vault: ami-0857d4653bc70ed8a
-      CPM: ami-0e65627a0c7842a6a
-      PVWA: ami-00df4be0ff09c52e9
-      PSM: ami-0aef53037e05f1814
-      PSMP: ami-0646e73bd35827fd3
+      Vault: ami-03a9f45466c8b1745
+      CPM: ami-00e48bb56cb48bcac
+      PVWA: ami-0bbd7321ab1c8b40d
+      PSM: ami-0e5cfcb7995396ece
+      PSMP: ami-08f73d068b16dc6f7
     ap-southeast-1:
-      Vault: ami-04dffa3cbc0c7a2eb
-      CPM: ami-0e9befeac1f8fec88
-      PVWA: ami-03282b571f44a5c00
-      PSM: ami-0353c5824a19acfc3
-      PSMP: ami-0e39d0b84ebb54e1a
+      Vault: ami-01a195c73e8f3da53
+      CPM: ami-04bd4ea2c7ec7d6d3
+      PVWA: ami-0fb4f39c13a43f229
+      PSM: ami-03cdefc68513080f7
+      PSMP: ami-0533ed0c9fb526e7b
     ap-southeast-2:
-      Vault: ami-067da16b2b1614688
-      CPM: ami-0f630549af94e1154
-      PVWA: ami-033ff0ded3ba18436
-      PSM: ami-0c563ba9e9a6ad9f2
-      PSMP: ami-0d13566385aaaa992
+      Vault: ami-07b0aa6bb69361b91
+      CPM: ami-0344dde570a581fc8
+      PVWA: ami-069c6d2dbbdd5bda7
+      PSM: ami-07af05bb0f6125b00
+      PSMP: ami-0fa8a8427040f0a7e
     ap-northeast-2:
-      Vault: ami-0da0ebf7137add23c
-      CPM: ami-01de7b88d753d8de0
-      PVWA: ami-08ff3a31e2a030d05
-      PSM: ami-027dae58e3a55ebfd
-      PSMP: ami-04401539a5f3afc5c
+      Vault: ami-04a79126206649385
+      CPM: ami-05f57efc9ec12ae43
+      PVWA: ami-0f78ff4ed43ef2c9d
+      PSM: ami-027565ab508ddc064
+      PSMP: ami-07b1a5ef1d315b8a4
     ap-northeast-1:
-      Vault: ami-038b5624075367ed6
-      CPM: ami-00179df718b649d32
-      PVWA: ami-00d1b0360b71f6067
-      PSM: ami-0305e9ba7ce060ab8
-      PSMP: ami-0320b8464c30d2df8
+      Vault: ami-00ba6baa337bb4579
+      CPM: ami-0a3d5480f8556d550
+      PVWA: ami-0df0e9dfbec83202b
+      PSM: ami-0b6eaa39085af85eb
+      PSMP: ami-086b005ec5c41b129
     ap-south-1:
-      Vault: ami-0f473cf734303a296
-      CPM: ami-0961a72b4505249ad
-      PVWA: ami-03c474216b19950f5
-      PSM: ami-05df9dcf45f0cd146
-      PSMP: ami-02dc87adaa5c196da
+      Vault: ami-027b213ba79561465
+      CPM: ami-08bf8c691219ab111
+      PVWA: ami-0694ec41a8b2f1682
+      PSM: ami-08ef88d9c140f194e
+      PSMP: ami-0e2d9d665cca9f4cd
     sa-east-1:
-      Vault: ami-07ffe2d83bd424a77
-      CPM: ami-0eaa13fa39b0cee58
-      PVWA: ami-013a0a611ffc6cfdf
-      PSM: ami-0150ca7b39788fac1
-      PSMP: ami-02129f1be6a069a69
+      Vault: ami-006243a6d82fbdc60
+      CPM: ami-0b634c6b4a68c9575
+      PVWA: ami-00f8d7dafdbb87942
+      PSM: ami-0a929153b71f68464
+      PSMP: ami-00fe192a8bafd3a51
     us-gov-west-1:
-      Vault: ami-90c9e3f1
-      CPM: ami-c1cbe1a0
-      PVWA: ami-23e8dd42
-      PSM: ami-68cee409
-      PSMP: ami-2c23044d
+      Vault: ami-680b3809
+      CPM: ami-95093af4
+      PVWA: ami-a50b38c4
+      PSM: ami-f8063599
+      PSMP: ami-20ebd841
     us-gov-east-1:
-      Vault: ami-00c9a6d3aafc67170
-      CPM: ami-002e97d888c3565c2
-      PVWA: ami-0f677c97d556096dc
-      PSM: ami-0f1d61fab72952996
-      PSMP: ami-06569e3bb5ab0cf98
+      Vault: ami-0c3f9622c3fe2d74a
+      CPM: ami-02323c1a259174c93
+      PVWA: ami-08d70b8aa066991e6
+      PSM: ami-0458a131fafcef33a
+      PSMP: ami-04ea67f00fdea37ec
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
