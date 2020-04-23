@@ -329,16 +329,22 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:GetRole
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-*'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -1056,53 +1062,53 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-0c2500a8152313412
-      Components: ami-0f009bf9bea37ce56
+      Vault: ami-067d67ca1445a5209
+      Components: ami-046d3f6cbf3f81203
     us-east-2:
-      Vault: ami-0651f06c9ea096567
-      Components: ami-0a8fb00411e0fb20c
+      Vault: ami-0dbe87c3a37082b4d
+      Components: ami-0209dd2af358422d7
     eu-west-2:
-      Vault: ami-07515bfd47210af44
-      Components: ami-0db5b486dcf8b430b
+      Vault: ami-078d2d55d71ec32d3
+      Components: ami-053e8181a5fb33b11
     us-west-1:
-      Vault: ami-017f6cf4a4e519907
-      Components: ami-0a32cb368a3151dc2
+      Vault: ami-01b6d3607b9c455a5
+      Components: ami-07c0488bc1a3bf218
     us-west-2:
-      Vault: ami-066a0a079b58b898d
-      Components: ami-0acc0c0f0469c8811
+      Vault: ami-0cd4e3ad8aad42a51
+      Components: ami-0902fd1ecd3fe3b3c
     ca-central-1:
-      Vault: ami-0e1657c46b4879709
-      Components: ami-061edb963e615e699
+      Vault: ami-05164390c672c1172
+      Components: ami-026db006e8e61fcd2
     eu-west-1:
-      Vault: ami-0c13c30badd167ec4
-      Components: ami-0b12748418ddc4f9e
+      Vault: ami-0cf822f2a8c89ca7d
+      Components: ami-000b0ff33ca6c12d9
     eu-central-1:
-      Vault: ami-0857d4653bc70ed8a
-      Components: ami-0438c7bc2ec14b349
+      Vault: ami-03a9f45466c8b1745
+      Components: ami-0b90013b8a03c5c90
     ap-southeast-1:
-      Vault: ami-04dffa3cbc0c7a2eb
-      Components: ami-0d7173edd9f4aa4a8
+      Vault: ami-01a195c73e8f3da53
+      Components: ami-0c961d997319709a8
     ap-southeast-2:
-      Vault: ami-067da16b2b1614688
-      Components: ami-029db6b34dfda1a23
+      Vault: ami-07b0aa6bb69361b91
+      Components: ami-074f693172b1685e9
     ap-northeast-2:
-      Vault: ami-0da0ebf7137add23c
-      Components: ami-0f7051ad64065e2c7
+      Vault: ami-04a79126206649385
+      Components: ami-006932a066875b198
     ap-northeast-1:
-      Vault: ami-038b5624075367ed6
-      Components: ami-0cc23400d22084913
+      Vault: ami-00ba6baa337bb4579
+      Components: ami-09917cb9f169ca963
     ap-south-1:
-      Vault: ami-0f473cf734303a296
-      Components: ami-08231bbf59b34070c
+      Vault: ami-027b213ba79561465
+      Components: ami-0a239898d2cea14a1
     sa-east-1:
-      Vault: ami-07ffe2d83bd424a77
-      Components: ami-0c53fce94b6a2b743
+      Vault: ami-006243a6d82fbdc60
+      Components: ami-0c0eb23dcb99da5b5
     us-gov-west-1:
-      Vault: ami-90c9e3f1
-      Components: ami-80eedbe1
+      Vault: ami-680b3809
+      Components: ami-690b3808
     us-gov-east-1:
-      Vault: ami-00c9a6d3aafc67170
-      Components: ami-04de08b2bee0dabcd
+      Vault: ami-0c3f9622c3fe2d74a
+      Components: ami-0d3c306ce801f67d2
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
