@@ -400,7 +400,15 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
-    Default: m4.large
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+    Default: m5.large
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Vault instance.
