@@ -11,19 +11,27 @@
          "maxLength":6,
          "type":"String",
          "metadata":{
-            "description":"I have read and agree to the Terms and Conditions."
+            "description":"I have read and agree to the Terms and Conditions"
+         }
+      },
+      "Key Vault Name":{
+         "type":"String",
+         "minLength":4,
+         "maxLength":24,
+         "metadata":{
+            "description":"Enter the name of the Key Vault. Note: To avoid deployment failure, validate in advance that your Key Vault Name is available"
          }
       },
       "Vault Storage Account Name":{
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the storage account that contains the license and public key."
+            "description":"Enter the name of the storage account that contains the license and public key"
          }
       },
-      "Storage Container Name":{
+      "Vault Storage Container Name":{
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the container in the Vault storage account that contains the license and public key."
+            "description":"Enter the name of the container in the Vault storage account that contains the license and public key"
          }
       },
       "Vault Storage Account Access Key":{
@@ -46,79 +54,89 @@
             "description":"Enter the name of the public key file in the container. Note: This field is case sensitive"
          }
       },
-      "Key Vault Name":{
-         "type":"String",
-         "minLength":3,
-         "maxLength":24,
-         "metadata":{
-            "description":"Enter the name of the Key Vault , verify it does not already exist"
-         }
-      },
-      "Vault Master Password":{
-         "type":"SecureString",
-         "metadata":{
-            "description":"Enter a password for the Vault Master user."
-         }
-      },
-      "Vault Administrator Password":{
+      "Primary Vault Administrator Password":{
          "type":"SecureString",
          "metadata":{
             "description":"Enter a password for the Vault Administrator user."
          }
       },
-      "Vault VM Host Name":{
-         "type":"String",
+      "Primary Vault Master Password":{
+         "type":"SecureString",
          "metadata":{
-            "description":"Enter the host name for the PAS Vault VM."
+            "description":"Enter a password for the Vault Master user."
          }
       },
-      "Vault VM Size":{
+      "DR Username Secret":{
+         "type":"String",
+         "metadata":{
+            "description":"Enter a secret string for the DR user (Optional)"
+         }
+      },
+      "Primary Vault VM Name":{
+         "type":"String",
+         "defaultValue":"PrimaryVault",
+         "metadata":{
+            "description":"Enter the name of the Primary Vault VM"
+         }
+      },
+      "Primary Vault VM Size":{
          "defaultValue":"Standard_D2s_v3",
          "type":"String",
          "metadata":{
-            "description":"Enter the desired VM Size"
+            "description":"Enter the size of the Primary Vault VM"
          }
       },
-      "Vault VM Admin User":{
+      "Primary Vault VM Admin User":{
          "type":"String",
          "metadata":{
-            "description":"Enter Vault VM Administrator user."
+            "description":"Enter the Primary Vault VM Administrator user name"
          }
       },
-      "Vault VM Admin Password":{
+      "Primary Vault VM Admin Password":{
          "type":"SecureString",
          "metadata":{
-            "description":"Enter Vault VM Administrator password."
+            "description":"Enter the Primary Vault VM Administrator password"
          }
       },
       "ImageID":{
          "type":"String",
          "metadata":{
-            "description":"Enter Vault Image ID."
+            "description":"Enter the Vault Image ID"
          }
       },
-      "Secret":{
-         "type":"String",
+      "Availability Zone":{
+         "type":"string",
+         "allowedValues": [
+             "1",
+             "2",
+             "3"
+         ],
+         "defaultValue": "1",
          "metadata":{
-            "description":"Enter a secret for vault DR activation (Optional)"
+            "description":"Choose the availability zone for the Primary Vault VM"
          }
       },
-      "Vault AvailablitySet Name":{
+      "Primary Vault VNet Name":{
          "type":"String",
+         "defaultValue": "PAS-VNet",
          "metadata":{
-            "description":"Enter the Availability Set for the Vault VM , If doesn’t exist it will be created"
+            "description":"Enter the VNet for the Primary Vault VM"
          }
-      }
+      },
+	"Primary Vault Subnet Name": {
+	    "type": "String",
+	    "defaultValue": "Vault-Subnet",
+	    "metadata": {
+	        "description": "Enter the VNet for the Primary Vault VM"
+	    }
+	}
    },
    "variables":{
       "vnetIdVault":"[resourceId('Microsoft.Network/virtualNetworks', 'Vault-Vnet')]",
       "vnetIdVaultDR":"[resourceId('Microsoft.Network/virtualNetworks', 'Vault-DR-Vnet')]",
       "subnetRefVault":"[concat(variables('vnetIdVault'), '/subnets/','Vault-Subnet')]",
-      "subnetRefVaultDR":"[concat(variables('vnetIdVaultDR'), '/subnets/','Vault-DR-Subnet')]",
-      "networkInterfaceName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-      "availabilitySetPlatformFaultDomainCount":3,
-      "availabilitySetPlatformUpdateDomainCount":5,
-      "publicIpAddressName":"[toLower(concat(parameters('Vault VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+      "networkInterfaceName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
+      "publicIpAddressName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "vaultName":"[parameters('Key Vault Name')]"
    },
    "resources":[
@@ -141,11 +159,11 @@
          "apiVersion":"2015-06-01",
          "location":"[resourceGroup().location]",
          "properties":{
-            "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.tenantId]",
+            "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
             "accessPolicies":[
                {
-                  "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.tenantId]",
-                  "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name')), '2017-03-30', 'Full').identity.principalId]",
+                  "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
+                  "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.principalId]",
                   "permissions":{
                      "keys":[
                         "create",
@@ -165,20 +183,17 @@
                "virtualNetworkRules":[
                   {
                      "id":"[variables('subnetRefVault')]"
-                  },
-                  {
-                     "id":"[variables('subnetRefVaultDR')]"
                   }
                ]
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
          ]
       },
       {
          "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Vault VM Host Name'),'/ManagedIdentityExtensionForWindows')]",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
          "apiVersion":"2018-06-01",
          "location":"[resourceGroup().location]",
          "properties":{
@@ -191,28 +206,31 @@
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
          ]
       },
       {
          "type":"Microsoft.Compute/virtualMachines",
-         "name":"[parameters('Vault VM Host Name')]",
-         "apiVersion":"2017-03-30",
+         "name":"[parameters('Primary Vault VM Host Name')]",
+         "apiVersion":"2019-07-01",
          "location":"[resourceGroup().location]",
+         "zones": [
+               "[parameters('Availability Zone')]"
+         ],
          "identity":{
             "type":"SystemAssigned"
          },
          "properties":{
             "osProfile":{
-               "computerName":"[parameters('Vault VM Host Name')]",
-               "adminUsername":"[parameters('Vault VM Admin User')]",
-               "adminPassword":"[parameters('Vault VM Admin Password')]",
+               "computerName":"[parameters('Primary Vault VM Name')]",
+               "adminUsername":"[parameters('Primary Vault VM Admin User')]",
+               "adminPassword":"[parameters('Primary Vault VM Admin Password')]",
                "windowsConfiguration":{
                   "provisionVmAgent":"true"
                }
             },
             "hardwareProfile":{
-               "vmSize":"[parameters('Vault VM Size')]"
+               "vmSize":"[parameters('Primary Vault VM Size')]"
             },
             "storageProfile":{
                "imageReference":{
@@ -231,19 +249,16 @@
                      "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                   }
                ]
-            },
-            "availabilitySet":{
-               "id":"[resourceId('Microsoft.Compute/availabilitySets', parameters('Vault AvailablitySet Name'))]"
             }
          },
          "dependsOn":[
             "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-            "[concat('Microsoft.Compute/availabilitySets/', parameters('Vault AvailablitySet Name'))]"
+            "[concat('Microsoft.Compute/availabilitySets/', parameters('Availability Zone'))]"
          ]
       },
       {
          "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Vault VM Host Name'),'/', 'customscript')]",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript')]",
          "apiVersion":"2015-06-15",
          "location":"[resourceGroup().location]",
          "tags":{
@@ -260,24 +275,13 @@
                ]
             },
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Vault Administrator Password'), ' -MasterPass ', parameters('Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Vault Administrator Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Storage Container Name'), ' -StorageAccountKey ', parameters ('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('Secret'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Administrator Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Primary Vault Administrator Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Vault Storage Container Name'), ' -StorageAccountKey ', parameters ('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR Username Secret'))]"
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault VM Host Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
-      },
-      {
-         "type":"Microsoft.Compute/availabilitySets",
-         "name":"[parameters('Vault AvailablitySet Name')]",
-         "apiVersion":"2016-04-30-preview",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "platformFaultDomainCount":"[variables('availabilitySetPlatformFaultDomainCount')]",
-            "platformUpdateDomainCount":"[variables('availabilitySetPlatformUpdateDomainCount')]",
-            "managed":true
-         }
       },
       {
          "type":"Microsoft.Network/networkInterfaces",
@@ -302,7 +306,7 @@
    "outputs":{
       "adminUsername":{
          "type":"String",
-         "value":"[parameters('Vault VM Admin User')]"
+         "value":"[parameters('Primary Vault VM Admin User')]"
       },
       "networkInterface":{
          "value":"[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
