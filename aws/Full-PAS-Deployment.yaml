@@ -350,7 +350,7 @@ Resources:
           import boto3
           import uuid
           import cfnresponse
-          
+
           def lambda_handler(event, context):
             physicalResourceId = str(uuid.uuid4())
             if 'PhysicalResourceId' in event:
@@ -360,11 +360,11 @@ Resources:
                 print("Creating AWS CloudFormation")
                 print("Start RemovePermissionLambda execution")
                 client = boto3.client('iam')
-                
+
                 # Get vault role info
                 vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-                
+
                 # Delete old Policies
                 list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
                 inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
@@ -378,12 +378,12 @@ Resources:
                     except:
                       print("Didn\'t find policy: {0}".format(inline_policy))
                 print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-  
+
                 # Get KMS ID
                 kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
                 kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
                 print("Retrieve KMS ARN: {0}".format(kms_arn))
-                
+
                 # Create inline policy
                 kms_policy =  {
                   "Statement": [
@@ -397,10 +397,10 @@ Resources:
                     }
                   ]
                 }
-                
+
                 response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
                 print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-                
+
                 return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
               except Exception as E:
                 print("Error in Lambda execution: {0}".format(E))
@@ -429,12 +429,12 @@ Resources:
           Value: !Ref VaultInstanceName
       SecurityGroupIds: !Ref VaultInstanceSecurityGroups
       SubnetId: !Ref VaultInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
       InstanceType: !Ref VaultInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
@@ -496,7 +496,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -505,12 +504,12 @@ Resources:
           Value: !Sub '${VaultInstanceName} DR'
       SecurityGroupIds: !Ref VaultInstanceSecurityGroups
       SubnetId: !Ref DRInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
       InstanceType: !Ref VaultInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
@@ -582,14 +581,12 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref VaultInstancesRole
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -706,12 +703,12 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PVWA
       InstanceType: !Ref PVWAInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending --region ${AWS::Region}
@@ -752,13 +749,13 @@ Resources:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: 0
             2-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-                  InputHostname: !If 
+                  InputHostname: !If
                     - PVWAHostNameEmpty
                     - empty
                     - !Sub '${PVWAHostName}'
@@ -800,12 +797,12 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - CPM
       InstanceType: !Ref CPMInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region}
@@ -842,7 +839,7 @@ Resources:
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
@@ -875,9 +872,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
+    DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
-    DeletionPolicy: Retain
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -886,12 +883,12 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSM
       InstanceType: !Ref PSMInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region}
@@ -927,7 +924,7 @@ Resources:
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
@@ -951,9 +948,9 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
+    DeletionPolicy: Retain
     DependsOn:
       - CPMMachine
-    DeletionPolicy: Retain
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -962,12 +959,12 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSMP
       InstanceType: !Ref PSMPInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >
           #!/bin/bash -e
 
@@ -994,22 +991,22 @@ Resources:
                 file = /var/log/cloud-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cloud-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cloud-init-output.log]
                 file = /var/log/cloud-init-output.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cloud-init-output.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-init.log]
                 file = /var/log/cfn-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cfn-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-wire.log]
                 file = /var/log/cfn-wire.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cfn-wire.log
-                datetime_format =               
+                datetime_format =
               mode: '000444'
               owner: root
               group: root
@@ -1070,7 +1067,6 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
-    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -1144,7 +1140,7 @@ Parameters:
     MinLength: 8
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Vault instance.
+    Description: Select the instance type of the Vault instances.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -1153,13 +1149,13 @@ Parameters:
     Default: m4.large
   VaultInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the Vault and Vault DR instances.
+    Description: Assign Security Groups to the Vault instances.
   VaultInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the Vault instance will reside.
+    Description: Select the Subnet Id where the Primary Vault instance will reside.
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the Vault DR instance will reside.
+    Description: Select the Subnet Id where the DR Vault instance will reside.
   CPMInstanceName:
     Type: String
     Description: Enter a name for the CPM instance.
@@ -1239,27 +1235,27 @@ Parameters:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
 Conditions:
-  PVWAHostNameEmpty: !Equals 
+  PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
 Rules:
   PasswordConfirmation:
     Assertions:
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultMasterPassword
           - !Ref RetypeMasterPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultAdminPassword
           - !Ref RetypeAdminPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultDRPassword
           - !Ref RetypeDRPassword
         AssertDescription: The password confirmation does not match.
   EULAAcception:
     Assertions:
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
@@ -1275,7 +1271,7 @@ Metadata:
           - LicenseFile
           - RecoveryPublicKey
       - Label:
-          default: Vault and Vault DR configuration
+          default: Primary Vault and DR Vault configuration
         Parameters:
           - VaultInstanceName
           - VaultMasterPassword
@@ -1343,13 +1339,13 @@ Metadata:
       RetypeDRPassword:
         default: Retype DR Password
       VaultInstanceType:
-        default: Vault and Vault DR Instance Type
+        default: Primary Vault and Vault DR Instance Type
       VaultInstanceSecurityGroups:
         default: Vault Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id
+        default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
-        default: Vault DR Instance Subnet Id
+        default: DR Vault Instance Subnet Id
       CPMInstanceName:
         default: CPM Instance Name
       CPMInstanceType:
