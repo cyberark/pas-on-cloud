@@ -597,9 +597,9 @@ Metadata:
           - RetypeDRPassword
           - VaultMasterPassword
           - RetypeMasterPassword
-        - Label:
-            default: DR Vault Machine Information
-          Parameters:
+      - Label:
+          default: DR Vault Machine Information
+        Parameters:
           - VaultInstanceName
           - VaultHostName
           - VaultInstanceType
