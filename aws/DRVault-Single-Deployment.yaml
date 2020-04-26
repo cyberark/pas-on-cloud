@@ -493,11 +493,11 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: Enter the name of the bucket containing the license and recovery
+    Description: Enter the name of the S3 bucket containing the license and recovery public key.
       public key.
   LicenseFile:
     Type: String
-    Description: Enter the path of the license file within the bucket.
+    Description: Enter the path of the Vault license file within the bucket.
     Default: license.xml
   RecoveryPublicKey:
     Type: String
@@ -589,7 +589,7 @@ Metadata:
           - LicenseFile
           - RecoveryPublicKey
       - Label:
-          default: DR Vault information
+          default: Primary Vault and DR information
         Parameters:
           - VaultPrivateIP
           - VaultAdminPassword
@@ -597,6 +597,9 @@ Metadata:
           - RetypeDRPassword
           - VaultMasterPassword
           - RetypeMasterPassword
+        - Label:
+            default: DR Vault Machine Information
+          Parameters:
           - VaultInstanceName
           - VaultHostName
           - VaultInstanceType
@@ -608,9 +611,9 @@ Metadata:
       KeyName:
         default: Key Pair
       VaultFilesBucket:
-        default: Vault Files Bucket
+        default: S3 Bucket
       LicenseFile:
-        default: License File
+        default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultPrivateIP:
