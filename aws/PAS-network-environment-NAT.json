@@ -1909,7 +1909,7 @@
         },
         {
           "Label": {
-            "default": "External Access"
+            "default": "Users access management"
           },
           "Parameters": [
             "UsersAccessCIDR",
@@ -1922,13 +1922,13 @@
           "default": "PAS VPC CIDR"
         },
         "PASNATGWSubnetCIDR": {
-          "default": "Vault NAT Gateway Subnet CIDR"
+          "default": "NAT Gateway Subnet CIDR"
         },
         "VaultMainSubnetCIDR": {
-          "default": "Vault Main Subnet CIDR"
+          "default": "Primaary Vault Main Subnet CIDR"
         },
         "VaultDRSubnetCIDR": {
-          "default": "Vault DR Subnet CIDR"
+          "default": "DR Vault Subnet CIDR"
         },
         "CPMMainSubnetCIDR": {
           "default": "CPM Main Subnet CIDR"
@@ -1989,7 +1989,7 @@
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "VaultMainSubnetCIDR": {
-      "Description": "IPv4 address range for the Vault main subnet",
+      "Description": "IPv4 address range for the Primary Vault subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
@@ -1998,7 +1998,7 @@
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "VaultDRSubnetCIDR": {
-      "Description": "IPv4 address range for the Vault DR subnet",
+      "Description": "IPv4 address range for the DR Vault subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
