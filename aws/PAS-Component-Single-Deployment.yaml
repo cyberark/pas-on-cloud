@@ -892,7 +892,7 @@ Metadata:
           - EULA
           - KeyName
       - Label:
-          default: Vault and DR information
+          default: Primary Vault and DR information
         Parameters:
           - VaultPrivateIP
           - DRPrivateIP

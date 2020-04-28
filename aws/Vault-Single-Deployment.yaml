@@ -501,12 +501,10 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: >-
-      Enter the name of the bucket containing the license and recovery public
-      key.
+    Description: Enter the name of the S3 bucket containing the license and recovery public key.
   LicenseFile:
     Type: String
-    Description: Enter the path of the license file within the bucket.
+    Description: Enter the path of the Vault license file within the bucket.
     Default: license.xml
   RecoveryPublicKey:
     Type: String
@@ -514,7 +512,7 @@ Parameters:
     Default: recpub.key
   VaultMasterPassword:
     Type: String
-    Description: Enter a password for the Vault Master user.
+    Description: Enter a password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: >-
@@ -598,6 +596,9 @@ Metadata:
           - RetypeAdminPassword
           - VaultMasterPassword
           - RetypeMasterPassword
+      - Label:
+          default: Primary Vault Machine Information
+        Parameters:
           - VaultInstanceName
           - VaultHostName
           - VaultInstanceType
@@ -609,9 +610,9 @@ Metadata:
       KeyName:
         default: Key Pair
       VaultFilesBucket:
-        default: Vault Files Bucket
+        default: S3 Bucket
       LicenseFile:
-        default: License File
+        default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultMasterPassword:
