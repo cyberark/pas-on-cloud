@@ -1,0 +1,230 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "License Agreement": {
+            "defaultValue": "Decline",
+            "allowedValues": [
+                "Accept",
+                "Decline"
+          ],
+            "maxLength": 6,
+            "type": "String",
+            "metadata": {
+                "description": "I have read and agreed to the Terms and Conditions."
+            }
+        },
+        "PTA Storage Account Name":{
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the storage account that contains the license."
+            }
+         },
+         "Storage Container Name":{
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the container in the PTA storage account that contains the license."
+            }
+         },
+         "License File":{
+            "defaultValue":"license.xml",
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the license file in the container. Note: This field is case sensitive"
+            }
+         },
+         "PTA Server TimeZone":{
+            "Type":"String",
+            "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
+         },
+         "Vault Time Zone":{
+            "Type":"String",
+                "Description":"Enter the time zone of the Vault Server."
+         },
+         "PVWA Private DNS":{
+            "Type":"String",
+                "Description":"Enter the private DNS of the PVWA instance."
+         },
+        "Vault Private IP": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a comma (e.g 1.1.1.1,2.2.2.2)."
+            }
+        },
+        "Vault Admin User": {
+            "defaultValue": "Administrator",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Administrator Vault user."
+            }
+        },
+        "Vault Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter a password for the Vault Administrator user."
+            }
+        },
+        "Component VM Host Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the host name for the PAS Component VM."
+            }
+        },
+        "Component VM Size": {
+            "defaultValue": "Standard_D2s_v3",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the desired VM Size"
+            }
+        },
+        "Component VM Admin User": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Component VM Administrator user."
+            }
+        },
+        "Component VM Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter Component VM Administrator password."
+            }
+        },
+        "ImageID": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter Components Image ID."
+            }
+        },
+        "Component VNet": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the VNet name."
+            }
+        },
+        "Component Subnet": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Subnet name."
+            }
+        },
+        "Component AvailablitySet Name": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Availability Set for the Component VM , If doesn’t exist it will be created"
+            }
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('PAS-VNet'))]",
+        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('PTA-Subnet'))]",
+        "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "availabilitySetPlatformFaultDomainCount": 3,
+        "availabilitySetPlatformUpdateDomainCount": 5,
+        "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('VMname')]",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('computerName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('ImageID')]"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+				"availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('computerName'),'/', 'customscriptpta')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-component-pta"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws' -e vault_ip=parameters('Vault Private IP'), ' ', vault_adminUser=parameters('Vault Admin User'), ' ',  vault_adminPassword=parameters('Vault Admin Password'),' ', pvwa_host=variables('PVWA Private DNS'), ' ', vault_timezone=parameters('Vault Time Zone'), ' ', timezone=parameters('PTA Server TimeZone'), ' ', vault_port=1858)]",
+                    "fileUris": []
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('computerName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[parameters('Component AvailablitySet Name')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
+                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
+                "managed": true
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRefComponent')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "String",
+            "value": "[parameters('Component VM Admin User')]"
+        },
+        "networkInterface": {
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "type": "object"
+        }
+    }
+}
