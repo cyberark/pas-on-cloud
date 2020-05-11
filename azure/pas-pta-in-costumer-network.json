@@ -107,12 +107,18 @@
                 "description": "Enter the Subnet name."
             }
         },
-        "PTA AvailablitySet Name": {
-            "type": "String",
-            "metadata": {
-                "description": "Enter the Availability Set for the PTA VM , If doesn’t exist it will be created"
+        "Availability Zone":{
+            "type":"string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "defaultValue": "1",
+            "metadata":{
+               "description":"Choose the availability zone for the Component VM"
             }
-        }
+         }
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('PTA VNet'))]",
@@ -128,6 +134,9 @@
             "name": "[parameters('PTA VM Host Name')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('PTA VM Host Name')]",
