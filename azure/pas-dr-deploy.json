@@ -11,7 +11,7 @@
             "maxLength": 6,
             "type": "String",
             "metadata": {
-                "description": "I have read and agree to the Terms and Conditions"
+                "description": "I have read and agree to the Terms and Conditions."
             }
         },
 		"Vault Storage Account Name": {
