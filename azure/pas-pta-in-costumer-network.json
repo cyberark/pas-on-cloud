@@ -67,7 +67,7 @@
         "PTA VM Host Name": {
             "type": "String",
             "metadata": {
-                "description": "Enter the host name for the PAS Component VM."
+                "description": "Enter the host name for the PTA VM."
             }
         },
         "PTA VM Size": {
@@ -80,19 +80,19 @@
         "PTA VM Admin User": {
             "type": "String",
             "metadata": {
-                "description": "Enter Component VM Administrator user."
+                "description": "Enter PTA VM Administrator user."
             }
         },
         "PTA VM Admin Password": {
             "type": "SecureString",
             "metadata": {
-                "description": "Enter Component VM Administrator password."
+                "description": "Enter PTA VM Administrator password."
             }
         },
         "ImageID": {
             "type": "String",
             "metadata": {
-                "description": "Enter Components Image ID."
+                "description": "Enter PTAs Image ID."
             }
         },
         "PTA VNet": {
@@ -110,7 +110,7 @@
         "PTA AvailablitySet Name": {
             "type": "String",
             "metadata": {
-                "description": "Enter the Availability Set for the Component VM , If doesn’t exist it will be created"
+                "description": "Enter the Availability Set for the PTA VM , If doesn’t exist it will be created"
             }
         }
     },
@@ -125,7 +125,7 @@
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('VMname')]",
+            "name": "[parameters('PTA VM Host Name')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -163,11 +163,11 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('computerName'),'/', 'customscriptpta')]",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscriptpta')]",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
             "tags": {
-                "displayName": "config-component-pta"
+                "displayName": "config-pta"
             },
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -183,12 +183,12 @@
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('computerName'))]"
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
             ]
         },
         {
             "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('Component AvailablitySet Name')]",
+            "name": "[parameters('PTA AvailablitySet Name')]",
             "apiVersion": "2016-04-30-preview",
             "location": "[resourceGroup().location]",
             "properties": {
