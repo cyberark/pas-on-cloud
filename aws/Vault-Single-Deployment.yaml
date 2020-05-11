@@ -348,11 +348,10 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: Enter the name of the bucket containing the license and recovery
-      public key.
+    Description: Enter the name of the bucket containing the license and recovery public key.
   LicenseFile:
     Type: String
-    Description: Enter the path of the license file within the bucket.
+    Description: Enter the path of the Vault license file within the bucket.
     Default: license.xml
   RecoveryPublicKey:
     Type: String
@@ -360,7 +359,7 @@ Parameters:
     Default: recpub.key
   VaultMasterPassword:
     Type: String
-    Description: Enter a password for the Vault Master user.
+    Description: Enter a password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -368,12 +367,12 @@ Parameters:
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
     Type: String
-    Description: Retype the password for the Vault Master user.
+    Description: Retype the password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
   VaultAdminPassword:
     Type: String
-    Description: Enter a password for the Vault Administrator user.
+    Description: Enter a password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
@@ -381,20 +380,16 @@ Parameters:
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeAdminPassword:
     Type: String
-    Description: Retype the password for the Vault Administrator user.
+    Description: Retype the password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
   VaultInstanceName:
     Type: String
-    Description: Enter a name for the Vault instance.
-    Default: CyberArk Vault
-  VaultHostName:
-    Type: String
-    Description: Enter the host name for the Vault instance.
-    MinLength: 4
+    Description: Enter a name for the Primary Vault instance.
+    Default: CyberArk Primary Vault
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Vault instance.
+    Description: Enter the host name for the Primary Vault instance.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -409,19 +404,26 @@ Parameters:
       - m5.16xlarge
       - m5.24xlarge
     Default: m5.large
+  VaultHostName:
+    Type: String
+    Description: Enter the host name for the Primary Vault instance.
+    MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Assign Security Groups to the Vault instance.
+    Description: Assign Security Groups to the Primary Vault instance.
   VaultInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
-    Description: Select the Subnet Id where the Vault instance will reside.
+    Description: Select the Subnet Id where the Primary Vault instance will reside.
   Secret:
     Type: String
-    Description: Enter a Secret for DR registration(Optional).
+    Description: Enter a secret string for the DR user.(Optional).
     NoEcho: true
-    #AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
-    #ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase
-    #  letter, 1 uppercase letter, 1 digit and 1 special character
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character
+  SecretRetype:
+    Type: String
+    Description: Retype DR Username Secret.
+    NoEcho: true
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -433,6 +435,10 @@ Rules:
           - !Ref 'VaultAdminPassword'
           - !Ref 'RetypeAdminPassword'
         AssertDescription: The password confirmation does not match.
+      - Assert: !Equals
+          - !Ref 'Secret'
+          - !Ref 'SecretRetype'
+        AssertDescription: The secret confirmation does not match.
   EULAAcception:
     Assertions:
       - Assert: !Equals
@@ -457,19 +463,23 @@ Metadata:
           - RetypeAdminPassword
           - VaultMasterPassword
           - RetypeMasterPassword
+          - Secret
+          - SecretRetype
+      - Label: 
+          default: Primary Vault Machine Information
+        Parameters:
           - VaultInstanceName
-          - VaultHostName
           - VaultInstanceType
+          - VaultHostName
           - VaultInstanceSecurityGroups
           - VaultInstanceSubnetId
-          - Secret
     ParameterLabels:
       EULA:
         default: License Agreement
       KeyName:
         default: Key Pair
       VaultFilesBucket:
-        default: Vault Files Bucket
+        default: S3 Bucket
       LicenseFile:
         default: License File
       RecoveryPublicKey:
@@ -491,9 +501,11 @@ Metadata:
       VaultInstanceSecurityGroups:
         default: Vault Instance Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id\
+        default: Vault Instance Subnet Id
       Secret:
-        default: Secret for DR registration
+        default: DR Username Secret
+      SecretRetype:
+        default: Retype DR Username Secret
 Mappings:
   RegionMap:
     us-east-1:
