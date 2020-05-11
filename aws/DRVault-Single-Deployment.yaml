@@ -336,7 +336,7 @@ Resources:
               waitAfterCompletion: 0
             4-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultPrivateIP} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} -Secret ${Secret}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "DR" -SSMDRPassParameterID ${StoreDRPassword.SsmId} -PrimaryVaultIP ${VaultPrivateIP} -Region ${AWS::Region} -Secret ${Secret} -DRUser "DRAdmin"
               waitAfterCompletion: 0
             5-removePermissions:
               command: !Sub >
