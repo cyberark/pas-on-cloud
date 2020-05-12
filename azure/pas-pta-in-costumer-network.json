@@ -26,6 +26,12 @@
                "description":"Enter the name of the container in the PTA storage account that contains the license."
             }
          },
+         "PTA Storage Account Access Key":{
+            "type":"SecureString",
+            "metadata":{
+               "description":"Enter the access key of the storage account that contains the license and public key."
+            }
+         },
          "License File":{
             "defaultValue":"license-valid.xml",
             "type":"String",
@@ -124,15 +130,13 @@
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('PTA VNet'))]",
         "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('PTA Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "availabilitySetPlatformFaultDomainCount": 3,
-        "availabilitySetPlatformUpdateDomainCount": 5,
         "publicIpAddressName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('PTA VM Host Name')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "zones": [
                 "[parameters('Availability Zone')]"
@@ -157,9 +161,6 @@
                         }
                     }
                 },
-				"availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('PTA AvailablitySet Name'))]"
-                },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
@@ -169,6 +170,31 @@
                 }
             },
             "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscriptpta')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-get-license-to-place"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('/tmp/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', variables('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml')]",
+                    "fileUris": []
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
+            ]
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -194,17 +220,6 @@
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
             ]
-        },
-        {
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('PTA AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
-                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
-                "managed": true
-            }
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
