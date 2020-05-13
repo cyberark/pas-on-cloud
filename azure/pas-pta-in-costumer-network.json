@@ -41,15 +41,21 @@
          },
          "PTA Server TimeZone":{
             "Type":"String",
+            "metadata":{
             "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
+            }
          },
          "Vault Time Zone":{
             "Type":"String",
-                "Description":"Enter the time zone of the Vault Server."
+            "metadata":{
+            "Description":"Enter the time zone of the Vault Server."
+            }
          },
          "PVWA Private DNS":{
             "Type":"String",
+            "metadata":{
                 "Description":"Enter the private DNS of the PVWA instance."
+            }
          },
         "Vault Private IP": {
             "type": "String",
@@ -164,7 +170,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                         }
                     ]
                 }
@@ -173,7 +179,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscriptpta')]",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript')]",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -213,7 +219,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws' -e vault_ip=parameters('Vault Private IP'), ' ', vault_adminUser=parameters('Vault Admin User'), ' ',  vault_adminPassword=parameters('Vault Admin Password'),' ', pvwa_host=variables('PVWA Private DNS'), ' ', vault_timezone=parameters('Vault Time Zone'), ' ', timezone=parameters('PTA Server TimeZone'), ' ', vault_port=1858)]",
+                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', variables('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858)]",
                     "fileUris": []
                 }
             },
