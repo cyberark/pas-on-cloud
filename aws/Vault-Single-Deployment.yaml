@@ -456,7 +456,7 @@ Resources:
               waitAfterCompletion: 0
         configSignal:
           commands:
-           4-changeHostName:
+            4-changeHostName:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${VaultHostName} -Force -Restart
