@@ -69,6 +69,7 @@ pipeline {
     stage('build peer networks lambda zip') {
       steps {
         sh '''
+          python3 -m virtualenv .testenv
           source ./.testenv/bin/activate
           pip install -r aws/multi region/requirements.txt --target ./src/pas_peer_networks/package
           cd src/pas_peer_networks
