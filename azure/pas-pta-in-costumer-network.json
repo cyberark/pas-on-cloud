@@ -219,7 +219,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', variables('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858)]",
+                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858)]",
                     "fileUris": []
                 }
             },
