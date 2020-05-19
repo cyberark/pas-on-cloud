@@ -194,7 +194,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', variables('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml')]",
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml')]",
                     "fileUris": []
                 }
             },
