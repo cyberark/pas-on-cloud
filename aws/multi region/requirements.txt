@@ -1,0 +1,5 @@
+boto3==1.12.21
+botocore==1.12.253
+certifi==2019.11.28
+cfnresponse==1.0.2
+urllib3==1.25.8

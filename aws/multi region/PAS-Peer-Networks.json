@@ -1,0 +1,175 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+
+    "PeerNetworksLambdaPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "Description": "Policy for PeerNetworks Lambda",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ec2:AuthorizeSecurityGroupEgress",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
+                "ec2:AcceptVpcPeeringConnection",
+                "ec2:DeleteVpcPeeringConnection",
+                "ec2:DeleteRoute",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:DescribeStackResource",
+                "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:CreateRoute",
+                "ec2:RevokeSecurityGroupEgress",
+                "ec2:CreateVpcPeeringConnection"
+                ],
+              "Resource": [
+                "arn:aws:ec2:*:*:vpc-peering-connection/*",
+                "arn:aws:ec2:*:*:route-table/*",
+                "arn:aws:ec2:*:*:security-group/*",
+                "arn:aws:ec2:*:*:vpc/*",
+                "arn:aws:cloudformation:*:*:stack/*/*"
+                ]
+            }
+            ]
+        }
+      }
+    },
+    "PeerNetworksLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Ref": "PeerNetworksLambdaPolicy"
+          }
+        ]
+      }
+    },
+    "PeerNetworksLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdasBucket"
+          },
+          "S3Key": "peer_network_lambda.zip"
+        },
+        "Description": "Lambda to create and configure network peering",
+        "Handler": "PeerNetworksLambda.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "PeerNetworksLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7",
+        "Timeout": 7
+      },
+      "DependsOn": [
+        "PeerNetworksLambdaPolicy"
+      ]
+    },
+    "PeerNetwork": {
+      "Type": "AWS::CloudFormation::CustomResource",
+      "Version": "1.0",
+      "Properties": {
+        "ServiceToken": {
+            "Fn::GetAtt": [
+                "PeerNetworksLambda",
+                "Arn"
+            ]
+        },
+        "CloudFormationName": {
+          "Ref": "CloudFormationName"
+        },
+        "SecondaryRegionName": {
+          "Ref": "SecondaryRegionName"
+        },
+        "CloudFormationSecondaryRegionName": {
+          "Ref": "CloudFormationSecondaryRegionName"
+        }
+    }
+  }
+  },
+  "Parameters": {
+    "LambdasBucket": {
+      "Type": "String",
+      "Description": "Name of the bucket containing the solution files. The bucket must be in the same region where the solution is deployed"
+    },
+    "CloudFormationName": {
+      "Type": "String",
+      "Description": "The name of the Network CloudFormation in current region"
+    },
+    "SecondaryRegionName": {
+      "Type": "String",
+      "Description": "The name of the region where the second CloudFormation was deployed"
+    },
+    "CloudFormationSecondaryRegionName": {
+      "Type": "String",
+      "Description": "The name of the Network CloudFormation in the second region"
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Lambda configuration"
+          },
+          "Parameters": [
+            "LambdasBucket"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Current Region parameters"
+          },
+          "Parameters": [
+            "CloudFormationName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Secondary Region parameters"
+          },
+          "Parameters": [
+            "SecondaryRegionName",
+            "CloudFormationSecondaryRegionName"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "LambdasBucket": {
+          "default": "Bucket Name:"
+        },
+        "CloudFormationName": {
+          "default": "The name of the Network CloudFormation in current Region:"
+        },
+        "SecondaryRegionName": {
+          "default": "The name of the Region where the second CloudFormation was deployed:"
+        },
+        "CloudFormationSecondaryRegionName": {
+          "default": "The name of the Network CloudFormation in the second Region:"
+        }
+      }
+    }
+  }
+}
