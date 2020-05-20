@@ -92,7 +92,7 @@ Resources:
                               route_table_accepter.create_route(DestinationCidrBlock=vpc_cidr_requester, VpcPeeringConnectionId=vpc_peering_connection.id)
                               return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
                       except Exception as e:
-                          print(e)
+                          print ("Error on creating network peering. Error: {0}".format(e))
                           return cfnresponse.send(event, context, cfnresponse.FAILED, None, {}, physicalResourceId)
 
       Description: Lambda to create and configure network peering
