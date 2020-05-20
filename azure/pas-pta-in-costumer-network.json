@@ -40,19 +40,19 @@
             }
          },
          "PTA Server TimeZone":{
-            "Type":"String",
+            "type":"String",
             "metadata":{
             "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
             }
          },
          "Vault Time Zone":{
-            "Type":"String",
+            "type":"String",
             "metadata":{
             "Description":"Enter the time zone of the Vault Server."
             }
          },
          "PVWA Private DNS":{
-            "Type":"String",
+            "type":"String",
             "metadata":{
                 "Description":"Enter the private DNS of the PVWA instance."
             }
@@ -180,7 +180,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -194,32 +194,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml')]",
-                    "fileUris": []
-                }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscriptpta')]",
-            "apiVersion": "2015-06-15",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "config-pta"
-            },
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "skipDos2Unix": false
-                },
-                "protectedSettings": {
-                    "commandToExecute": "[concat('python /root/pta_installation/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858)]",
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml;','python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858 )]",
                     "fileUris": []
                 }
             },
