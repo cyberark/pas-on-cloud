@@ -72,7 +72,7 @@ pipeline {
           python3 -m pip install --user virtualenv
           python3 -m virtualenv .testenv
           source ./.testenv/bin/activate
-          pip install -r aws/multi region network/requirements.txt --target ./src/pas_peer_networks/package
+          pip install -r aws/multi_region_network/requirements.txt --target ./src/pas_peer_networks/package
           cd src/pas_peer_networks
           cd package
           zip -r9 ${OLDPWD}/pas_peer_networks.zip .
