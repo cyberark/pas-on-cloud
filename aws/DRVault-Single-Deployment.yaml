@@ -396,19 +396,15 @@ Resources:
               waitAfterCompletion: 0
         configServices:
           commands:
-            1-allowDR:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\AllowDR.ps1 -PrimaryVaultIP ${VaultPrivateIP}
-              waitAfterCompletion: 0
-            2-postInstall:
+            1-postInstall:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultPrivateIP} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -Secret ${Secret}
               waitAfterCompletion: 0
-            3-changeKMSTag:
+            2-changeKMSTag:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            4-ChangeHostName:
+            3-ChangeHostName:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
               waitAfterCompletion: forever
