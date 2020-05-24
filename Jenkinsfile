@@ -77,12 +77,18 @@ pipeline {
           cd src/pas_peer_networks
           cd package
           zip -r9 ${OLDPWD}/pas_peer_networks.zip .
-          rm -rf artifacts/
-          mkdir artifacts
-          cp ${OLDPWD}/pas_peer_networks.zip artifacts
         '''
       }
     }
+   stage('Copy zip') {
+      steps {
+        sh '''
+          rm -rf artifacts/
+          mkdir artifacts
+          cp src/pas_peer_networks/pas_peer_networks.zip artifacts/
+        '''
+      }
+   }
   }
   post {
     always {
