@@ -88,5 +88,8 @@ pipeline {
     always {
       s3Delete(bucket: "$BUCKET", path: "$BUCKET_PATH/")
     }
+    success {
+            archiveArtifacts artifacts: 'artifacts/*.zip', fingerprint: true
+        }
   }
 }
