@@ -79,7 +79,7 @@ pipeline {
           zip -r9 ${OLDPWD}/pas_peer_networks.zip .
           rm -rf artifacts/
           mkdir artifacts
-          cp src/pas_peer_networks/pas_peer_networks.zip artifacts
+          cp ${OLDPWD}/pas_peer_networks.zip artifacts
         '''
       }
     }
