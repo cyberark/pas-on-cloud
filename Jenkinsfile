@@ -77,7 +77,7 @@ pipeline {
           cd package
           zip -r9 ${OLDPWD}/pas_peer_networks.zip .
           cd $OLDPWD
-          zip -g pas_peer_networks.zip PasPeerNetworks.py
+          zip -g pas_peer_networks.zip ../PasPeerNetworks.py
           rm -rf artifacts/
           mkdir artifacts
           cp src/pas_peer_networks/pas_peer_networks.zip artifacts
