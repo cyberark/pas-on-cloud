@@ -73,6 +73,8 @@ pipeline {
           python3 -m virtualenv .testenv
           source ./.testenv/bin/activate
           pip install -r aws/multi_region_network/requirements.txt --target ./src/pas_peer_networks/package
+          # Install security tools
+          pip install safety bandit
           cp aws/multi_region_network/PasPeerNetworks.py ./src/pas_peer_networks/package
           cd src/pas_peer_networks
           cd package
@@ -86,9 +88,27 @@ pipeline {
           rm -rf artifacts/
           mkdir artifacts
           cp src/pas_peer_networks/pas_peer_networks.zip artifacts/
+          cd artifacts
+          unzip pas_peer_networks.zip -d pas_peer_networks
         '''
       }
    }
+   stage('Scan requirements file for vulnerabilities') {
+            steps {
+                sh '''
+                    source ./.testenv/bin/activate
+                    safety check -r aws/multi_region_network/requirements.txt --full-report > reports/safety.txt || true
+                '''
+            }
+        }
+        stage('Scan distributables code for vulnerabilities') {
+            steps {
+                sh '''
+                    source ./.testenv/bin/activate
+                    bandit -r artifacts/. --format html > reports/bandit.html || true
+                '''
+            }
+        }
   }
   post {
     always {
