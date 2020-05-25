@@ -13,6 +13,7 @@ def lambda_handler(event, context):
             return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
 
         if event['RequestType'] == 'Create':
+            print("Fetching information from existing network CloudFormation Stacks")
             CloudFormationNameRequester = event['ResourceProperties']['CloudFormationName']
             CloudFormationNameAccepter = event['ResourceProperties']['CloudFormationSecondaryRegionName']
             AccepterRegion = event['ResourceProperties']['SecondaryRegionName']
@@ -57,6 +58,7 @@ def lambda_handler(event, context):
             sg_accepter_id = response['StackResourceDetail']['PhysicalResourceId']
 
             # Create Peering connection
+            print("Creating VPC Peering")
             vpc_requester = ec2_requester_resource.Vpc(vpc_requester_id)
             vpc_peering_connection = vpc_requester.request_vpc_peering_connection(
                 DryRun=False,
@@ -65,8 +67,9 @@ def lambda_handler(event, context):
             )
 
             # Accept Peering connection (wait 2 seconds until the peer exists in second region)
+            time.sleep(2)
             vpc_peering_connection_accepter = ec2_accepter_resource.VpcPeeringConnection(vpc_peering_connection.id)
-            time.sleep(4)
+            print("Accepting VPC Peering")
             response = vpc_peering_connection_accepter.accept()
 
             # Fetch VPC CIDRs from the peering connection (for further use)
@@ -74,6 +77,7 @@ def lambda_handler(event, context):
             vpc_cidr_accepter = response['VpcPeeringConnection']['AccepterVpcInfo']['CidrBlock']
 
             # Add ingress and egress rules to Vault SG in both regions
+            print("Connecting Vault Security Groups - allowing inbound and outbound between Vaults")
             security_group_requester = ec2_requester_resource.SecurityGroup(sg_requester_id)
             security_group_accepter = ec2_accepter_resource.SecurityGroup(sg_accepter_id)
             security_group_requester.authorize_ingress(
@@ -200,8 +204,9 @@ def lambda_handler(event, context):
                     },
                 ]
             )
-
+            print("Vault Security Groups were connected")
             # Add routing to Private Route Tables in both regions
+            print("Adding Route Table rules to tunnel connection between VPCS via VPC Peering")
             route_table_requester = ec2_requester_resource.RouteTable(route_table_requester_id)
             route_table_accepter = ec2_accepter_resource.RouteTable(route_table_accepter_id)
 
