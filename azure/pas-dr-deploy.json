@@ -93,7 +93,7 @@
                "description":"Choose the availability zone for the DR Vault  VM"
             }
          },
-        "2":{
+        "Vault DR VNet Name":{
             "type":"String",
             "defaultValue": "PAS-VNet",
             "metadata":{
@@ -109,7 +109,7 @@
          }
     },
     "variables": {
-        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', (parameters('Vault DR VM Name'))]",
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', (parameters('Vault DR VNet Name'))]",
         "subnetRefVault": "[concat(variables('vnetId'), '/subnets/','Vault-DR-Subnet')]",
         "networkInterfaceName": "[toLower(concat(parameters('Vault DR VM Name'), '-', uniqueString(resourceGroup().id)))]",
         "publicIpAddressName": "[toLower(concat(parameters('Vault DR VM Name'), '-', uniqueString(resourceGroup().id)))]"
