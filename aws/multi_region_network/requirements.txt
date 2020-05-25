@@ -1,5 +1,5 @@
 boto3==1.13.16
-botocore==1.7.48
+botocore==1.12.253
 certifi==2020.4.5.1
 cfnresponse==1.0.2
 urllib3==1.25.9
