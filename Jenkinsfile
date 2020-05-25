@@ -112,7 +112,7 @@ pipeline {
         stage('Upload artifact to S3 Bucket') {
             steps {
                 sh '''
-                    aws se cp artifacts/pas_peer_networks.zip s3://aob-auto-test
+                    aws s3 cp artifacts/pas_peer_networks.zip s3://aob-auto-test
                 '''
             }
         }
