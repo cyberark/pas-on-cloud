@@ -110,7 +110,7 @@
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Vault DR VNet Name'))]",
-        "subnetRefVault": "[concat(variables('vnetId'), '/subnets/','Vault-DR-Subnet')]",
+        "subnetRefVault": "[concat(variables('vnetId'), '/subnets/',parameters('Vault DR Subnet Name'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Vault DR VM Name'), '-', uniqueString(resourceGroup().id)))]",
         "publicIpAddressName": "[toLower(concat(parameters('Vault DR VM Name'), '-', uniqueString(resourceGroup().id)))]"
     },
@@ -135,11 +135,11 @@
             "apiVersion":"2015-06-01",
             "location":"[resourceGroup().location]",
             "properties":{
-               "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
+               "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name')), '2017-03-30', 'Full').identity.tenantId]",
                "accessPolicies":[
                   {
-                     "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
-                     "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name')), '2017-03-30', 'Full').identity.principalId]",
+                     "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name')), '2017-03-30', 'Full').identity.tenantId]",
+                     "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name')), '2017-03-30', 'Full').identity.principalId]",
                      "permissions":{
                         "keys":[
                            "create",
@@ -164,7 +164,7 @@
                }
             },
             "dependsOn":[
-               "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'))]"
+               "[concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name'))]"
             ]
          },
         {
