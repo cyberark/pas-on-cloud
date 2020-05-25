@@ -66,7 +66,7 @@ def lambda_handler(event, context):
 
             # Accept Peering connection (wait 2 seconds until the peer exists in second region)
             vpc_peering_connection_accepter = ec2_accepter_resource.VpcPeeringConnection(vpc_peering_connection.id)
-            time.sleep(2)
+            time.sleep(4)
             response = vpc_peering_connection_accepter.accept()
 
             # Fetch VPC CIDRs from the peering connection (for further use)
