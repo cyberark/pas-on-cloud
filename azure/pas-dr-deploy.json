@@ -29,7 +29,7 @@
             }
         },
         "DR Username Secret":{
-            "type":"String",
+            "type":"SecureString",
             "minLength":10,
             "defaultValue": "",
             "metadata":{
@@ -186,24 +186,6 @@
             ]
         },
         {
-            "type": "Microsoft.KeyVault/vaults/accessPolicies",
-            "name": "[concat(parameters('Key Vault Name'), '/add')]",
-            "apiVersion": "2016-10-01",
-            "properties": {
-                "accessPolicies": [
-                    {
-                        "tenantId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name')), '2017-03-30', 'Full').identity.tenantId]",
-                        "objectId": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Vault DR VM Name')), '2017-03-30', 'Full').identity.principalId]",
-                        "permissions": {
-                            "keys": [
-                                "create","wrapKey","unwrapKey"
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Vault DR VM Name')]",
             "apiVersion": "2017-03-30",
@@ -266,7 +248,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Vault DR Administrator Password'), ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Vault Private IP'), ' -DRPassword ', parameters('Vault DR Password'),' -DRUser ', parameters('DR Username'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR Username Secret'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('Vault DR Password'),' -DRUser ', parameters('DR Username'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR Username Secret'))]"
                 }
             },
             "dependsOn": [
