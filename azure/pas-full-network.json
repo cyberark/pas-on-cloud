@@ -120,7 +120,7 @@
             "name": "AllowHTTPSOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "443",
+              "sourcePortRange": "*",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
