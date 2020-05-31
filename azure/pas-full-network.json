@@ -199,6 +199,19 @@
             }
           },
           {
+            "name": "Allow1858Out",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1858",
+              "sourceAddressPrefix": "[parameters('Vault Subnet CIDR')]",
+              "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
+              "access": "Allow",
+              "priority": 170,
+              "direction": "Outbound"
+            }
+          },
+          {
             "name": "DenyAllOut",
             "properties": {
               "description": "Deny all outbound traffic",
