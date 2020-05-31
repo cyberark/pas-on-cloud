@@ -149,7 +149,7 @@
               "sourcePortRange": "*",
               "destinationPortRange": "53",
               "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "AzurePlatformDNS",
+              "destinationAddressPrefix": "168.63.129.16",
               "access": "Allow",
               "priority": 130,
               "direction": "Outbound"
