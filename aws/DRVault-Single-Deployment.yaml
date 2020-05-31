@@ -440,11 +440,6 @@ Parameters:
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault DR password must contain at least 1 lowercase letter,
       1 uppercase letter, 1 digit and 1 special character
-  RetypeDRPassword:
-    Type: String
-    Description: Retype the password for the DR Vault DR user.
-    NoEcho: true
-    MinLength: 8
   VaultInstanceName:
     Type: String
     Description: Enter a name for the DR Vault instance.
@@ -482,21 +477,7 @@ Parameters:
     NoEcho: true
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character
-  SecretRetype:
-    Type: String
-    Description: Retype DR Username Secret.
-    NoEcho: true
 Rules:
-  PasswordConfirmation:
-    Assertions:
-      - Assert: !Equals
-          - !Ref 'VaultDRPassword'
-          - !Ref 'RetypeDRPassword'
-        AssertDescription: The password confirmation does not match.
-      - Assert: !Equals
-          - !Ref 'Secret'
-          - !Ref 'SecretRetype'
-        AssertDescription: The secret confirmation does not match.
   EULAAcception:
     Assertions:
       - Assert: !Equals
@@ -516,9 +497,7 @@ Metadata:
         Parameters:
           - VaultPrivateIP
           - Secret
-          - SecretRetype
           - VaultDRPassword
-          - RetypeDRPassword
       - Label:
           default: DR Vault Machine Information
         Parameters:
@@ -536,8 +515,6 @@ Metadata:
         default: Primary Vault Private IP
       VaultDRPassword:
         default: DR Vault DR User Password
-      RetypeDRPassword:
-        default: Retype DR Vault DR User Password
       VaultInstanceName:
         default: DR Vault Instance Name
       VaultHostName:
@@ -550,8 +527,6 @@ Metadata:
         default: DR Vault Instance Subnet Id
       Secret:
         default: DR Username Secret
-      SecretRetype:
-        default: Retype DR Username Secret
 Mappings:
   RegionMap:
     us-east-1:
