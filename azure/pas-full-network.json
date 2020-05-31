@@ -104,19 +104,6 @@
       "properties": {
         "securityRules": [
           {
-            "name": "AllowICMPIn",
-            "properties": {
-              "protocol": "ICMP",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 101,
-              "direction": "Outbound"
-            }
-          },
-          {
             "name": "AllowICMPOut",
             "properties": {
               "protocol": "ICMP",
@@ -125,21 +112,130 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 102,
-              "direction": "Inbound"
+              "priority": 100,
+              "direction": "Outbound"
             }
           },
           {
-            "name": "Allow443Out",
+            "name": "AllowHTTPSOut",
             "properties": {
               "protocol": "TCP",
-              "sourcePortRange": "443",
+              "sourcePortRange": "*",
               "destinationPortRange": "443",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 103,
+              "priority": 110,
               "direction": "Outbound"
+            }
+          },
+          {
+            "name": "AllowRDPOut",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 120,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "AllowDNSOut",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "53",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "access": "Allow",
+              "priority": 130,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "Allow32526Out",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "32526",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "168.63.129.16",
+              "access": "Allow",
+              "priority": 140,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "AllowHTTPOut",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "",
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Outbound",
+              "destinationAddressPrefixes": [
+                "168.63.129.16",
+                "169.254.169.254"
+              ]
+            }
+          },
+          {
+            "name": "AllowKMSOut",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1688",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "23.102.135.246",
+              "access": "Allow",
+              "priority": 160,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "Allow1858Out",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1858",
+              "sourceAddressPrefix": "[parameters('Vault Subnet CIDR')]",
+              "destinationAddressPrefix": "[parameters('Vault Subnet CIDR')]",
+              "access": "Allow",
+              "priority": 170,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "DenyAllOut",
+            "properties": {
+              "description": "Deny all outbound traffic",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 4000,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "AllowICMPIn",
+            "properties": {
+              "protocol": "ICMP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
             }
           },
           {
@@ -151,7 +247,7 @@
               "sourceAddressPrefix": "",
               "destinationAddressPrefix": "",
               "access": "Allow",
-              "priority": 100,
+              "priority": 110,
               "direction": "Inbound",
               "sourceAddressPrefixes": [
                 "[parameters('PVWA Subnet CIDR')]",
@@ -174,44 +270,12 @@
               "sourceAddressPrefix": "",
               "destinationAddressPrefix": "",
               "access": "Allow",
-              "priority": 400,
+              "priority": 120,
               "direction": "Inbound",
               "sourceAddressPrefixes": [
                 "[parameters('PVWA Subnet CIDR')]"
               ],
               "destinationAddressPrefixes": [
-                "[parameters('Vault Subnet CIDR')]"
-              ]
-            }
-          },
-          {
-            "name": "AllowStorageVaultOut",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "443",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "",
-              "destinationAddressPrefix": "Storage",
-              "access": "Allow",
-              "priority": 110,
-              "direction": "Outbound",
-              "sourceAddressPrefixes": [
-                "[parameters('Vault Subnet CIDR')]"
-              ]
-            }
-          },
-          {
-            "name": "AllowKeyVaultOut",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "443",
-              "destinationPortRange": "443",
-              "sourceAddressPrefix": "",
-              "destinationAddressPrefix": "AzureKeyVault",
-              "access": "Allow",
-              "priority": 120,
-              "direction": "Outbound",
-              "sourceAddressPrefixes": [
                 "[parameters('Vault Subnet CIDR')]"
               ]
             }
