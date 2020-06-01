@@ -30,7 +30,6 @@
         },
         "DR Username Secret":{
             "type":"SecureString",
-            "minLength":10,
             "defaultValue": "",
             "metadata":{
             "description":"Enter the secret string for the DR user that was set on the Primary Vault"
