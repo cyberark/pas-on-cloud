@@ -60,9 +60,16 @@
         "Vault Private IP": {
             "type": "String",
             "metadata": {
-                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a comma (e.g 1.1.1.1,2.2.2.2)."
+                "description": "Enter the IP of the Vault instance."
             }
         },
+        "DR Private IP":{
+            "defaultValue": "",
+            "type":"string",
+            "metadata": {
+                "Description":"Enter the IPs of the Vault DR instances, separated by comma (,). (Optional)."
+            }
+         },
         "Vault Admin User": {
             "defaultValue": "Administrator",
             "type": "String",
@@ -178,9 +185,10 @@
             "dependsOn": []
         },
         {
+            "condition":"[empty(parameters ('DR Private IP'))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript')]",
-            "apiVersion": "2018-06-01",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_no_dr')]",
+            "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -194,7 +202,33 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml;','python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', 1858 )]",
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'))]",
+                    "fileUris": []
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
+            ]
+        },
+        {
+            "condition":"[not(empty(parameters ('DR Private IP')))]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_with_dr')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-get-license-to-place"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', parameters('DR Private IP'))]",
                     "fileUris": []
                 }
             },
