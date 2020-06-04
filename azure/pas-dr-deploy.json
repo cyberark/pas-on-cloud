@@ -36,9 +36,10 @@
             }
         },
         "DR Username":{
-            "minLength":4,
+            "minLength":2,
             "maxLength":24,
             "type":"String",
+            "defaultValue": "DR",
             "metadata":{
             "description":"Enter the Vault DR Username that will be linked to this Vault DR instance. You must allow registration to this Vault DR user on the Primary Vault before continuing this operation."
             }
