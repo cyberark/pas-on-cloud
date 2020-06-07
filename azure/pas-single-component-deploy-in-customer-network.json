@@ -244,17 +244,6 @@
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
         {
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('Component AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
-                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
-                "managed": true
-            }
-        },
-        {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2016-09-01",
