@@ -161,6 +161,13 @@ Resources:
       Password: !Ref 'DRVaultPassword'
     DependsOn:
       - LambdaDeployRole
+  StoreSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'Secret'
+    DependsOn:
+      - LambdaDeployRole
   CleanMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -187,7 +194,16 @@ Resources:
       key: !GetAtt 'StoreDRPassword.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - VaultMachine    
+      - VaultMachine
+  CleanSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreSecret.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultMachine     
   LambdaRemovePermissionsRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -367,6 +383,7 @@ Resources:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
@@ -471,11 +488,11 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID 
                 ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} 
                 -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" 
-                -Region ${AWS::Region} ${Secret}
+                -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
               - Secret: !If 
                   - SecretEmpty
                   - ''
-                  - !Sub '-Secret ${Secret}'
+                  - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
               waitAfterCompletion: 0
             2-changeKMSTag:
               command: !Sub >
@@ -690,7 +707,7 @@ Metadata:
       SecretRetype:
         default: Retype DR Username Secret
 Conditions:
-  SecretEmpty: !Equals
+  SecretEmpty: !Equals 
     - ''
     - !Ref Secret
 Mappings:
