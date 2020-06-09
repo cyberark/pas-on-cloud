@@ -240,6 +240,20 @@ Resources:
     Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
+  StoreDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'DRVaultPassword'
+    DependsOn:
+      - LambdaDeployRole
+  StoreSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'Secret'
+    DependsOn:
+      - LambdaDeployRole
   CleanMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -262,6 +276,26 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - ComponentsMachine
+  CleanDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreDRPassword.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - StorePasswordLambda
+      - VaultMachine
+  CleanSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreSecret.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - StorePasswordLambda
+      - VaultMachine
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -418,6 +452,8 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
         - PolicyName: VaultFilesBucketAccess
           PolicyDocument:
             Statement:
@@ -815,6 +851,12 @@ Metadata:
         default: Vault Admin Password
       RetypeAdminPassword:
         default: Retype Admin Password
+      DRVaultPassword:
+        default: DR Vault Password
+      Secret:
+        default: DR Username Secret
+      SecretRetype:
+        default: Retype DR Username Secret
       VaultInstanceType:
         default: Vault Instance Type
       VaultInstanceSecurityGroups:
@@ -829,6 +871,10 @@ Metadata:
         default: Components Instance Security Groups
       ComponentsInstanceSubnetId:
         default: Components Instance Subnet Id
+Conditions:
+  SecretEmpty: !Equals 
+    - ''
+    - !Ref Secret
 Mappings:
   RegionMap:
     us-east-1:
