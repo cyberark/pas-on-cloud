@@ -21,7 +21,7 @@ Resources:
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: 'VaultMachine/VaultPostInstallLog'
-ComponentsCfnInitLogStream:
+  ComponentsCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -778,7 +778,7 @@ Parameters:
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Primary Vault instance.
-    Default: CyberArk Vault
+    Default: CyberArk Primary Vault
   VaultMasterPassword:
     Type: String
     Description: Enter a password for the Vault Master user.
@@ -825,10 +825,12 @@ Parameters:
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
+    MinLength: 10
   SecretRetype:
     Type: String
     Description: Retype the secret string for the DR User.
     NoEcho: true
+  MinLength: 10
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the Primary Vault instance.
@@ -890,6 +892,12 @@ Rules:
           - !Ref 'Secret'
           - !Ref 'SecretRetype'
         AssertDescription: The secret confirmation does not match.
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref 'EULA'
+          - Accept
+        AssertDescription: You must accept EULA to continue
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -979,8 +987,8 @@ Mappings:
       Vault: ami-068bc4ecc92db8199
       Components: ami-0760243808377180b
     eu-west-2:
-      Vault: ami-08e302bd203bff170
-      Components: ami-03d08891a6821b530
+      Vault: ami-015c5039c05236bfe
+      Components: ami-0e51fd301b0ac1f1b
     us-west-1:
       Vault: ami-0f1803a9c76472be5
       Components: ami-0863710cb43917155
