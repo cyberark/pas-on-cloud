@@ -11,7 +11,7 @@
          "maxLength":6,
          "type":"String",
          "metadata":{
-            "description":"I have read and agree to the Terms and Conditions"
+            "description":"I have read and agree to the Terms and Conditions."
          }
       },
       "Key Vault Name":{
@@ -19,64 +19,64 @@
          "minLength":4,
          "maxLength":24,
          "metadata":{
-            "description":"Enter the name of the Key Vault. Note: To avoid deployment failure, validate in advance that your Key Vault Name is available"
+            "description":"Enter the name of the Key Vault. Note: Key Vault Name must be unique. To avoid deployment failure, validate in advance that your Key Vault Name is available."
          }
       },
-      "Vault Storage Account Name":{
+      "Storage Account Name":{
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the storage account that contains the license and public key"
+            "description":"Enter the name of the storage account that contains the license and public key."
          }
       },
-      "Vault Storage Container Name":{
+      "Container name":{
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the container in the Vault storage account that contains the license and public key"
+            "description":"Enter the name of the container in the storage account that contains the license and public key."
          }
       },
-      "Vault Storage Account Access Key":{
+      "Storage account access key":{
          "type":"SecureString",
          "metadata":{
             "description":"Enter the access key of the storage account that contains the license and public key."
          }
       },
-      "License File":{
+      "Vault License File":{
          "defaultValue":"license.xml",
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the license file in the container. Note: This field is case sensitive"
+            "description":"Enter the name of the Vault license file in the container (this field is case sensitive)."
          }
       },
       "Recovery Public Key":{
          "defaultValue":"recpub.key",
          "type":"String",
          "metadata":{
-            "description":"Enter the name of the public key file in the container. Note: This field is case sensitive"
+            "description":"Enter the name of the public key file in the container (this field is case sensitive)."
          }
       },
-      "Primary Vault Administrator Password":{
+      "Primary Vault Admin Password":{
          "type":"SecureString",
          "minLength":8,
          "metadata":{
-            "description":"Enter a password for the Vault Administrator user."
+            "description":"Enter a password for the Primary Vault Administrator user."
          }
       },
       "Primary Vault Master Password":{
          "type":"SecureString",
          "minLength":8,
          "metadata":{
-            "description":"Enter a password for the Vault Master user."
+            "description":"Enter a password for the Primary Vault Master user."
          }
       },
-      "DR Vault Password":{
+      "DR User Password":{
          "type":"SecureString",
          "minLength":8,
          "defaultValue": "",
          "metadata":{
-            "description":"Enter a password for the DR Vault Administrator user."
+            "description":"Enter the DR user password."
          }
       },
-      "DR Username Secret":{
+      "DR User Secret":{
          "type":"SecureString",
          "defaultValue": "",
          "metadata":{
@@ -87,32 +87,32 @@
          "type":"String",
          "defaultValue":"PrimaryVault",
          "metadata":{
-            "description":"Enter the name of the Primary Vault VM"
+            "description":"Enter the name of the Primary Vault VM."
          }
       },
       "Primary Vault VM Size":{
          "defaultValue":"Standard_D2s_v3",
          "type":"String",
          "metadata":{
-            "description":"Enter the size of the Primary Vault VM"
+            "description":"Enter the size of the Primary Vault VM."
          }
       },
       "Primary Vault VM Admin User":{
          "type":"String",
          "metadata":{
-            "description":"Enter the Primary Vault VM Administrator user name"
+            "description":"Enter the Primary Vault VM Administrator user name."
          }
       },
       "Primary Vault VM Admin Password":{
          "type":"SecureString",
          "metadata":{
-            "description":"Enter the Primary Vault VM Administrator password"
+            "description":"Enter the Primary Vault VM Administrator password."
          }
       },
-      "ImageID":{
+      "Image ID":{
          "type":"String",
          "metadata":{
-            "description":"Enter the Vault Image ID"
+            "description":"Enter the Vault Image ID."
          }
       },
       "Availability Zone":{
@@ -124,21 +124,21 @@
          ],
          "defaultValue": "1",
          "metadata":{
-            "description":"Choose the availability zone for the Primary Vault VM"
+            "description":"Choose the Availability Zone for the Primary Vault Deployment."
          }
       },
       "Primary Vault VNet Name":{
          "type":"String",
          "defaultValue": "PAS-VNet",
          "metadata":{
-            "description":"Enter the VNet for the Primary Vault VM"
+            "description":"Enter the Vnet where the Primary Vault instance will reside."
          }
       },
 	"Primary Vault Subnet Name": {
 	    "type": "String",
 	    "defaultValue": "Vault-Subnet",
 	    "metadata": {
-	        "description": "Enter the VNet for the Primary Vault VM"
+	        "description": "Enter the Subnet Name where the Primary Vault instance will reside."
 	    }
 	}
    },
@@ -246,7 +246,7 @@
             },
             "storageProfile":{
                "imageReference":{
-                  "id":"[parameters('ImageID')]"
+                  "id":"[parameters('Image ID')]"
                },
                "osDisk":{
                   "createOption":"FromImage",
@@ -268,7 +268,7 @@
          ]
       },
       {
-         "condition":"[not(empty(parameters ('DR Username Secret')))]",
+         "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_with_dr')]",
          "apiVersion":"2015-06-15",
@@ -287,7 +287,7 @@
                ]
             },
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Administrator Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Primary Vault Administrator Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Vault Storage Container Name'), ' -StorageAccountKey ', parameters('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR Username Secret'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Primary Vault Admin Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
             }
          },
          "dependsOn":[
@@ -296,7 +296,7 @@
          ]
       },
       {
-         "condition":"[empty(parameters ('DR Username Secret'))]",
+         "condition":"[empty(parameters ('DR User Secret'))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_no_dr')]",
          "apiVersion":"2015-06-15",
@@ -315,7 +315,7 @@
                ]
             },
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Administrator Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR Vault Password'), ' -LicenseFileName ', parameters('License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Vault Storage Account Name'), ' -ContainerName ', parameters('Vault Storage Container Name'), ' -StorageAccountKey ', parameters ('Vault Storage Account Access Key'), ' -VKMName ', parameters ('Key Vault Name'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters ('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'))]"
             }
          },
          "dependsOn":[
