@@ -830,7 +830,7 @@ Parameters:
     Type: String
     Description: Retype the secret string for the DR User.
     NoEcho: true
-  MinLength: 10
+    MinLength: 10
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the Primary Vault instance.
