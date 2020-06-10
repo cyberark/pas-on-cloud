@@ -167,7 +167,7 @@
       {
          "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
-         "name":"[variables('vaultName')]",
+         "name":"[variables('keyVaultName')]",
          "apiVersion":"2015-06-01",
          "location":"[resourceGroup().location]",
          "properties":{
@@ -281,11 +281,7 @@
             "type":"CustomScriptExtension",
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
-            "settings":{
-               "fileUris":[
 
-               ]
-            },
             "protectedSettings":{
                "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('Primary Vault Admin Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
             }

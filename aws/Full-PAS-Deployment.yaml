@@ -209,8 +209,6 @@ Resources:
           import uuid
           import boto3
           import cfnresponse
-
-
           def lambda_handler(event, context):
               ssmClient = boto3.client('ssm')
               physicalResourceId = str(uuid.uuid4())
@@ -248,8 +246,6 @@ Resources:
           import uuid
           import boto3
           import cfnresponse
-
-
           def lambda_handler(event, context):
               ssmClient = boto3.client('ssm')
               physicalResourceId = str(uuid.uuid4())
@@ -293,6 +289,138 @@ Resources:
                 Action:
                   - 'logs:*'
                 Resource: '*'
+  LambdaRemovePermissionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+        - PolicyName: KMSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:DescribeKey
+                Resource:
+                  - '*'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
+  RemovePermissionLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Change Policies of VaultInstancesRole IAM Role
+      Code:
+        ZipFile: |-
+          import json
+          import boto3
+          import uuid
+          import cfnresponse
+
+          def lambda_handler(event, context):
+            physicalResourceId = str(uuid.uuid4())
+            if 'PhysicalResourceId' in event:
+              physicalResourceId = event['PhysicalResourceId']
+            if event['RequestType'] == 'Create':
+              try:
+                print("Creating AWS CloudFormation")
+                print("Start RemovePermissionLambda execution")
+                client = boto3.client('iam')
+
+                # Get vault role info
+                vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
+                print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
+
+                # Delete old Policies
+                list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
+                print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+                for role in list:
+                  print("Delete policies in {0} IAM Role".format(role))
+                  for inline_policy in inline_policies:
+                    try:
+                      delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
+                      print("Delete policy: {0}".format(inline_policy))
+                    except:
+                      print("Didn\'t find policy: {0}".format(inline_policy))
+                print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+
+                # Get KMS ID
+                kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
+                kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
+                print("Retrieve KMS ARN: {0}".format(kms_arn))
+
+                # Create inline policy
+                kms_policy =  {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "kms:Encrypt",
+                        "kms:Decrypt"
+                        ],
+                        "Resource": kms_arn,
+                        "Effect": "Allow"
+                    }
+                  ]
+                }
+
+                response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
+                print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+
+                return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
+              except Exception as E:
+                print("Error in Lambda execution: {0}".format(E))
+                return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
+            elif event['RequestType'] == 'Delete':
+              print("Deleting AWS CloudFormation")
+              return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
+  RemovePermissionVault:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
+      vault_role_name: !Ref 'VaultInstancesRole'
+      lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
+      instance: !Ref 'VaultDRMachine'
+      region: !Ref 'AWS::Region'
   VaultMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -301,12 +429,12 @@ Resources:
           Value: !Ref VaultInstanceName
       SecurityGroupIds: !Ref VaultInstanceSecurityGroups
       SubnetId: !Ref VaultInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
       InstanceType: !Ref VaultInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
@@ -321,19 +449,11 @@ Resources:
             - configServices
             - configSignal
         configSSMAndHostname:
-          files:
-            'C:\CyberArk\Deployment\KMSPolicy.json':
-              content:
-                'Fn::Sub': >-
-                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"],
-                  "Resource":
-                  "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER",
-                  "Effect": "Allow"}]}
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -364,6 +484,9 @@ Resources:
                 "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
                 "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: 0
+            3-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -373,7 +496,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultDRMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -382,12 +504,12 @@ Resources:
           Value: !Sub '${VaultInstanceName} DR'
       SecurityGroupIds: !Ref VaultInstanceSecurityGroups
       SubnetId: !Ref DRInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - Vault
       InstanceType: !Ref VaultInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
@@ -398,23 +520,15 @@ Resources:
       'AWS::CloudFormation::Init':
         configSets:
           ascending:
-            - configSSMAndHostname
+            - configSSMAndHostnameAndTagKMS
             - configServices
             - configSignal
-        configSSMAndHostname:
-          files:
-            'C:\CyberArk\Deployment\KMSPolicy.json':
-              content:
-                'Fn::Sub': >-
-                  {"Statement": [{"Action": ["kms:Encrypt", "kms:Decrypt"],
-                  "Resource":
-                  "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/KMSKEYID_PLACEHOLDER",
-                  "Effect": "Allow"}]}
+        configSSMAndHostnameAndTagKMS:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -450,11 +564,14 @@ Resources:
                 "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath
                 "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region}
               waitAfterCompletion: 0
-            4-removePermissions:
+            4-changeKMSTag:
               command: !Sub >
                 powershell.exe -File
-                C:\CyberArk\Deployment\VaultRemoveIAMPolicies.ps1 -Role ${VaultInstancesRole}
+                C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
+            5-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -464,7 +581,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
-    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -525,6 +641,11 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
                   - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}'
         - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
@@ -538,14 +659,6 @@ Resources:
                   - 'kms:EnableKeyRotation'
                   - 'kms:UpdateKeyDescription'
                   - 'kms:CreateAlias'
-                Resource: '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'iam:DeleteRolePolicy'
-                  - 'iam:PutRolePolicy'
                 Resource: '*'
     DeletionPolicy: Retain
   ComponentInstanceProfile:
@@ -590,12 +703,12 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PVWA
       InstanceType: !Ref PVWAInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending --region ${AWS::Region}
@@ -613,8 +726,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -628,30 +741,30 @@ Resources:
                 ${PVWASetLocalServiceLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-                  InputHostname: !If 
+                  InputHostname: !If
                     - PVWAHostNameEmpty
                     - empty
                     - !Sub '${PVWAHostName}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             4-startAppPool:
               command: >-
                 powershell -Command "& {&'Import-Module' WebAdministration}"; "&
@@ -659,10 +772,10 @@ Resources:
                 {&'Set-ItemProperty' -Path
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
                 'true'}"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             5-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             6-restart:
               command: powershell.exe -Command "Restart-Computer -Force"
               waitAfterCompletion: forever
@@ -671,7 +784,7 @@ Resources:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -684,12 +797,12 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - CPM
       InstanceType: !Ref CPMInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region}
@@ -707,8 +820,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -721,41 +834,41 @@ Resources:
                 ${CPMSetLocalServiceLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             4-configureCPMService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             5-CPMserviceConfig:
               command: sc config "CyberArk Password Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -770,12 +883,12 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSM
       InstanceType: !Ref PSMInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >-
           <script>
           cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region}
@@ -793,8 +906,8 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
@@ -806,32 +919,32 @@ Resources:
                 -PSMRegistration ${PSMRegistrationLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: '60'
-              ignoreErrors: 'true'
+              waitAfterCompletion: 60
+              ignoreErrors: true
         configServices:
           commands:
             1-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
             3-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
                 cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
-              waitAfterCompletion: '0'
+              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -846,12 +959,12 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - RegionMap
         - !Ref 'AWS::Region'
         - PSMP
       InstanceType: !Ref PSMPInstanceType
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Sub': >
           #!/bin/bash -e
 
@@ -878,22 +991,22 @@ Resources:
                 file = /var/log/cloud-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cloud-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cloud-init-output.log]
                 file = /var/log/cloud-init-output.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cloud-init-output.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-init.log]
                 file = /var/log/cfn-init.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cfn-init.log
-                datetime_format = 
+                datetime_format =
                 [/var/log/cfn-wire.log]
                 file = /var/log/cfn-wire.log
                 log_group_name = ${LogGroup}
                 log_stream_name = PSMSSHMachine/cfn-wire.log
-                datetime_format =               
+                datetime_format =
               mode: '000444'
               owner: root
               group: root
@@ -912,8 +1025,8 @@ Resources:
           services:
             sysvinit:
               awslogs:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - /etc/awslogs/awslogs.conf
         install_psmp:
@@ -954,20 +1067,6 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
-        - !Ref VaultInstancesRole
-  VaultBootstrapKMSPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: VaultBootstrapKMSAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'kms:CreateKey'
-              - 'kms:GenerateRandom'
-            Resource: '*'
-      Roles:
-        - !Ref VaultInstancesRole
 Parameters:
   EULA:
     Type: String
@@ -982,12 +1081,10 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: >-
-      Enter the name of the bucket containing the license and recovery public
-      key.
+    Description: Enter the name of the S3 bucket containing the license and recovery public key.
   LicenseFile:
     Type: String
-    Description: Enter the path of the license file within the bucket.
+    Description: Enter the path of the Vault license file within the bucket.
     Default: license.xml
   RecoveryPublicKey:
     Type: String
@@ -1041,7 +1138,7 @@ Parameters:
     MinLength: 8
   VaultInstanceType:
     Type: String
-    Description: Select the instance type of the Vault instance.
+    Description: Select the instance type of the Vault instances.
     AllowedValues:
       - m4.large
       - m4.xlarge
@@ -1050,13 +1147,13 @@ Parameters:
     Default: m4.large
   VaultInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the Vault and Vault DR instances.
+    Description: Assign Security Groups to the Vault instances.
   VaultInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the Vault instance will reside.
+    Description: Select the Subnet Id where the Primary Vault instance will reside.
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the Vault DR instance will reside.
+    Description: Select the Subnet Id where the DR Vault instance will reside.
   CPMInstanceName:
     Type: String
     Description: Enter a name for the CPM instance.
@@ -1136,27 +1233,27 @@ Parameters:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
 Conditions:
-  PVWAHostNameEmpty: !Equals 
+  PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
 Rules:
   PasswordConfirmation:
     Assertions:
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultMasterPassword
           - !Ref RetypeMasterPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultAdminPassword
           - !Ref RetypeAdminPassword
         AssertDescription: The password confirmation does not match.
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref VaultDRPassword
           - !Ref RetypeDRPassword
         AssertDescription: The password confirmation does not match.
   EULAAcception:
     Assertions:
-      - Assert: !Equals 
+      - Assert: !Equals
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
@@ -1172,7 +1269,7 @@ Metadata:
           - LicenseFile
           - RecoveryPublicKey
       - Label:
-          default: Vault and Vault DR configuration
+          default: Primary Vault and DR Vault configuration
         Parameters:
           - VaultInstanceName
           - VaultMasterPassword
@@ -1220,9 +1317,9 @@ Metadata:
       KeyName:
         default: Key Pair
       VaultFilesBucket:
-        default: Vault Files Bucket
+        default: S3 Bucket
       LicenseFile:
-        default: License File
+        default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultInstanceName:
@@ -1240,13 +1337,13 @@ Metadata:
       RetypeDRPassword:
         default: Retype DR Password
       VaultInstanceType:
-        default: Vault and Vault DR Instance Type
+        default: Primary Vault and Vault DR Instance Type
       VaultInstanceSecurityGroups:
         default: Vault Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id
+        default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
-        default: Vault DR Instance Subnet Id
+        default: DR Vault Instance Subnet Id
       CPMInstanceName:
         default: CPM Instance Name
       CPMInstanceType:
@@ -1284,101 +1381,101 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-01d4a7bd46088f700
-      CPM: ami-0c5048832f0ba342b
-      PVWA: ami-01512e92898f7ba04
-      PSM: ami-08e096c0a3522f356
-      PSMP: ami-0bb8f4622a32ccbbe
+      Vault: ami-067d67ca1445a5209
+      CPM: ami-00f590af64ade8748
+      PVWA: ami-076593dcd726c23f5
+      PSM: ami-00afadacdf17657f0
+      PSMP: ami-0ff7d290a0a59e9af
     us-east-2:
-      Vault: ami-068bc4ecc92db8199
-      CPM: ami-083b0f4f9d741d954
-      PVWA: ami-0f945da6e23f077a9
-      PSM: ami-09b4ac3bdeae933c0
-      PSMP: ami-022c7e173b0e6e7c4
+      Vault: ami-0dbe87c3a37082b4d
+      CPM: ami-08034c344a821dfe3
+      PVWA: ami-01043d67e3e6169d2
+      PSM: ami-0a47c55cf14be9f7b
+      PSMP: ami-0d4b5aae1aa552bfe
     eu-west-2:
-      Vault: ami-08e302bd203bff170
-      CPM: ami-0786741ff2d3da9a7
-      PVWA: ami-03f3e9935101407a5
-      PSM: ami-0a2cefbabba2cd617
-      PSMP: ami-0e04bdb478e01edec
+      Vault: ami-078d2d55d71ec32d3
+      CPM: ami-017a1d7c1d31faf98
+      PVWA: ami-0f2db7e10644798a9
+      PSM: ami-0ba248bd61d9355eb
+      PSMP: ami-0e1313459871ac044
     us-west-1:
-      Vault: ami-0f1803a9c76472be5
-      CPM: ami-099bcb5ad7933f4ea
-      PVWA: ami-04696a8ab6b72e55c
-      PSM: ami-01eb3fb9c9c81365d
-      PSMP: ami-056229e9b60431969
+      Vault: ami-01b6d3607b9c455a5
+      CPM: ami-009902f6f4b0a60e9
+      PVWA: ami-09b12de7c7fd321ab
+      PSM: ami-00d4afe69a4959435
+      PSMP: ami-0c4ca8b74492dca58
     us-west-2:
-      Vault: ami-01edee6e967c17628
-      CPM: ami-0e217872421f388da
-      PVWA: ami-08d239a59b430d34e
-      PSM: ami-08ee313797af3001f
-      PSMP: ami-02643903bb58ccd9b
+      Vault: ami-0cd4e3ad8aad42a51
+      CPM: ami-04c6ae8963c5763c3
+      PVWA: ami-08aa2108685ac5ffd
+      PSM: ami-08ace74fec7fa1293
+      PSMP: ami-09cbbc97bd7632288
     ca-central-1:
-      Vault: ami-0582d8c1a70001244
-      CPM: ami-0d30069a5fefbb76b
-      PVWA: ami-0609dcbfc67c0ff0b
-      PSM: ami-0ac9ec0e3a84f7d2f
-      PSMP: ami-0169b158e5aedf114
+      Vault: ami-05164390c672c1172
+      CPM: ami-0a083494453bfaa00
+      PVWA: ami-0484b045a1b2df41d
+      PSM: ami-0a1899f2db7879820
+      PSMP: ami-0b7ee1d6dc4d46749
     eu-west-1:
-      Vault: ami-09397273b9046d5b9
-      CPM: ami-0e7871f260cff49cd
-      PVWA: ami-06b533e49a82d0eaf
-      PSM: ami-0c1aab51f2b76b3f3
-      PSMP: ami-0fcc0e1d2a564297c
+      Vault: ami-0cf822f2a8c89ca7d
+      CPM: ami-00b9312293746ddc7
+      PVWA: ami-0123945a30b4397a0
+      PSM: ami-055797a51fd69f87a
+      PSMP: ami-002907bd8a065f6d7
     eu-central-1:
-      Vault: ami-06f43402c6e002660
-      CPM: ami-0d80700930f21c822
-      PVWA: ami-0f9f83f225903fa54
-      PSM: ami-0d25e8bcf7b72ddc4
-      PSMP: ami-0646e73bd35827fd3
+      Vault: ami-03a9f45466c8b1745
+      CPM: ami-00e48bb56cb48bcac
+      PVWA: ami-0bbd7321ab1c8b40d
+      PSM: ami-0e5cfcb7995396ece
+      PSMP: ami-08f73d068b16dc6f7
     ap-southeast-1:
-      Vault: ami-0872cf43e69e28466
-      CPM: ami-0f4c5e5d997518a87
-      PVWA: ami-0cb6d24dcd607ec98
-      PSM: ami-08f7c51d67091747f
-      PSMP: ami-0e39d0b84ebb54e1a
+      Vault: ami-01a195c73e8f3da53
+      CPM: ami-04bd4ea2c7ec7d6d3
+      PVWA: ami-0fb4f39c13a43f229
+      PSM: ami-03cdefc68513080f7
+      PSMP: ami-0533ed0c9fb526e7b
     ap-southeast-2:
-      Vault: ami-0a02581b7c2a55e6f
-      CPM: ami-0ba04d0de7e57e96a
-      PVWA: ami-03f90659c438a56c8
-      PSM: ami-0221aac7e5aa4877e
-      PSMP: ami-0d13566385aaaa992
+      Vault: ami-07b0aa6bb69361b91
+      CPM: ami-0344dde570a581fc8
+      PVWA: ami-069c6d2dbbdd5bda7
+      PSM: ami-07af05bb0f6125b00
+      PSMP: ami-0fa8a8427040f0a7e
     ap-northeast-2:
-      Vault: ami-0ed3745003fa46976
-      CPM: ami-089d652381509cb91
-      PVWA: ami-0d40187c0f8c4b8db
-      PSM: ami-08ac621e8106f7ece
-      PSMP: ami-04401539a5f3afc5c
+      Vault: ami-04a79126206649385
+      CPM: ami-05f57efc9ec12ae43
+      PVWA: ami-0f78ff4ed43ef2c9d
+      PSM: ami-027565ab508ddc064
+      PSMP: ami-07b1a5ef1d315b8a4
     ap-northeast-1:
-      Vault: ami-02e14fe4621742bde
-      CPM: ami-0e8fa7121b8b46482
-      PVWA: ami-0fcb9f4bfab7f1b64
-      PSM: ami-03de5e42ad5435e97
-      PSMP: ami-0320b8464c30d2df8
+      Vault: ami-00ba6baa337bb4579
+      CPM: ami-0a3d5480f8556d550
+      PVWA: ami-0df0e9dfbec83202b
+      PSM: ami-0b6eaa39085af85eb
+      PSMP: ami-086b005ec5c41b129
     ap-south-1:
-      Vault: ami-0ff8fe4a731baa07a
-      CPM: ami-06abf8d5e4c0f3ba1
-      PVWA: ami-076964d92284f16fa
-      PSM: ami-000f302e84175b8ab
-      PSMP: ami-02dc87adaa5c196da
+      Vault: ami-027b213ba79561465
+      CPM: ami-08bf8c691219ab111
+      PVWA: ami-0694ec41a8b2f1682
+      PSM: ami-08ef88d9c140f194e
+      PSMP: ami-0e2d9d665cca9f4cd
     sa-east-1:
-      Vault: ami-04b91be9198835fc8
-      CPM: ami-0c4d646f214dc2565
-      PVWA: ami-0f7517ec36ced0752
-      PSM: ami-0a0688382df21b7fa
-      PSMP: ami-02129f1be6a069a69
+      Vault: ami-006243a6d82fbdc60
+      CPM: ami-0b634c6b4a68c9575
+      PVWA: ami-00f8d7dafdbb87942
+      PSM: ami-0a929153b71f68464
+      PSMP: ami-00fe192a8bafd3a51
     us-gov-west-1:
-      Vault: ami-0e87a36f
-      CPM: ami-e94e6a88
-      PVWA: ami-f2e2c693
-      PSM: ami-13406472
-      PSMP: ami-2c23044d
+      Vault: ami-680b3809
+      CPM: ami-95093af4
+      PVWA: ami-a50b38c4
+      PSM: ami-f8063599
+      PSMP: ami-20ebd841
     us-gov-east-1:
-      Vault: ami-00268514ee37890b9
-      CPM: ami-084456b03a3ed8ab2
-      PVWA: ami-062952a36194ca27e
-      PSM: ami-07858426bb4179bfc
-      PSMP: ami-06569e3bb5ab0cf98
+      Vault: ami-0c3f9622c3fe2d74a
+      CPM: ami-02323c1a259174c93
+      PVWA: ami-08d70b8aa066991e6
+      PSM: ami-0458a131fafcef33a
+      PSMP: ami-04ea67f00fdea37ec
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

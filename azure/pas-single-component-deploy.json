@@ -81,7 +81,8 @@
             "type": "String",
             "metadata": {
                 "description": "Enter the VNet name."
-            }
+            },
+            "defaultValue": "PAS-VNet"
         },
         "Component Subnet": {
             "type": "String",
@@ -89,35 +90,26 @@
                 "description": "Enter the Subnet name."
             }
         },
-        "Component AvailablitySet Name": {
-            "type": "String",
-            "metadata": {
-                "description": "Enter the Availability Set for the Component VM , If doesn’t exist it will be created"
+        "Availability Zone":{
+            "type":"string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "defaultValue": "1",
+            "metadata":{
+               "description":"Choose the availability zone for the Component VM"
             }
-        }
+         }
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet'))]",
-        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('Component Subnet'))]",
+        "subnetRefComponent": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet')), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "availabilitySetPlatformFaultDomainCount": 3,
-        "availabilitySetPlatformUpdateDomainCount": 5,
         "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
-        {
-           "type":"Microsoft.Resources/deployments",
-           "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-           "apiVersion": "2018-02-01",
-           "properties": {
-             "mode":"incremental",
-             "template":{
-               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-               "contentVersion":"1.0.0.0",
-               "resources": []
-             }
-           }
-        },
         {
             "type": "Microsoft.Resources/deployments",
             "name": "linkedTemplate",
@@ -125,7 +117,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.3.json",
+                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.4.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -147,9 +139,6 @@
                     "Imageid": {
                         "value": "[parameters('ImageID')]"
                     },
-                    "AvailablitySetName": {
-                        "value": "[parameters('Component AvailablitySet Name')]"
-                    },
                     "NetworkInterfaceName": {
                         "value": "[variables('networkInterfaceName')]"
                     },
@@ -165,7 +154,6 @@
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "condition": "[equals(parameters('Component To Install'),'PSMP')]"
@@ -173,8 +161,11 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Component VM Host Name')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -207,14 +198,10 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                         }
                     ]
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Component AvailablitySet Name'))]"
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
@@ -242,17 +229,6 @@
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]"
             ],
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
-        },
-        {
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('Component AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
-                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
-                "managed": true
-            }
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
