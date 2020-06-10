@@ -449,11 +449,6 @@ Parameters:
   VaultPrivateIP:
     Type: String
     Description: Enter the Primary Vault Private IP.
-  DRUserUsername:
-    Type: String
-    Description: Enter the DR Vault Username that will be linked to this DR Vault instance.
-      You must allow registration to this DR Vault user on the Primary Vault before continuing this operation.
-    Default: DR
   VaultDRPassword:
     Type: String
     Description: Enter a password for the DR Vault user that was set on the Primary Vault.
@@ -516,7 +511,6 @@ Metadata:
           default: Primary Vault and DR information
         Parameters:
           - VaultPrivateIP
-          - DRUserUsername
           - VaultDRPassword
           - Secret
       - Label:
@@ -548,8 +542,6 @@ Metadata:
         default: DR Vault Instance Subnet Id
       Secret:
         default: DR User Secret
-      DRUserUsername:
-        default: DR User Username
 Mappings:
   RegionMap:
     us-east-1:
