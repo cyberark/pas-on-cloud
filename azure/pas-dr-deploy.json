@@ -28,15 +28,6 @@
                 "description": "Enter the Primary Vault Private IP."
             }
         },
-        "DR User Username":{
-            "minLength":2,
-            "maxLength":24,
-            "type":"String",
-            "defaultValue": "DR",
-            "metadata":{
-            "description":"Enter the Vault DR Username that will be linked to this Vault DR instance. You must allow registration to this Vault DR user on the Primary Vault before continuing this operation."
-            }
-        },
         "DR User Password": {
             "type": "SecureString",
             "metadata": {
@@ -249,7 +240,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'),' -DRUser ', parameters('DR User Username'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
                 }
             },
             "dependsOn": [
