@@ -527,7 +527,7 @@ Parameters:
     ConstraintDescription: Can contain only ASCII characters.
   VaultFilesBucket:
     Type: String
-    Description: Enter the name of the bucket containing the license and recovery public key.
+    Description: Enter the name of the S3 bucket containing the license and recovery public key.
   LicenseFile:
     Type: String
     Description: Enter the path of the Vault license file within the bucket.
@@ -536,6 +536,19 @@ Parameters:
     Type: String
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
+  VaultAdminPassword:
+    Type: String
+    Description: Enter a password for the Primary Vault Administrator user.
+    NoEcho: true
+    MinLength: 8
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
+      letter, 1 uppercase letter, 1 digit and 1 special character
+  RetypeAdminPassword:
+    Type: String
+    Description: Retype the password for the Primary Vault Administrator user.
+    NoEcho: true
+    MinLength: 8
   VaultMasterPassword:
     Type: String
     Description: Enter a password for the Primary Vault Master user.
@@ -549,31 +562,40 @@ Parameters:
     Description: Retype the password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
-  VaultAdminPassword:
+  DRVaultPassword:
     Type: String
-    Description: Enter a password for the Primary Vault Administrator user.
+    Description: Enter a password for the DR Vault Administrator user.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
       letter, 1 uppercase letter, 1 digit and 1 special character
-  RetypeAdminPassword:
+  RetypeDRVaultPassword:
     Type: String
-    Description: Retype the password for the DR Vault Administrator user.
+    Description: Retype the password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
+  Secret:
+    Type: String
+    Description: Enter a secret string for the DR user.(Optional).
+    NoEcho: true
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
+      Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
+    MinLength: 10
+  SecretRetype:
+    Type: String
+    Description: Retype the secret string for the DR User.
+    NoEcho: true
+    MinLength: 10
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Primary Vault instance.
     Default: CyberArk Primary Vault
   VaultInstanceType:
     Type: String
-    Description: Enter the host name for the Primary Vault instance.
+    Description: Select the instance type of the Primary Vault instance.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -593,29 +615,6 @@ Parameters:
   VaultInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Primary Vault instance will reside.
-  DRVaultPassword:
-    Type: String
-    Description: Enter a password for the DR Vault Administrator user.
-    NoEcho: true
-    MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
-    ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
-      letter, 1 uppercase letter, 1 digit and 1 special character
-  RetypeDRVaultPassword:
-    Type: String
-    Description: Retype the password for the Primary Vault Administrator user.
-    NoEcho: true
-    MinLength: 8
-  Secret:
-    Type: String
-    Description: Enter a secret string for the DR user.(Optional).
-    NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
-    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character
-  SecretRetype:
-    Type: String
-    Description: Retype DR Username Secret.
-    NoEcho: true
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -679,33 +678,35 @@ Metadata:
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:
-        default: License File
+        default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
       VaultMasterPassword:
-        default: Vault Master Password
+        default: Primary Vault Master Password
       RetypeMasterPassword:
-        default: Retype Master Password
+        default: Retype Primary Vault Master Password.
       VaultAdminPassword:
-        default: Vault Admin Password
+        default: Primary Vault Admin Password
       RetypeAdminPassword:
-        default: Retype Admin Password
+        default: Retype Primary Vault Admin Password
       VaultInstanceName:
-        default: Vault Instance Name
+        default: Primary Vault Instance Name
       VaultHostName:
-        default: Vault Host Name
+        default: Primary Vault Host Name
       VaultInstanceType:
-        default: Vault Instance Type
+        default: Primary Vault Instance Type
       VaultInstanceSecurityGroups:
-        default: Vault Instance Security Groups
+        default: Primary Vault Instance Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id
+        default: Primary Vault Instance Subnet Id
       DRVaultPassword:
-        default: DR Vault Password
+        default: DR User Password
+      RetypeDRVaultPassword:
+        default: Retype the DR User Password
       Secret:
-        default: DR Username Secret
+        default: DR User Secret
       SecretRetype:
-        default: Retype DR Username Secret
+        default: Retype DR User Secret
 Conditions:
   SecretEmpty: !Equals 
     - ''

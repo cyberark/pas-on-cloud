@@ -449,30 +449,35 @@ Parameters:
   VaultPrivateIP:
     Type: String
     Description: Enter the Primary Vault Private IP.
+  DRUserUsername:
+    Type: String
+    Description: Enter the DR Vault Username that will be linked to this DR Vault instance.
+      You must allow registration to this DR Vault user on the Primary Vault before continuing this operation.
+    Default: DR
   VaultDRPassword:
     Type: String
-    Description: Enter a password for the DR Vault DR user.
+    Description: Enter a password for the DR Vault user that was set on the Primary Vault.
     NoEcho: true
     MinLength: 8
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault DR password must contain at least 1 lowercase letter,
       1 uppercase letter, 1 digit and 1 special character
+  Secret:
+    Type: String
+    Description: Enter the secret string for the DR user that was set on the Primary Vault.(Optional).
+    NoEcho: true
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
+      Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
+    MinLength: 10
   VaultInstanceName:
     Type: String
     Description: Enter a name for the DR Vault instance.
     Default: CyberArk DR Vault
-  VaultHostName:
-    Type: String
-    Description: Enter the host name for the DR Vault instance.
-    MinLength: 4
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the DR Vault instance.
     AllowedValues:
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
       - m5.large
       - m5.xlarge
       - m5.2xlarge
@@ -482,18 +487,16 @@ Parameters:
       - m5.16xlarge
       - m5.24xlarge
     Default: m5.large
+  VaultHostName:
+    Type: String
+    Description: Enter the host name for the DR Vault instance.
+    MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the DR Vault instance.
   DRInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the DR Vault instance will reside.
-  Secret:
-    Type: String
-    Description: Enter a secret string for the DR user.(Optional).
-    NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
-    ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special character
 Rules:
   EULAAcception:
     Assertions:
@@ -513,8 +516,9 @@ Metadata:
           default: Primary Vault and DR information
         Parameters:
           - VaultPrivateIP
-          - Secret
+          - DRUserUsername
           - VaultDRPassword
+          - Secret
       - Label:
           default: DR Vault Machine Information
         Parameters:
@@ -531,7 +535,7 @@ Metadata:
       VaultPrivateIP:
         default: Primary Vault Private IP
       VaultDRPassword:
-        default: DR Vault DR User Password
+        default: DR User Password
       VaultInstanceName:
         default: DR Vault Instance Name
       VaultHostName:
@@ -543,7 +547,9 @@ Metadata:
       DRInstanceSubnetId:
         default: DR Vault Instance Subnet Id
       Secret:
-        default: DR Username Secret
+        default: DR User Secret
+      DRUserUsername:
+        default: DR User Username
 Mappings:
   RegionMap:
     us-east-1:
