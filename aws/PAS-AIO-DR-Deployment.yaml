@@ -264,21 +264,7 @@ Resources:
       Password: !Ref VaultDRPassword
     DependsOn:
       - LambdaDeployRole
-  StoreVaultDRPasswordMachine:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Properties:
-      ServiceToken: !GetAtt StorePasswordLambda.Arn
-      Password: !Ref VaultDRPassword
-    DependsOn:
-      - LambdaDeployRole
   StoreSecret:
-    Type: AWS::CloudFormation::CustomResource
-    Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'Secret'
-    DependsOn:
-      - LambdaDeployRole
-  StoreSecretDR:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
@@ -315,32 +301,12 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - VaultDRMachine
-  CleaVaultDRPasswordMachine:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt DeletePasswordLambda.Arn
-      key: !GetAtt StoreVaultDRPasswordMachine.SsmId
-    DependsOn:
-      - LambdaDeployRole
-      - StorePasswordLambda
-      - VaultDRMachine
   CleanSecret:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
       key: !GetAtt 'StoreSecret.SsmId'
-    DependsOn:
-      - LambdaDeployRole
-      - StorePasswordLambda
-      - VaultDRMachine
-  CleanSecretDR:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreSecretDR.SsmId'
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
@@ -367,6 +333,39 @@ Resources:
       region: !Ref 'AWS::Region'
     DependsOn:
       - RemovePermissionLambda
+  RemovePermissionsKMSPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: KMSPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+            Resource:
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref LambdaRemovePermissionsRole
+    DependsOn:
+      - RemovePermissionVaultDR
+  RemovePermissionsVaultBootstrapIAMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+            Resource:
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref VaultInstancesRole
+        - !Ref VaultDRInstancesRole
+    DependsOn:
+      - VaultDRMachine
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -446,7 +445,7 @@ Resources:
                 
                 # Delete old Policies
                 list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
-                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess","KMSPolicy", "VaultBootstrapIAMPolicy"]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
                 print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
                 for role in list:
                   print("Delete policies in {0} IAM Role".format(role))
@@ -593,7 +592,7 @@ Resources:
           cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'VaultInstancesProfile'
+      IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
@@ -621,7 +620,7 @@ Resources:
           commands:
             1-postInstall:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreVaultDRPasswordMachine.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecretDR.SsmId}
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
               waitAfterCompletion: 0
             2-changeKMSTag:
               command: !Sub >
@@ -648,7 +647,6 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultDRInstancesRole'
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -766,8 +764,8 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreVaultDRPasswordMachine.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecretDR.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
         - PolicyName: VaultInstancesKMSPolicy
           PolicyDocument:
             Statement:
@@ -781,6 +779,14 @@ Resources:
                   - kms:EnableKeyRotation
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
                 Resource: '*'
   ComponentInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
@@ -1212,7 +1218,7 @@ Mappings:
       Vault: ami-0dbe87c3a37082b4d
       Components: ami-0209dd2af358422d7
     eu-west-2:
-      Vault: ami-078d2d55d71ec32d3
+      Vault: ami-0749fb7f1d6aad3bd
       Components: ami-053e8181a5fb33b11
     us-west-1:
       Vault: ami-01b6d3607b9c455a5
