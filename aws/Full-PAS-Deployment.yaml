@@ -209,12 +209,11 @@ Resources:
       PolicyName: KMSPolicy
       PolicyDocument:
         Statement:
-          - Effect: Allow
+          - Effect: Deny
             Action:
-              - kms:Encrypt
-              - kms:Decrypt
+              - '*'
             Resource:
-              - !GetAtt LambdaRemovePermissionsRole.Arn
+              - '*'
       Roles:
         - !Ref LambdaRemovePermissionsRole
     DependsOn:
@@ -225,12 +224,11 @@ Resources:
       PolicyName: VaultBootstrapIAMPolicy
       PolicyDocument:
         Statement:
-          - Effect: Allow
+          - Effect: Deny
             Action:
-              - kms:Encrypt
-              - kms:Decrypt
+              - '*'
             Resource:
-              - !GetAtt LambdaRemovePermissionsRole.Arn
+              - '*'
       Roles:
         - !Ref VaultInstancesRole
         - !Ref VaultDRInstancesRole
