@@ -635,6 +635,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -726,6 +727,7 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultDRInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -788,6 +790,7 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
+    DeletionPolicy: Retain
   ComponentInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -1190,11 +1193,11 @@ Metadata:
       VaultInstanceName:
         default: Vault Instance Name
       VaultInstanceType:
-        default: Vault Instance Type
+        default: Primary Vault and Vault DR Instance Type
       VaultInstanceSecurityGroups:
         default: Vault Instance Security Groups
       VaultInstanceSubnetId:
-        default: Vault Instance Subnet Id
+        default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
       ComponentsInstanceName:
