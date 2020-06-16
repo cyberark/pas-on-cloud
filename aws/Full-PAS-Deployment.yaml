@@ -628,18 +628,23 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
+    DependsOn:
+      - VaultMachine
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref VaultInstancesRole
+    DeletionPolicy: Retain
   VaultDRInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref 'VaultDRInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -788,6 +793,7 @@ Resources:
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -909,6 +915,8 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
+    DependsOn:
+      - VaultDRMachine
     DeletionPolicy: Retain
   CPMMachine:
     Type: 'AWS::EC2::Instance'
@@ -1188,6 +1196,7 @@ Resources:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
         - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String

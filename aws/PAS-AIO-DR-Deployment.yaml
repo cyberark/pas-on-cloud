@@ -21,6 +21,7 @@ Resources:
     Properties: 
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/VaultPostInstallLog
+    DeletionPolicy: Retain
   VaultDRCfnInitLogStream:
     Type: 'AWS::Logs::LogStream'
     Properties:
@@ -634,18 +635,22 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultMachine
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   VaultDRInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref 'VaultDRInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
