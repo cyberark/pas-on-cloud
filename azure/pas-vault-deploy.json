@@ -167,7 +167,7 @@
       {
          "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
-         "name":"[variables('key Vault Name')]",
+         "name":"[variables('vaultName')]",
          "apiVersion":"2015-06-01",
          "location":"[resourceGroup().location]",
          "properties":{
