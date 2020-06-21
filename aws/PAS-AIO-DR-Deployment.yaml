@@ -625,6 +625,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
+            3-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
