@@ -190,8 +190,6 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultMachine'
       region: !Ref 'AWS::Region'
-    DependsOn:
-      - RemovePermissionLambda
   RemovePermissionVaultDR:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -201,8 +199,6 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
-    DependsOn:
-      - RemovePermissionLambda
   RemovePermissionsKMSPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -230,10 +226,9 @@ Resources:
             Resource:
               - '*'
       Roles:
-        - !Ref VaultInstancesRole
-        - !Ref VaultDRInstancesRole
+        - !Ref LambdaRemovePermissionsRole
     DependsOn:
-      - VaultDRMachine
+      - RemovePermissionVaultDR
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -437,8 +432,8 @@ Resources:
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
                 
                 # Delete old Policies
-                list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
-                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
+                list = [event['ResourceProperties']['vault_role_name']]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultBootstrapIAMPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
                 print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
                 for role in list:
                   print("Delete policies in {0} IAM Role".format(role))
@@ -632,8 +627,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultMachine
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -918,8 +911,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
-    DependsOn:
-      - VaultDRMachine
     DeletionPolicy: Retain
   CPMMachine:
     Type: 'AWS::EC2::Instance'
@@ -1547,16 +1538,16 @@ Mappings:
       PSMP: ami-0ff7d290a0a59e9af
     us-east-2:
       Vault: ami-0dbe87c3a37082b4d
-      CPM: ami-08034c344a821dfe3
-      PVWA: ami-01043d67e3e6169d2
+      CPM: ami-02f306437e42f2af0
+      PVWA: ami-094673f844ba842ea
       PSM: ami-0a47c55cf14be9f7b
-      PSMP: ami-0d4b5aae1aa552bfe
+      PSMP: ami-06e13318b73160360
     eu-west-2:
-      Vault: ami-0749fb7f1d6aad3bd
-      CPM: ami-017a1d7c1d31faf98
-      PVWA: ami-0f2db7e10644798a9
+      Vault: ami-06214816574a9bc14
+      CPM: ami-02f306437e42f2af0
+      PVWA: ami-094673f844ba842ea
       PSM: ami-0ba248bd61d9355eb
-      PSMP: ami-0e1313459871ac044
+      PSMP: ami-06e13318b73160360
     us-west-1:
       Vault: ami-01b6d3607b9c455a5
       CPM: ami-009902f6f4b0a60e9

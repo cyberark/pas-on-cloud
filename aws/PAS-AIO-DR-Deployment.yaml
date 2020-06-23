@@ -321,8 +321,6 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultMachine'
       region: !Ref 'AWS::Region'
-    DependsOn:
-      - RemovePermissionLambda
   RemovePermissionVaultDR:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -332,8 +330,6 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
-    DependsOn:
-      - RemovePermissionLambda
   RemovePermissionsKMSPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -361,10 +357,9 @@ Resources:
             Resource:
               - '*'
       Roles:
-        - !Ref VaultInstancesRole
-        - !Ref VaultDRInstancesRole
+        - !Ref LambdaRemovePermissionsRole
     DependsOn:
-      - VaultDRMachine
+      - RemovePermissionVaultDR
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -443,8 +438,8 @@ Resources:
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
                 
                 # Delete old Policies
-                list = [event['ResourceProperties']['vault_role_name'],event['ResourceProperties']['lambda_role_name']]
-                inline_policies = ["VaultInstancesKMSPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
+                list = [event['ResourceProperties']['vault_role_name']]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultBootstrapIAMPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
                 print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
                 for role in list:
                   print("Delete policies in {0} IAM Role".format(role))
@@ -638,8 +633,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultMachine
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -1227,8 +1220,8 @@ Mappings:
       Vault: ami-0dbe87c3a37082b4d
       Components: ami-0209dd2af358422d7
     eu-west-2:
-      Vault: ami-0749fb7f1d6aad3bd
-      Components: ami-053e8181a5fb33b11
+      Vault: ami-06214816574a9bc14
+      Components: ami-0acd283b25e2deb05
     us-west-1:
       Vault: ami-01b6d3607b9c455a5
       Components: ami-07c0488bc1a3bf218
