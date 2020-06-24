@@ -533,7 +533,7 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID 
                 ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} 
                 -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" 
-                -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
+                -Region ${AWS::Region} ${Secret}
               - Secret: !If 
                   - SecretEmpty
                   - ''
