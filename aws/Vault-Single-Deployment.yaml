@@ -582,12 +582,10 @@ Parameters:
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
-    MinLength: 10
   SecretRetype:
     Type: String
     Description: Retype the secret string for the DR User.
     NoEcho: true
-    MinLength: 10
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Primary Vault instance.
