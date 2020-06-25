@@ -421,6 +421,7 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -513,6 +514,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
