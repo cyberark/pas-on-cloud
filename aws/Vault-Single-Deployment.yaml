@@ -165,7 +165,7 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Sub '${Secret}'
+      Password: !Sub 'SecretEmpty'
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
