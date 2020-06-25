@@ -81,7 +81,7 @@ Resources:
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
               if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
-                  return True
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
               try:
                   if event['RequestType'] == 'Delete':
                       ssmClient.delete_parameter(Name=physicalResourceId)
@@ -164,7 +164,11 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'Secret'
+      Password: 
+        Fn::If:
+          - SecretEmpty
+          - "EmptyValue"
+          - !Ref 'Secret'
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
