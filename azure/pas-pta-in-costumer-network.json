@@ -29,17 +29,17 @@
          "PTA Storage Account Access Key":{
             "type":"SecureString",
             "metadata":{
-               "description":"Enter the access key of the storage account that contains the license and public key."
+               "description":"Enter the access key of the PTA storage account that contains the license and public key."
             }
          },
          "License File":{
             "defaultValue":"license-valid.xml",
             "type":"String",
             "metadata":{
-               "description":"Enter the name of the license file in the container. Note: This field is case sensitive"
+               "description":"Enter the name of the PTA license file in the container. Note: This field is case sensitive"
             }
          },
-         "PTA Server TimeZone":{
+         "PTA Server Time Zone":{
             "type":"String",
             "metadata":{
             "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
@@ -54,20 +54,20 @@
          "PVWA Private DNS":{
             "type":"String",
             "metadata":{
-                "Description":"Enter the private DNS of the PVWA instance."
+                "Description":"Enter the private DNS of the PVWA VM."
             }
          },
         "Vault Private IP": {
             "type": "String",
             "metadata": {
-                "description": "Enter the IP of the Vault instance."
+                "description": "Enter the IP of the Vault VM."
             }
         },
         "Vault DR Private IP":{
             "defaultValue": "",
             "type":"string",
             "metadata": {
-                "Description":"Enter the IPs of the Vault DR instances, separated by comma (,). (Optional)."
+                "Description":"Enter the IPs of the Vault DR VMs, separated by a comma (,). (Optional)."
             }
          },
         "Vault Admin User": {
@@ -80,7 +80,7 @@
         "Vault Admin Password": {
             "type": "SecureString",
             "metadata": {
-                "description": "Enter a password for the Vault Administrator user."
+                "description": "Enter the password for the Vault Administrator user."
             }
         },
         "PTA VM Host Name": {
@@ -93,7 +93,7 @@
             "defaultValue": "Standard_D2s_v3",
             "type": "String",
             "metadata": {
-                "description": "Enter the desired VM Size"
+                "description": "Enter the desired PTA VM Size"
             }
         },
         "PTA VM Admin User": {
@@ -111,7 +111,7 @@
         "ImageID": {
             "type": "String",
             "metadata": {
-                "description": "Enter PTAs Image ID."
+                "description": "Enter PTA Image ID."
             }
         },
         "PTA VNet": {
@@ -135,7 +135,7 @@
             ],
             "defaultValue": "1",
             "metadata":{
-               "description":"Choose the availability zone for the Component VM"
+               "description":"Choose the availability zone for the PTA VM"
             }
          }
     },
@@ -202,7 +202,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'))]",
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
                     "fileUris": []
                 }
             },
@@ -228,7 +228,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server TimeZone'), ' ', parameters('Vault DR Private IP'))]",
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Private DNS'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
                     "fileUris": []
                 }
             },
