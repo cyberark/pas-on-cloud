@@ -81,7 +81,6 @@ Resources:
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
               if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
-                  print ('The property Password must not be empty')
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
               try:
                   if event['RequestType'] == 'Delete':
@@ -165,7 +164,11 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'Secret'
+      Password: 
+        Fn::If:
+          - SecretEmpty
+          - "EmptyValue"
+          - !Ref 'Secret'
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
@@ -342,6 +345,7 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -421,6 +425,7 @@ Resources:
                   - iam:DeleteRolePolicy
                   - iam:PutRolePolicy
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -488,7 +493,7 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID 
                 ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} 
                 -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" 
-                -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
+                -Region ${AWS::Region} ${Secret}
               - Secret: !If 
                   - SecretEmpty
                   - ''
@@ -513,6 +518,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -582,12 +588,10 @@ Parameters:
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
-    MinLength: 10
   SecretRetype:
     Type: String
     Description: Retype the secret string for the DR User.
     NoEcho: true
-    MinLength: 10
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Primary Vault instance.
@@ -714,34 +718,34 @@ Conditions:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-01d4a7bd46088f700
+      Vault: ami-0c989966b856cfeb4
     us-east-2:
-      Vault: ami-068bc4ecc92db8199
+      Vault: ami-05398ef0af4262795
     eu-west-2:
-      Vault: ami-06214816574a9bc14
+      Vault: ami-091806f3b753d4cd8
     us-west-1:
-      Vault: ami-0f1803a9c76472be5
+      Vault: ami-00353cf97859c10e9
     us-west-2:
-      Vault: ami-01edee6e967c17628
+      Vault: ami-052788403d2fa7f44
     ca-central-1:
-      Vault: ami-0582d8c1a70001244
+      Vault: ami-0d5c03b3349f727e9
     eu-west-1:
-      Vault: ami-09397273b9046d5b9
+      Vault: ami-076e7778eb66ffbb1
     eu-central-1:
-      Vault: ami-06f43402c6e002660
+      Vault: ami-0e347ea01ed304fb4
     ap-southeast-1:
-      Vault: ami-0872cf43e69e28466
+      Vault: ami-0fc1fe1cda9594ffa
     ap-southeast-2:
-      Vault: ami-0a02581b7c2a55e6f
+      Vault: ami-09796bdf31a3b4d4c
     ap-northeast-2:
-      Vault: ami-0ed3745003fa46976
+      Vault: ami-0e5e74e37d1c4384f
     ap-northeast-1:
-      Vault: ami-02e14fe4621742bde
+      Vault: ami-0f0dc1282040cb772
     ap-south-1:
-      Vault: ami-0ff8fe4a731baa07a
+      Vault: ami-0328592c425ace5be
     sa-east-1:
-      Vault: ami-04b91be9198835fc8
+      Vault: ami-0c443bbb958573592
     us-gov-west-1:
-      Vault: ami-0e87a36f
+      Vault: ami-0789dc0e5567e54ae
     us-gov-east-1:
-      Vault: ami-00268514ee37890b9
+      Vault: ami-0d6dccbfe57682bf6

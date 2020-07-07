@@ -309,6 +309,7 @@ Resources:
       Path: /
       Roles:
         - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -363,6 +364,7 @@ Resources:
                   - kms:UpdateKeyDescription
                   - kms:CreateAlias
                 Resource: '*'
+    DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -434,6 +436,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
+    DeletionPolicy: Retain
 Parameters:
   EULA:
     Type: String
@@ -545,34 +548,34 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-067d67ca1445a5209
+      Vault: ami-0c989966b856cfeb4
     us-east-2:
-      Vault: ami-0dbe87c3a37082b4d
+      Vault: ami-05398ef0af4262795
     eu-west-2:
-      Vault: ami-06214816574a9bc14
+      Vault: ami-091806f3b753d4cd8
     us-west-1:
-      Vault: ami-01b6d3607b9c455a5
+      Vault: ami-00353cf97859c10e9
     us-west-2:
-      Vault: ami-0cd4e3ad8aad42a51
+      Vault: ami-052788403d2fa7f44
     ca-central-1:
-      Vault: ami-05164390c672c1172
+      Vault: ami-0d5c03b3349f727e9
     eu-west-1:
-      Vault: ami-0cf822f2a8c89ca7d
+      Vault: ami-076e7778eb66ffbb1
     eu-central-1:
-      Vault: ami-03a9f45466c8b1745
+      Vault: ami-0e347ea01ed304fb4
     ap-southeast-1:
-      Vault: ami-01a195c73e8f3da53
+      Vault: ami-0fc1fe1cda9594ffa
     ap-southeast-2:
-      Vault: ami-07b0aa6bb69361b91
+      Vault: ami-09796bdf31a3b4d4c
     ap-northeast-2:
-      Vault: ami-04a79126206649385
+      Vault: ami-0e5e74e37d1c4384f
     ap-northeast-1:
-      Vault: ami-00ba6baa337bb4579
+      Vault: ami-0f0dc1282040cb772
     ap-south-1:
-      Vault: ami-027b213ba79561465
+      Vault: ami-0328592c425ace5be
     sa-east-1:
-      Vault: ami-006243a6d82fbdc60
+      Vault: ami-0c443bbb958573592
     us-gov-west-1:
-      Vault: ami-680b3809
+      Vault: ami-0789dc0e5567e54ae
     us-gov-east-1:
-      Vault: ami-0c3f9622c3fe2d74a
+      Vault: ami-0d6dccbfe57682bf6
