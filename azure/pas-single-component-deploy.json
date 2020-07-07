@@ -7,7 +7,7 @@
             "allowedValues": [
                 "Accept",
                 "Decline"
-          ],
+            ],
             "maxLength": 6,
             "type": "String",
             "metadata": {
@@ -78,6 +78,7 @@
             }
         },
         "Component VNet": {
+            "defaultValue": "PAS-VNet",
             "type": "String",
             "metadata": {
                 "description": "Enter the VNet name."
@@ -89,43 +90,37 @@
                 "description": "Enter the Subnet name."
             }
         },
-        "Component AvailablitySet Name": {
+        "Availability Zone": {
+            "defaultValue": "1",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
             "type": "String",
             "metadata": {
-                "description": "Enter the Availability Set for the Component VM , If doesn’t exist it will be created"
+                "description": "Choose the availability zone for the Component VM"
             }
         }
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet'))]",
-        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('Component Subnet'))]",
+        "subnetRefComponent": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet')), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "availabilitySetPlatformFaultDomainCount": 3,
-        "availabilitySetPlatformUpdateDomainCount": 5,
         "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
     },
     "resources": [
         {
-           "type":"Microsoft.Resources/deployments",
-           "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-           "apiVersion": "2018-02-01",
-           "properties": {
-             "mode":"incremental",
-             "template":{
-               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-               "contentVersion":"1.0.0.0",
-               "resources": []
-             }
-           }
-        },
-        {
             "type": "Microsoft.Resources/deployments",
-            "name": "linkedTemplate",
             "apiVersion": "2017-05-10",
+            "name": "linkedTemplate",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.4.json",
+                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.5.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -147,9 +142,6 @@
                     "Imageid": {
                         "value": "[parameters('ImageID')]"
                     },
-                    "AvailablitySetName": {
-                        "value": "[parameters('Component AvailablitySet Name')]"
-                    },
                     "NetworkInterfaceName": {
                         "value": "[variables('networkInterfaceName')]"
                     },
@@ -161,20 +153,25 @@
                     },
                     "VaultPrivateIP": {
                         "value": "[parameters('Vault Private IP')]"
+                    },
+                    "AvailabilityZone": {
+                        "value": "[parameters('Availability Zone')]"
                     }
                 }
             },
-            "dependsOn": [
-                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-            ],
             "condition": "[equals(parameters('Component To Install'),'PSMP')]"
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
             "name": "[parameters('Component VM Host Name')]",
-            "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
             "identity": {
                 "type": "SystemAssigned"
             },
@@ -207,22 +204,18 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                         }
                     ]
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('Component AvailablitySet Name'))]"
                 }
             },
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
-                "[concat('Microsoft.Compute/availabilitySets/', parameters('Component AvailablitySet Name'))]"
-            ],
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript')]",
             "apiVersion": "2015-06-15",
+            "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript')]",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]"
+            ],
             "tags": {
                 "displayName": "config-component"
             },
@@ -238,26 +231,12 @@
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\cyberark\\componentregistration.ps1', ' ', parameters('Component To Install'), ' ', parameters('Vault Private IP'), ' ',  parameters('Vault Admin User'),' ',parameters('Vault Admin Password'))]"
                 }
             },
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]"
-            ],
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
         {
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "[parameters('Component AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
-                "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]",
-                "managed": true
-            }
-        },
-        {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('networkInterfaceName')]",
             "apiVersion": "2016-09-01",
+            "name": "[variables('networkInterfaceName')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "ipConfigurations": [
@@ -280,8 +259,8 @@
             "value": "[parameters('Component VM Admin User')]"
         },
         "networkInterface": {
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
-            "type": "object"
+            "type": "Object",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]"
         }
     }
 }
