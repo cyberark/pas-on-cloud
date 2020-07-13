@@ -33,7 +33,7 @@
             }
          },
          "License File":{
-            "defaultValue":"license-valid.xml",
+            "defaultValue":"license.xml",
             "type":"String",
             "metadata":{
                "description":"Enter the name of the PTA license file in the container. Note: This field is case sensitive"
