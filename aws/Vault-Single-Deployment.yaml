@@ -723,6 +723,10 @@ Mappings:
       Vault: ami-05398ef0af4262795
     eu-west-2:
       Vault: ami-091806f3b753d4cd8
+    eu-west-3:
+      Vault: ami-0b38a46b69509287e
+    eu-north-1:
+      Vault: ami-078357c8651df9851
     us-west-1:
       Vault: ami-00353cf97859c10e9
     us-west-2:
