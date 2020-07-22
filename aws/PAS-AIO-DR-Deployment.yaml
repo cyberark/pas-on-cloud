@@ -1221,6 +1221,12 @@ Mappings:
     eu-west-2:
       Vault: ami-091806f3b753d4cd8
       Components: ami-0a42b238d9d5adbb2
+    eu-west-3:
+      Vault: ami-0b38a46b69509287e
+      Components: ami-0f4cefc736f832d91
+    eu-north-1:
+      Vault: ami-078357c8651df9851
+      Components: ami-0dcb493885e7f4c19
     us-west-1:
       Vault: ami-00353cf97859c10e9
       Components: ami-07fb5114e902cdc40
