@@ -1,0 +1,272 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "License Agreement": {
+            "defaultValue": "Decline",
+            "allowedValues": [
+                "Accept",
+                "Decline"
+          ],
+            "maxLength": 6,
+            "type": "String",
+            "metadata": {
+                "description": "I have read and agreed to the Terms and Conditions."
+            }
+        },
+        "PTA Storage Account Name":{
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the storage account that contains the license."
+            }
+         },
+         "Storage Container Name":{
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the container in the PTA storage account that contains the license."
+            }
+         },
+         "PTA Storage Account Access Key":{
+            "type":"SecureString",
+            "metadata":{
+               "description":"Enter the access key of the PTA storage account that contains the license and public key."
+            }
+         },
+         "License File":{
+            "defaultValue":"license.xml",
+            "type":"String",
+            "metadata":{
+               "description":"Enter the name of the PTA license file in the container. Note: This field is case sensitive"
+            }
+         },
+         "PTA Server Time Zone":{
+            "type":"String",
+            "metadata":{
+            "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
+            }
+         },
+         "Vault Time Zone":{
+            "type":"String",
+            "metadata":{
+            "Description":"Enter the time zone of the Vault Server."
+            }
+         },
+         "PVWA Server Name":{
+            "type":"String",
+            "metadata":{
+                "Description":"Enter the private DNS of the PVWA VM."
+            }
+         },
+        "Vault Private IP": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter the IP of the Vault VM."
+            }
+        },
+        "Vault DR Private IP":{
+            "defaultValue": "",
+            "type":"string",
+            "metadata": {
+                "Description":"Enter the IPs of the Vault DR VMs, separated by a comma (,). (Optional)."
+            }
+         },
+        "Vault Admin User": {
+            "defaultValue": "Administrator",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Administrator Vault user."
+            }
+        },
+        "Vault Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter the password for the Vault Administrator user."
+            }
+        },
+        "PTA VM Host Name": {
+            "defaultValue":"PTAServer",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the host name for the PTA VM."
+            }
+        },
+        "PTA VM Size": {
+            "defaultValue": "Standard_D2s_v3",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the desired PTA VM Size"
+            }
+        },
+        "PTA VM Admin User": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter PTA VM Administrator user."
+            }
+        },
+        "PTA VM Admin Password": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Enter PTA VM Administrator password."
+            }
+        },
+        "ImageID": {
+            "type": "String",
+            "metadata": {
+                "description": "Enter PTA Image ID."
+            }
+        },
+        "PTA VNet": {
+            "defaultValue":"PAS-VNet",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the VNet name."
+            }
+        },
+        "PTA Subnet": {
+            "defaultValue":"PTA-Subnet",
+            "type": "String",
+            "metadata": {
+                "description": "Enter the Subnet name."
+            }
+        },
+        "Availability Zone":{
+            "type":"string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "defaultValue": "1",
+            "metadata":{
+               "description":"Choose the availability zone for the PTA VM"
+            }
+         }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('PTA VNet'))]",
+        "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('PTA Subnet'))]",
+        "networkInterfaceName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "publicIpAddressName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('PTA VM Host Name')]",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('PTA VM Host Name')]",
+                    "adminUsername": "[parameters('PTA VM Admin User')]",
+                    "adminPassword": "[parameters('PTA VM Admin Password')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('PTA VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('ImageID')]"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "condition":"[empty(parameters ('Vault DR Private IP'))]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_no_dr')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-get-license-to-place"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
+                    "fileUris": []
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
+            ]
+        },
+        {
+            "condition":"[not(empty(parameters ('Vault DR Private IP')))]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_with_dr')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "config-get-license-to-place"
+            },
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
+                    "fileUris": []
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRefComponent')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "String",
+            "value": "[parameters('PTA VM Admin User')]"
+        },
+        "networkInterface": {
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "type": "object"
+        }
+    }
+}
