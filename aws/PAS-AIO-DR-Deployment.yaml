@@ -1261,8 +1261,8 @@ Mappings:
       Vault: ami-0c443bbb958573592
       Components: ami-02332d20cd80254c1
     us-gov-west-1:
-      Vault: ami-0789dc0e5567e54ae
-      Components: ami-057b95bfec9e2f442
+      Vault: ami-072c537a519c44d8f
+      Components: ami-06ebf8a0d1efeb2c0
     us-gov-east-1:
       Vault: ami-0d6dccbfe57682bf6
       Components: ami-0804baa6b4790f9e2
