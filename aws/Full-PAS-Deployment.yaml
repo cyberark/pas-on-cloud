@@ -1530,100 +1530,112 @@ Conditions:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-0c989966b856cfeb4
-      CPM: ami-000864f124979ad1d
-      PVWA: ami-0447c93ba7042e170
-      PSM: ami-00afadacdf17657f0
+      Vault: ami-09e899129e882351e
+      CPM: ami-0e2bd78c0de973abd
+      PVWA: ami-07fbbf7521e1dac22
+      PSM: ami-08bea117059459a5f
       PSMP: ami-00ad4497fd5adfbe4
     us-east-2:
-      Vault: ami-05398ef0af4262795
-      CPM: ami-0e52cacd88f690da5
-      PVWA: ami-0b87905133561d9ac
-      PSM: ami-0a47c55cf14be9f7b
+      Vault: ami-0bfff7ddd6a8b4abf
+      CPM: ami-09b46213bca0f963c
+      PVWA: ami-0a4ec012dfabf8571
+      PSM: ami-06cd4fbd99c4120c3
       PSMP: ami-0dcbd6f148bdd8574
     eu-west-2:
-      Vault: ami-091806f3b753d4cd8
-      CPM: ami-09762c8394759c02d
-      PVWA: ami-069636974b7568f8e
-      PSM: ami-0ba248bd61d9355eb
+      Vault: ami-0b3941a57abdfec94
+      CPM: ami-081d40f1dca53a86c
+      PVWA: ami-0b85d14a28c1fcf01
+      PSM: ami-010a13dd742811f13
       PSMP: ami-0f64f81e55abd7f57
+    eu-west-3:
+      Vault: ami-0b513be6b13b06086
+      CPM: ami-0171a76283d4e2411
+      PVWA: ami-02658f1d533478ad5
+      PSM: ami-03b6d8347cdb083ac
+      PSMP: ami-0e095a2572a778847
+    eu-north-1:
+      Vault: ami-04db7fdf1c0b404f1
+      CPM: ami-0c8c7ad466aa67d46
+      PVWA: ami-0b8835bd7df3d49f5
+      PSM: ami-00d4518b82b5b6102
+      PSMP: ami-00fe376a9d7e36635
     us-west-1:
-      Vault: ami-00353cf97859c10e9
-      CPM: ami-0042948ba76b3aaae
-      PVWA: ami-083094be570966462
-      PSM: ami-00d4afe69a4959435
+      Vault: ami-04aecb6f745af036c
+      CPM: ami-024ccacdc28e81f76
+      PVWA: ami-0de5c4c8c9bca0cb0
+      PSM: ami-0dd2a23012fbec5c1
       PSMP: ami-09ed4d17a11adbfc3
     us-west-2:
-      Vault: ami-052788403d2fa7f44
-      CPM: ami-0d8facd74ed46a94e
-      PVWA: ami-024db26bb21e00803
-      PSM: ami-08ace74fec7fa1293
+      Vault: ami-0cabae8dd6955d05b
+      CPM: ami-01340112e65a9dec5
+      PVWA: ami-00d50ce1d5da1d15f
+      PSM: ami-0853d238032e027e0
       PSMP: ami-086118cd1b0ba374a
     ca-central-1:
-      Vault: ami-0d5c03b3349f727e9
-      CPM: ami-0a356e1a665bc6581
-      PVWA: ami-0c4fe3bec5c5f90b9
-      PSM: ami-0a1899f2db7879820
+      Vault: ami-01e38aa65bc7dbf46
+      CPM: ami-0e4ebf55a8067bd83
+      PVWA: ami-0865c62671a180609
+      PSM: ami-0560bd5db3ae377ca
       PSMP: ami-0e551e7130308ee04
     eu-west-1:
-      Vault: ami-076e7778eb66ffbb1
-      CPM: ami-098b3fc5157aa2b85
-      PVWA: ami-05718b3b3218846ef
-      PSM: ami-055797a51fd69f87a
+      Vault: ami-006b4d617f12159fe
+      CPM: ami-08122d29fbb72adaa
+      PVWA: ami-0231722fa7f73e1ee
+      PSM: ami-041b242d6f75499c0
       PSMP: ami-00a5a54060ab10e19
     eu-central-1:
-      Vault: ami-0e347ea01ed304fb4
-      CPM: ami-0bb5a1b017fa9853e
-      PVWA: ami-017c74c2fef061f4b
-      PSM: ami-0e5cfcb7995396ece
+      Vault: ami-0be1b12c31b86f3d7
+      CPM: ami-08c69b63f7dc4e281
+      PVWA: ami-04da425eb49280c9c
+      PSM: ami-0489a53a37cf167f0
       PSMP: ami-0d06e5831a18801cd
     ap-southeast-1:
-      Vault: ami-0fc1fe1cda9594ffa
-      CPM: ami-08f6cea6d65c93c6d
-      PVWA: ami-0fd41b8241140d976
-      PSM: ami-03cdefc68513080f7
+      Vault: ami-022e49b93937c9332
+      CPM: ami-02d01ad9f674a5345
+      PVWA: ami-09730a9a25be0e84b
+      PSM: ami-0a0df50d420022315
       PSMP: ami-0cdbc4cd7569dabbe
     ap-southeast-2:
-      Vault: ami-09796bdf31a3b4d4c
-      CPM: ami-0b27764e42ab737c5
-      PVWA: ami-0295a8ce05480f017
-      PSM: ami-07af05bb0f6125b00
+      Vault: ami-0387047bc9b729cb0
+      CPM: ami-0a25075ce2dfa2b2d
+      PVWA: ami-0297f078dbda96aea
+      PSM: ami-08d07723062c084a1
       PSMP: ami-09aab0d547c17452b
     ap-northeast-2:
-      Vault: ami-0e5e74e37d1c4384f
-      CPM: ami-0aab27fc5464d766c
-      PVWA: ami-031ef946c0e61c5d2
-      PSM: ami-027565ab508ddc064
+      Vault: ami-0c0beec1645f42cc1
+      CPM: ami-055d47512e2d175a9
+      PVWA: ami-0722d86fe237e634d
+      PSM: ami-05e26aa2c2957ba1e
       PSMP: ami-0aa274dc005242bb6
     ap-northeast-1:
-      Vault: ami-0f0dc1282040cb772
-      CPM: ami-036203ba644b690f8
-      PVWA: ami-0d903e07fd916639a
-      PSM: ami-0b6eaa39085af85eb
+      Vault: ami-044641fca1ef29285
+      CPM: ami-0566721460852d4a5
+      PVWA: ami-08ae64d6ab18893bf
+      PSM: ami-0e51bb04dd10ebd8a
       PSMP: ami-0396b14d58a6ec5f1
     ap-south-1:
-      Vault: ami-0328592c425ace5be
-      CPM: ami-05b25eeb467e840d5
-      PVWA: ami-03c96f133235523cf
-      PSM: ami-08ef88d9c140f194e
+      Vault: ami-0dafb49c74cb0dc37
+      CPM: ami-0075be1ab5b166a1b
+      PVWA: ami-07767f03c67c93ca0
+      PSM: ami-0bf9542529ebe9d77
       PSMP: ami-0e40caa4badc97fc8
     sa-east-1:
-      Vault: ami-0c443bbb958573592
-      CPM: ami-0c282aeadead5667f
-      PVWA: ami-0767c024d18c3d3bc
-      PSM: ami-0a929153b71f68464
+      Vault: ami-028c60e6ed1a1ba0e
+      CPM: ami-0d6a6538b058b1416
+      PVWA: ami-07fdf1b2b1159de8d
+      PSM: ami-0bb1736d5717e8da2
       PSMP: ami-09c302ad46f119ba1
     us-gov-west-1:
-      Vault: ami-0789dc0e5567e54ae
-      CPM: ami-0a877b13b4f0644f5
-      PVWA: ami-09ba42fdf22494709
-      PSM: ami-f8063599
+      Vault: ami-072c537a519c44d8f
+      CPM: ami-0a40baad3149a5245
+      PVWA: ami-0fb192e844acc09ed
+      PSM: ami-07d2b233e191e8512
       PSMP: ami-0deb907abf462cb5d
     us-gov-east-1:
-      Vault: ami-0d6dccbfe57682bf6
-      CPM: ami-0d8f980fd4776a8a9
-      PVWA: ami-0790025c804ef298c
-      PSM: ami-0458a131fafcef33a
+      Vault: ami-0c3651c4d17d06053
+      CPM: ami-0e42446a260d573b7
+      PVWA: ami-0b43888a715544b57
+      PSM: ami-0029cf747315299fe
       PSMP: ami-0e3df090306e0239e
 Outputs:
   CloudWatchLogGroupName:
