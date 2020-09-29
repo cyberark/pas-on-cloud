@@ -548,33 +548,33 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-09e899129e882351e
+      Vault: ami-01511ba4fc517cef2
     us-east-2:
-      Vault: ami-0bfff7ddd6a8b4abf
+      Vault: ami-01da8a49ffa1cf578
     eu-west-2:
-      Vault: ami-0b3941a57abdfec94
+      Vault: ami-07cd29ade3dae1159
     us-west-1:
-      Vault: ami-04aecb6f745af036c
+      Vault: ami-08900d437293f6027
     us-west-2:
-      Vault: ami-0cabae8dd6955d05b
+      Vault: ami-0b9a1112a689a957f
     ca-central-1:
-      Vault: ami-01e38aa65bc7dbf46
+      Vault: ami-0c48eeaaa4e2bca1a
     eu-west-1:
-      Vault: ami-006b4d617f12159fe
+      Vault: ami-0284eac8e5605658c
     eu-central-1:
-      Vault: ami-0be1b12c31b86f3d7
+      Vault: ami-0cfbecbcf14098f23
     ap-southeast-1:
-      Vault: ami-022e49b93937c9332
+      Vault: ami-08db75cf09c3209f3
     ap-southeast-2:
-      Vault: ami-0387047bc9b729cb0
+      Vault: ami-022d97240cd52f9f4
     ap-northeast-2:
-      Vault: ami-0c0beec1645f42cc1
+      Vault: ami-08785a7b1f23499e9
     ap-northeast-1:
-      Vault: ami-044641fca1ef29285
+      Vault: ami-0bb11b5f2d616973a
     ap-south-1:
-      Vault: ami-0dafb49c74cb0dc37
+      Vault: ami-058ed9a18cf33af52
     sa-east-1:
-      Vault: ami-028c60e6ed1a1ba0e
+      Vault: ami-06033e3133ea5f707
     us-gov-west-1:
       Vault: ami-072c537a519c44d8f
     us-gov-east-1:
