@@ -1021,7 +1021,7 @@ Mappings:
       CPM: ami-0a04520d78b9dbf8c
       PVWA: ami-003ec0d259607d52d
       PSM: ami-01218ce785cb15b93
-      PSMP: ami-08a8b3a7804590cdc
+      PSMP: ami-00b833b882e05941d
     us-gov-east-1:
       CPM: ami-015e7abd2d26d7cc9
       PVWA: ami-0746a35e1a2e3c8bb
