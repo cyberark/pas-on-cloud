@@ -1546,7 +1546,7 @@ Mappings:
       CPM: ami-056b1708ad3f3b9a8
       PVWA: ami-024bb3c7fc757272e
       PSM: ami-0e944d6da65363235
-      PSMP: ami-0fa62bb60a09456aa
+      PSMP: ami-042ba59b2938a7abd
     eu-west-3:
       Vault: ami-0f6ab6e6eee805d9a
       CPM: ami-0fcf527d1bc4530a5
