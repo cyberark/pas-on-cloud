@@ -39,6 +39,10 @@ PARAM(
     [Parameter(Mandatory = $false)]
     [String]
     $VaultAccessSAS
+    # Supplied by CyberArk PTA AccessSAS
+    [Parameter(Mandatory = $false)]
+    [String]
+    $PtaAccessSAS
 )
  
 #Set variables
@@ -47,6 +51,7 @@ $pvwaDestBlob = "pas-pvwa-$release.vhd"
 $psmDestBlob = "pas-psm-$release.vhd"
 $psmpDestBlob = "pas-psmp-$release.vhd"
 $vaultDestBlob = "pas-vault-$release.vhd"
+$ptaDestBlob = "pas-pta-$release.vhd"
 
 Try
 {
@@ -96,7 +101,13 @@ Try
     {
         Start-AzureStorageBlobCopy -AbsoluteUri $VaultAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $vaultDestBlob -Force
     }
-     
+
+    #Start copy pta
+    if ($PtaAccessSAS)
+    {
+        Start-AzureStorageBlobCopy -AbsoluteUri $PtaAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $ptaDestBlob -Force
+    }
+
     #Wait for vhd to be fully copied (~40 minutes)
         
     #Create Cpm Image from blob
@@ -158,6 +169,19 @@ Try
         $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $vaultblobUri
         $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
     }    
+
+    #Create Pta Image from blob
+    if ($PtaAccessSAS)
+    {
+        Get-AzureStorageBlobCopyState -Blob $ptaDestBlob -Container $containerName -Context $destContext -WaitForComplete
+        $ptablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $ptaDestBlob)
+        $vmOSType = "Windows"
+        $imageName = "PAS-PTA-$release"
+        $imageConfig = New-AzureRmImageConfig -Location $location
+        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $ptablobUri
+        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
+    }   
+
 }
 Catch
 {
