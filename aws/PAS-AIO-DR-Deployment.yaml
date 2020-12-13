@@ -1261,11 +1261,11 @@ Mappings:
       Vault: ami-0a88c862fc102a347
       Components: ami-0cb577ae9c4738267
     us-gov-west-1:
-      Vault: ami-072c537a519c44d8f
-      Components: ami-06ebf8a0d1efeb2c0
+      Vault: ami-0c200ca4169765f82
+      Components: ami-07b54e14a87acc6fa
     us-gov-east-1:
-      Vault: ami-0c3651c4d17d06053
-      Components: ami-06d616df5e1ac70d0
+      Vault: ami-0e957ca48725eefd0
+      Components: ami-07e9199ade6a01835
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
