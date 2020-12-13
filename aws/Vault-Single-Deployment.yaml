@@ -718,37 +718,37 @@ Conditions:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-09e899129e882351e
+      Vault: ami-03f0247c921dfbd80
     us-east-2:
-      Vault: ami-0bfff7ddd6a8b4abf
+      Vault: ami-0a5f426141ffac8c5
     eu-west-2:
-      Vault: ami-0b3941a57abdfec94
+      Vault: ami-04914525ad38c1ba1
     eu-west-3:
-      Vault: ami-0b513be6b13b06086
+      Vault: ami-0da004ec8729449b5
     eu-north-1:
-      Vault: ami-04db7fdf1c0b404f1
+      Vault: ami-0b88c7ea73bc7d617
     us-west-1:
-      Vault: ami-04aecb6f745af036c
+      Vault: ami-0271df178a002f414
     us-west-2:
-      Vault: ami-0cabae8dd6955d05b
+      Vault: ami-0e219dce6006c1f03
     ca-central-1:
-      Vault: ami-01e38aa65bc7dbf46
+      Vault: ami-0892312d4d05bebf4
     eu-west-1:
-      Vault: ami-006b4d617f12159fe
+      Vault: ami-0357e320b614a8c1c
     eu-central-1:
-      Vault: ami-0be1b12c31b86f3d7
+      Vault: ami-04ac45703e289ef12
     ap-southeast-1:
-      Vault: ami-022e49b93937c9332
+      Vault: ami-00086633fb5e783b9
     ap-southeast-2:
-      Vault: ami-0387047bc9b729cb0
+      Vault: ami-05589cdfd807a66b4
     ap-northeast-2:
-      Vault: ami-0c0beec1645f42cc1
+      Vault: ami-08add08c9d0d77335
     ap-northeast-1:
-      Vault: ami-044641fca1ef29285
+      Vault: ami-0735c2a51811acf6c
     ap-south-1:
-      Vault: ami-0dafb49c74cb0dc37
+      Vault: ami-0f259fd5535725e67
     sa-east-1:
-      Vault: ami-028c60e6ed1a1ba0e
+      Vault: ami-0a88c862fc102a347
     us-gov-west-1:
       Vault: ami-072c537a519c44d8f
     us-gov-east-1:
