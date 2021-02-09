@@ -1213,59 +1213,59 @@ Conditions:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-01511ba4fc517cef2
-      Components: ami-03a07c6ea32d6bc94
+      Vault: ami-03f0247c921dfbd80
+      Components: ami-0f8d6e646e5e09857
     us-east-2:
-      Vault: ami-01da8a49ffa1cf578
-      Components: ami-012fbe1d4d6f2be14
+      Vault: ami-0a5f426141ffac8c5
+      Components: ami-077b8cbb49e543fc3
     eu-west-2:
-      Vault: ami-07cd29ade3dae1159
-      Components: ami-0a24d91df887fb146
+      Vault: ami-04914525ad38c1ba1
+      Components: ami-0063f4871287514bb
     eu-west-3:
-      Vault: ami-0f6ab6e6eee805d9a
-      Components: ami-0c33dabc076e79e7f
+      Vault: ami-0da004ec8729449b5
+      Components: ami-0db0100034a75c3a6
     eu-north-1:
-      Vault: ami-0585d672e2adf121a
-      Components: ami-0d45add771747f204
+      Vault: ami-0b88c7ea73bc7d617
+      Components: ami-016d4e636dc9626a7
     us-west-1:
-      Vault: ami-08900d437293f6027
-      Components: ami-0f53b1f8cc385357a
+      Vault: ami-0271df178a002f414
+      Components: ami-022a6f75f30f349a3
     us-west-2:
-      Vault: ami-0b9a1112a689a957f
-      Components: ami-0c974ea5eec079486
+      Vault: ami-0e219dce6006c1f03
+      Components: ami-094c397fb6b8ab886
     ca-central-1:
-      Vault: ami-0c48eeaaa4e2bca1a
-      Components: ami-04c159011affac501
+      Vault: ami-0892312d4d05bebf4
+      Components: ami-000c22ec08fded0b3
     eu-west-1:
-      Vault: ami-0284eac8e5605658c
-      Components: ami-093084de2abc487fe
+      Vault: ami-0357e320b614a8c1c
+      Components: ami-0866b4f3eb1d0f188
     eu-central-1:
-      Vault: ami-0cfbecbcf14098f23
-      Components: ami-048060619542fab34
+      Vault: ami-04ac45703e289ef12
+      Components: ami-0c4f58cd3d6de3548
     ap-southeast-1:
-      Vault: ami-08db75cf09c3209f3
-      Components: ami-0e29ffcb8a086d31a
+      Vault: ami-00086633fb5e783b9
+      Components: ami-0d4e1f776bd61f0c0
     ap-southeast-2:
-      Vault: ami-022d97240cd52f9f4
-      Components: ami-0c29a808a035d3aa9
+      Vault: ami-05589cdfd807a66b4
+      Components: ami-07c590405903ef1b8
     ap-northeast-2:
-      Vault: ami-08785a7b1f23499e9
-      Components: ami-0d9cf5fdc3ffa3a19
+      Vault: ami-08add08c9d0d77335
+      Components: ami-020edb5d65d6e5905
     ap-northeast-1:
-      Vault: ami-0bb11b5f2d616973a
-      Components: ami-0459b1f8bc9543470
+      Vault: ami-0735c2a51811acf6c
+      Components: ami-00508253596175c3c
     ap-south-1:
-      Vault: ami-058ed9a18cf33af52
-      Components: ami-0dcc4f0f4844eecce
+      Vault: ami-0f259fd5535725e67
+      Components: ami-00bbd8e4af8cdcd66
     sa-east-1:
-      Vault: ami-06033e3133ea5f707
-      Components: ami-0db98732706f5eaae
+      Vault: ami-0a88c862fc102a347
+      Components: ami-0cb577ae9c4738267
     us-gov-west-1:
-      Vault: ami-0fc31a148ee8801ec
-      Components: ami-07f5bed498aeef036
+      Vault: ami-0c200ca4169765f82
+      Components: ami-07b54e14a87acc6fa
     us-gov-east-1:
-      Vault: ami-042e6722e554232f1
-      Components: ami-0a050d29c561e4617
+      Vault: ami-0e957ca48725eefd0
+      Components: ami-07e9199ade6a01835
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
