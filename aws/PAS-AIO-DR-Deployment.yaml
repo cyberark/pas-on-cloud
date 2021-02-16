@@ -1213,53 +1213,53 @@ Conditions:
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-03f0247c921dfbd80
-      Components: ami-0f8d6e646e5e09857
+      Vault: ami-05ad2b7bb117d064d
+      Components: ami-01a83fd49991f032a
     us-east-2:
-      Vault: ami-0a5f426141ffac8c5
-      Components: ami-077b8cbb49e543fc3
+      Vault: ami-0ba34074ff95c6a9b
+      Components: ami-07354399166508519
     eu-west-2:
-      Vault: ami-04914525ad38c1ba1
-      Components: ami-0063f4871287514bb
+      Vault: ami-0d8099cc7ba5d452c
+      Components: ami-0742e6b091a583535
     eu-west-3:
-      Vault: ami-0da004ec8729449b5
-      Components: ami-0db0100034a75c3a6
+      Vault: ami-08e2ab590a0dea634
+      Components: ami-040b833e67733ac5d
     eu-north-1:
-      Vault: ami-0b88c7ea73bc7d617
-      Components: ami-016d4e636dc9626a7
+      Vault: ami-036c01f4dab663417
+      Components: ami-004cc0a62895394ae
     us-west-1:
-      Vault: ami-0271df178a002f414
-      Components: ami-022a6f75f30f349a3
+      Vault: ami-0105fe8c6a9fad8c1
+      Components: ami-06faed7ddbe56f44e
     us-west-2:
-      Vault: ami-0e219dce6006c1f03
-      Components: ami-094c397fb6b8ab886
+      Vault: ami-0353948cc75dc4160
+      Components: ami-074fed7b784cb9386
     ca-central-1:
-      Vault: ami-0892312d4d05bebf4
-      Components: ami-000c22ec08fded0b3
+      Vault: ami-071532fbb023f3107
+      Components: ami-04c686a9ba974c293
     eu-west-1:
-      Vault: ami-0357e320b614a8c1c
-      Components: ami-0866b4f3eb1d0f188
+      Vault: ami-0b3bfde34f267dcb2
+      Components: ami-0c4d510f55152941b
     eu-central-1:
-      Vault: ami-04ac45703e289ef12
-      Components: ami-0c4f58cd3d6de3548
+      Vault: ami-0fe305af50263c06d
+      Components: ami-08c6c21c0a3fef9f8
     ap-southeast-1:
-      Vault: ami-00086633fb5e783b9
-      Components: ami-0d4e1f776bd61f0c0
+      Vault: ami-01263202c96d9988e
+      Components: ami-010d83625ab8aa427
     ap-southeast-2:
-      Vault: ami-05589cdfd807a66b4
-      Components: ami-07c590405903ef1b8
+      Vault: ami-0d1cb2cb7c8803cdb
+      Components: ami-0cc324288ccbe8ba1
     ap-northeast-2:
-      Vault: ami-08add08c9d0d77335
-      Components: ami-020edb5d65d6e5905
+      Vault: ami-0d687ae9bd0bb5ce0
+      Components: ami-03f629e2b8c9122bc
     ap-northeast-1:
-      Vault: ami-0735c2a51811acf6c
-      Components: ami-00508253596175c3c
+      Vault: ami-0dc24a348d2146743
+      Components: ami-01ed492b40d1eb138
     ap-south-1:
-      Vault: ami-0f259fd5535725e67
-      Components: ami-00bbd8e4af8cdcd66
+      Vault: ami-0e2c349d77eef16c4
+      Components: ami-0c51616e5f78bc4e0
     sa-east-1:
-      Vault: ami-0a88c862fc102a347
-      Components: ami-0cb577ae9c4738267
+      Vault: ami-08a34ccf19521eb28
+      Components: ami-058346befdc8db3cf
     us-gov-west-1:
       Vault: ami-0c200ca4169765f82
       Components: ami-07b54e14a87acc6fa
