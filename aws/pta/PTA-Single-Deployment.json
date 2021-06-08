@@ -157,23 +157,23 @@
                         "        physicalResourceId = event['PhysicalResourceId']",
                         "",
                         "    if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:",
-                        "            print 'The property Password must not be empty'",
+                        "            print('The property Password must not be empty')",
                         "            return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)",
                         "",
                         "    try:",
                         "        if event['RequestType'] == 'Delete':",
                         "            deletePassword(physicalResourceId)",
-                        "            print 'Password successfully deleted. Id='+physicalResourceId",
+                        "            print('Password successfully deleted. Id='+physicalResourceId)",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "",
                         "        if event['RequestType'] == 'Create':",
                         "            storePassword(physicalResourceId, event['ResourceProperties']['Password'])",
-                        "            print 'The store parameter has been created. Id='+physicalResourceId",
+                        "            print('The store parameter has been created. Id='+physicalResourceId)",
                         "            response = { 'SsmId': physicalResourceId }",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)",
                         "",
                         "    except client.exceptions.ParameterNotFound:",
-                        "        print 'Item already removed'",
+                        "        print('Item already removed')",
                         "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "    except Exception as E:",
                         "        print E",
@@ -182,7 +182,7 @@
                   ]
                }
             },
-            "Runtime":"python2.7",
+            "Runtime":"python3.7",
             "Handler":"index.lambda_handler",
             "Role":{
                "Fn::GetAtt":[
@@ -221,22 +221,22 @@
                         "    try:",
                         "        if event['RequestType'] == 'Create':",
                         "            deletePassword(event['ResourceProperties']['key'])",
-                        "            print 'Password succesfully deleted. Id='+event['ResourceProperties']['key']",
+                        "            print('Password succesfully deleted. Id='+event['ResourceProperties']['key'])",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "        if event['RequestType'] == 'Delete':",
                         "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "",
                         "    except client.exceptions.ParameterNotFound:",
-                        "        print 'Item already removed'",
+                        "        print('Item already removed')",
                         "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)",
                         "    except Exception as E:",
-                        "        print E",
+                        "        print(E)",
                         "        return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)"
                      ]
                   ]
                }
             },
-            "Runtime":"python2.7",
+            "Runtime":"python3.7",
             "Handler":"index.lambda_handler",
             "Role":{
                "Fn::GetAtt":[
