@@ -1,0 +1,597 @@
+Resources:
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 30
+    DeletionPolicy: Retain
+  DeployBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+  LambdaDeployRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - '*'
+        - PolicyName: SSM
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:PutParameter'
+                  - 'ssm:DeleteParameter'
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+        - PolicyName: S3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                  - 's3:ListBucket'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                  - 's3:DeleteObjectVersion'
+                Resource:
+                  - !Join 
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Ref DeployBucket
+                      - /*
+                  - !Join 
+                    - ''
+                    - - 'arn:aws:s3:::'
+                      - !Ref PTALicenseBucket
+                      - /*
+    Condition: EULACondition
+  StorePasswordLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Description: Saves given password to parameter store as SecureString
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+          def storePassword(name, value):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.put_parameter(
+                  Name = name,
+                  Value = value,
+                  Type = 'SecureString'
+              )
+
+          def deletePassword(name):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.delete_parameter(
+                  Name = name
+              )
+
+          def lambda_handler(event, context):
+
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                      print ('The property Password must not be empty')
+                      return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+
+              try:
+                  if event['RequestType'] == 'Delete':
+                      deletePassword(physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+
+                  if event['RequestType'] == 'Create':
+                      storePassword(physicalResourceId, event['ResourceProperties']['Password'])
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = { 'SsmId': physicalResourceId }
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+
+              except client.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+                  
+      Runtime: python3.7
+      Timeout: 60
+      Handler: index.lambda_handler
+      Role: !GetAtt 
+        - LambdaDeployRole
+        - Arn
+    Condition: EULACondition
+  DeletePasswordLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Description: Delete password from parameter store
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+          def deletePassword(name):
+              ssmClient = boto3.client('ssm')
+              return ssmClient.delete_parameter(
+                  Name = name
+              )
+
+          def lambda_handler(event, context):
+
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              
+              try:
+                  if event['RequestType'] == 'Create':
+                      deletePassword(event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+
+              except client.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+                  
+      Runtime: python3.7
+      Timeout: 60
+      Handler: index.lambda_handler
+      Role: !GetAtt 
+        - LambdaDeployRole
+        - Arn
+    Condition: EULACondition
+  StoreAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Properties:
+      ServiceToken: !GetAtt 
+        - StorePasswordLambda
+        - Arn
+      Password: !Ref VaultAdminPassword
+    Condition: EULACondition
+    DependsOn:
+      - LambdaDeployRole
+  CleanAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 
+        - DeletePasswordLambda
+        - Arn
+      key: !GetAtt 
+        - StoreAdminPassword
+        - SsmId
+    Condition: EULACondition
+    DependsOn:
+      - LambdaDeployRole
+      - StorePasswordLambda
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
+    Condition: EULACondition
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+    Condition: EULACondition
+  PTAMachine:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref PTAInstanceName
+      SecurityGroupIds: !Ref PTAInstanceSecurityGroups
+      SubnetId: !Ref PTAInstanceSubnetId
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - PTA
+      InstanceType: !Ref PTAInstanceType
+      UserData: !Base64 
+        'Fn::Sub': >
+          #!/bin/bash -e
+
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+          
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
+
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          install_all:
+            - install_cfn
+            - install_logs
+            - install_pta
+        install_cfn:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main] 
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.PTAMachine.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+
+                runas=root
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        install_logs:
+          files:
+            /etc/awslogs/awslogs.conf:
+              content: !Sub |
+                [general]
+                state_file= /var/awslogs/state/agent-state
+
+                [/var/log/cloud-init.log] 
+                file = /var/log/cloud-init.log
+                log_group_name = ${LogGroup} 
+                log_stream_name = {instance_id}/cloud-init.log 
+                datetime_format = 
+
+                [/var/log/cloud-init-output.log]
+                file = /var/log/cloud-init-output.log 
+                log_group_name = ${LogGroup}
+                log_stream_name = {instance_id}/cloud-init-output.log
+                datetime_format = 
+
+                [/var/log/cfn-init.log] 
+                file = /var/log/cfn-init.log
+                log_group_name = ${LogGroup} 
+                log_stream_name = {instance_id}/cfn-init.log 
+                datetime_format = 
+
+                [/var/log/cfn-hup.log]
+                file = /var/log/cfn-hup.log
+                log_group_name = ${LogGroup}
+                log_stream_name = {instance_id}/cfn-hup.log
+                datetime_format = 
+
+                [/var/log/cfn-wire.log]
+                file = /var/log/cfn-wire.log
+                log_group_name = ${LogGroup}
+                log_stream_name = {instance_id}/cfn-wire.log 
+                datetime_format = 
+                
+              mode: '000444'
+              owner: root
+              group: root
+            /etc/awslogs/awscli.conf:
+              content: !Sub | 
+                [plugins]
+                cwlogs = cwlogs
+                
+                [default]
+                region = ${AWS::Region}
+
+              mode: '000444'
+              owner: root
+              group: root
+          commands:
+            01_create_state_directory:
+              command: mkdir -p /var/awslogs/state
+          services:
+            sysvinit:
+              awslogs:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/awslogs/awslogs.conf
+        install_pta:
+          files:
+            /tmp/deploy.py:
+              content: !Sub | 
+                import boto3
+                import time 
+                
+                time.sleep(120)
+
+                def downloadFile(bucket,filePath,target):
+                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
+                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
+                    return target
+                    
+                licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
+                
+            /tmp/register.sh:
+              content: !Sub | 
+                #!/bin/bash
+
+                export vault_ip=${VaultPrivateIP} 
+                export vault_adminUser=${VaultAdminUser}
+                export vault_adminPassword=${VaultAdminPassword}
+                export pvwa_host=${PVWAPrivateDNS}
+                export vault_timezone=${VaultTimeZone}
+                export timezone=${PTAServerTimeZone}
+                export vault_port=1858
+                
+                if [ ! -z "${DRPrivateIP}" ]; then
+                    export vault_ipsDR=${DRPrivateIP}
+                fi;
+
+                echo $vault_ip
+                echo $vault_ipsDR 
+                echo $vault_timezone 
+                echo $timezone 
+                echo $vault_port 
+                echo $vault_adminUser 
+                echo $vault_adminPassword 
+                echo $pvwa_host
+
+                python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
+                    
+              mode: '000755'
+          commands:
+            01-copylicensefrombucket:
+              command: python /tmp/deploy.py
+            02-addowner:
+              command: >-
+                sudo chown tomcat:pta_server
+                /opt/tomcat/diamond-resources/license.xml
+            03-setpermissions:
+              command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
+            04-executeptaconfigurationscript:
+              command: sudo ./tmp/register.sh
+            99-SignalCompletion:
+              command: !Sub >-
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+    Condition: EULACondition
+    DependsOn:
+      - StoreAdminPassword
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    DeletionPolicy: Retain
+  ComponentInstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: ComponentInsancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+            Resource:
+              - !Sub >-
+                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+      Roles:
+        - !Ref ComponentInstanceRole
+    Condition: EULACondition
+Parameters:
+  EULA:
+    Type: String
+    Description: I have read and agree to the Terms and Conditions.
+    AllowedValues:
+      - Accept
+      - Decline
+    Default: Decline
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: Select an existing Key Pair from your AWS account.
+    ConstraintDescription: Can contain only ASCII characters.
+  PTALicenseBucket:
+    Type: String
+    Description: Enter the name of the bucket containing the license file.
+  LicenseFile:
+    Type: String
+    Description: Enter the path of the license file within the bucket.
+    Default: license.xml
+  PTAServerTimeZone:
+    Type: String
+    Description: >-
+      Enter the time zone of the PTA Server.
+      https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm 
+  VaultPrivateIP:
+    Type: String
+    Description: Enter the IP of the Vault instance.
+  DRPrivateIP:
+    Type: String
+    Description: >-
+      Enter the IPs of the Vault DR instances, separated by comma (,).
+      (Optional). 
+  VaultTimeZone:
+    Type: String
+    Description: Enter the time zone of the Vault Server.
+  VaultAdminUser:
+    Type: String
+    Description: Enter the Vault Administrator user.
+    Default: Administrator
+    MinLength: 8
+  VaultAdminPassword:
+    Type: String
+    Description: Enter a password for the Vault Administrator user.
+    NoEcho: true
+    MinLength: 8
+  PVWAPrivateDNS:
+    Type: String
+    Description: Enter the private DNS of the PVWA instance.
+  PTAInstanceName:
+    Type: String
+    Description: Enter a name for the PTA instance.
+    Default: PTA_Component
+  PTAInstanceType:
+    Type: String
+    Description: Select the instance type of the PTA instance.
+    AllowedValues:
+      - m4.2xlarge
+      - m4.4xlarge
+    Default: m4.2xlarge
+  PTAInstanceSecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Description: Assign Security Groups to the PTA instance.
+  PTAInstanceSubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: Select the Subnet Id where the PTA instance will reside.
+Conditions:
+  EULACondition: !Equals 
+    - Accept
+    - !Ref EULA
+  DRValueEmpty: !Equals 
+    - ''
+    - !Ref DRPrivateIP
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: General parameters
+        Parameters:
+          - EULA
+          - KeyName
+      - Label:
+          default: Vault and DR information
+        Parameters:
+          - VaultPrivateIP
+          - DRPrivateIP
+          - VaultTimeZone
+          - VaultAdminUser
+          - VaultAdminPassword
+          - PVWAPrivateDNS
+      - Label:
+          default: PTA configuration
+        Parameters:
+          - PTALicenseBucket
+          - LicenseFile
+          - PTAInstanceName
+          - PTAServerTimeZone
+          - PTAInstanceType
+          - PTAInstanceSecurityGroups
+          - PTAInstanceSubnetId
+    ParameterLabels:
+      EULA:
+        default: License Agreement
+      KeyName:
+        default: Key Pair
+      VaultPrivateIP:
+        default: Vault Private IP
+      DRPrivateIP:
+        default: Vault DR Private IP
+      VaultTimeZone:
+        default: Vault Time Zones
+      VaultAdminUser:
+        default: Vault Admin User
+      VaultAdminPassword:
+        default: Vault Admin Password
+      PVWAPrivateDNS:
+        default: PVWA Instance private DNS
+      PTALicenseBucket:
+        default: PTA License Bucket
+      LicenseFile:
+        default: License File
+      PTAInstanceName:
+        default: PTA Instance Name
+      PTAServerTimeZone:
+        default: PTA Server Time Zone
+      PTAInstanceType:
+        default: PTA Instance Type
+      PTAInstanceSecurityGroups:
+        default: PTA Instance Security Groups
+      PTAInstanceSubnetId:
+        default: PTA Instance Subnet Id
+Mappings:
+  RegionMap:
+    us-east-1:
+      PTA: ami-067810abfed5f92b0
+    us-east-2:
+      PTA: ami-0eff7a81246d001d8
+    eu-west-2:
+      PTA: ami-0dc10ea3098ad69db
+    us-west-1:
+      PTA: ami-0b3d78d239d55509e
+    us-west-2:
+      PTA: ami-063e67533878a4e27
+    ca-central-1:
+      PTA: ami-09746870593f38cda
+    eu-west-1:
+      PTA: ami-0b32579d6f3ed35ba
+    eu-central-1:
+      PTA: ami-0bc38743c9254c5d3
+    ap-southeast-1:
+      PTA: ami-00c3b7d02343bb21d
+    ap-southeast-2:
+      PTA: ami-0e5ce5e19999d7697
+    ap-northeast-2:
+      PTA: ami-091b1bd9fdd64fe81
+    ap-northeast-1:
+      PTA: ami-0777a9ab951a1e239
+    ap-south-1:
+      PTA: ami-00844e58910ba2c39
+    sa-east-1:
+      PTA: ami-071d36b6415462a72
+    eu-west-3:
+      PTA: ami-06c0ee40efde875ed
+Outputs:
+  CloudWatchLogGroupName:
+    Description: The name of the CloudWatch log group
+    Value: !Ref LogGroup
