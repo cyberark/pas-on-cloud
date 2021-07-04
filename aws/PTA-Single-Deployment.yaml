@@ -1,9 +1,4 @@
 Resources:
-  LogGroup:
-    Type: 'AWS::Logs::LogGroup'
-    Properties:
-      RetentionInDays: 30
-    DeletionPolicy: Retain
   DeployBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -21,19 +16,6 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Policies:
-        - PolicyName: CloudWatch
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:DescribeLogGroups'
-                  - 'logs:DescribeLogStreams'
-                  - 'logs:PutLogEvents'
-                Resource:
-                  - '*'
         - PolicyName: SSM
           PolicyDocument:
             Version: 2012-10-17
@@ -217,19 +199,6 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     Condition: EULACondition
   PTAMachine:
     Type: 'AWS::EC2::Instance'
@@ -248,9 +217,9 @@ Resources:
         'Fn::Sub': >
           #!/bin/bash -e
 
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
           
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
 
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
@@ -258,97 +227,7 @@ Resources:
       'AWS::CloudFormation::Init':
         configSets:
           install_all:
-            - install_cfn
-            - install_logs
             - install_pta
-        install_cfn:
-          files:
-            /etc/cfn/cfn-hup.conf:
-              content: !Sub |
-                [main] 
-                stack=${AWS::StackId}
-                region=${AWS::Region}
-
-              mode: '000400'
-              owner: root
-              group: root
-            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Sub |
-                [cfn-auto-reloader-hook]
-                triggers=post.update
-                path=Resources.PTAMachine.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
-
-                runas=root
-          services:
-            sysvinit:
-              cfn-hup:
-                enabled: 'true'
-                ensureRunning: 'true'
-                files:
-                  - /etc/cfn/cfn-hup.conf
-                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-        install_logs:
-          files:
-            /etc/awslogs/awslogs.conf:
-              content: !Sub |
-                [general]
-                state_file= /var/awslogs/state/agent-state
-
-                [/var/log/cloud-init.log] 
-                file = /var/log/cloud-init.log
-                log_group_name = ${LogGroup} 
-                log_stream_name = {instance_id}/cloud-init.log 
-                datetime_format = 
-
-                [/var/log/cloud-init-output.log]
-                file = /var/log/cloud-init-output.log 
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cloud-init-output.log
-                datetime_format = 
-
-                [/var/log/cfn-init.log] 
-                file = /var/log/cfn-init.log
-                log_group_name = ${LogGroup} 
-                log_stream_name = {instance_id}/cfn-init.log 
-                datetime_format = 
-
-                [/var/log/cfn-hup.log]
-                file = /var/log/cfn-hup.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-hup.log
-                datetime_format = 
-
-                [/var/log/cfn-wire.log]
-                file = /var/log/cfn-wire.log
-                log_group_name = ${LogGroup}
-                log_stream_name = {instance_id}/cfn-wire.log 
-                datetime_format = 
-                
-              mode: '000444'
-              owner: root
-              group: root
-            /etc/awslogs/awscli.conf:
-              content: !Sub | 
-                [plugins]
-                cwlogs = cwlogs
-                
-                [default]
-                region = ${AWS::Region}
-
-              mode: '000444'
-              owner: root
-              group: root
-          commands:
-            01_create_state_directory:
-              command: mkdir -p /var/awslogs/state
-          services:
-            sysvinit:
-              awslogs:
-                enabled: 'true'
-                ensureRunning: 'true'
-                files:
-                  - /etc/awslogs/awslogs.conf
         install_pta:
           files:
             /tmp/deploy.py:
@@ -406,7 +285,7 @@ Resources:
               command: sudo ./tmp/register.sh
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     Condition: EULACondition
     DependsOn:
       - StoreAdminPassword
@@ -591,7 +470,3 @@ Mappings:
       PTA: ami-071d36b6415462a72
     eu-west-3:
       PTA: ami-06c0ee40efde875ed
-Outputs:
-  CloudWatchLogGroupName:
-    Description: The name of the CloudWatch log group
-    Value: !Ref LogGroup
