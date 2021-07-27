@@ -470,3 +470,9 @@ Mappings:
       PTA: ami-071d36b6415462a72
     eu-west-3:
       PTA: ami-06c0ee40efde875ed
+    me-south-1:
+      PTA: ami-1234
+    us-gov-west-1:
+      PTA: ami-1234
+    us-gov-east-1:
+      PTA: ami-1234
