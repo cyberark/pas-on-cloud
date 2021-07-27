@@ -1260,6 +1260,9 @@ Mappings:
     sa-east-1:
       Vault: ami-08a34ccf19521eb28
       Components: ami-058346befdc8db3cf
+    me-south-1:
+      Vault: ami-1234
+      Components: ami-1234
     us-gov-west-1:
       Vault: ami-0e5100972290c3cf9
       Components: ami-03b0c1040c1ff63b9
