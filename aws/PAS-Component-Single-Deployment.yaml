@@ -1017,6 +1017,11 @@ Mappings:
       PVWA: ami-0b9a74b60728d8000
       PSM: ami-0d99de18cca368e15
       PSMP: ami-0fb8551089808cc9f
+    me-south-1:
+      CPM: ami-1234
+      PVWA: ami-1234
+      PSM: ami-1234
+      PSMP: ami-1234
     us-gov-west-1:
       CPM: ami-0b1606b1e7656ca98
       PVWA: ami-000b073030fa01344
