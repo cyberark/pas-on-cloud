@@ -786,7 +786,7 @@ Resources:
                   hostname=`curl
                   http://169.254.169.254/latest/meta-data/instance-id` &&
                   /root/CD-Image/register_and_activation.sh
-                  /root/CD-Image/user.cred ${VaultIpAddress} $hostname
+                  /root/CD-Image/user.cred ${VaultIpAddress} $hostname y
                 - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
