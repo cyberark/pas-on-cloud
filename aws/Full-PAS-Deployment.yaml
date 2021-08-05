@@ -1630,7 +1630,7 @@ Mappings:
       CPM: ami-0cf04a8445834b34e
       PVWA: ami-0f22410e004aec692
       PSM: ami-09ca4caa674c25d3a
-      PSMP: ami-1234
+      PSMP: ami-03e5c15e720d72c77
     us-gov-west-1:
       Vault: ami-0f977ab459adff29a
       CPM: ami-01a1d4653ffdfa908
