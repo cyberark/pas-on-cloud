@@ -6,19 +6,19 @@ Resources:
     DeletionPolicy: Retain
   VaultCfnInitLogStream:
     Type: AWS::Logs::LogStream
-    Properties: 
+    Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/CfnInitLog
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
-    Properties: 
+    Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/VaultInitLog
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
-    Properties: 
+    Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/VaultPostInstallLog
     DeletionPolicy: Retain
@@ -422,7 +422,7 @@ Resources:
           import boto3
           import uuid
           import cfnresponse
-          
+
           def lambda_handler(event, context):
             physicalResourceId = str(uuid.uuid4())
             if 'PhysicalResourceId' in event:
@@ -432,11 +432,11 @@ Resources:
                 print("Creating AWS CloudFormation")
                 print("Start RemovePermissionLambda execution")
                 client = boto3.client('iam')
-                
+
                 # Get vault role info
                 vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
                 print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-                
+
                 # Delete old Policies
                 list = [event['ResourceProperties']['vault_role_name']]
                 inline_policies = ["VaultInstancesKMSPolicy","VaultBootstrapIAMPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
@@ -450,12 +450,12 @@ Resources:
                     except:
                       print("Didn\'t find policy: {0}".format(inline_policy))
                 print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-  
+
                 # Get KMS ID
                 kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
                 kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
                 print("Retrieve KMS ARN: {0}".format(kms_arn))
-                
+
                 # Create inline policy
                 kms_policy =  {
                   "Statement": [
@@ -469,10 +469,10 @@ Resources:
                     }
                   ]
                 }
-                
+
                 response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
                 print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-                
+
                 return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
               except Exception as E:
                 print("Error in Lambda execution: {0}".format(E))
@@ -536,11 +536,11 @@ Resources:
             2-postInstallWithDR:
               command: !Sub
               - >-
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID 
-                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} 
-                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" 
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
+                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
+                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
                 -Region ${AWS::Region} ${Secret}
-              - Secret: !If 
+              - Secret: !If
                   - SecretEmpty
                   - ''
                   - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
@@ -885,26 +885,26 @@ Resources:
               ignoreErrors: false
             02-RunCloudWatch-PVWA:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup}
                 -Component "PVWA" -Configuration ${PVWAConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService ${PVWASetLocalServiceLog} -Registration ${PVWARegistrationLog}
             03-RunCloudWatch-CPM:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup}
                 -Component "CPM" -Configuration ${CPMConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService ${CPMSetLocalServiceLog} -Registration ${CPMRegistrationLog}
             04-RunCloudWatch-PSM:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup} 
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -Region ${AWS::Region} -LogGroup ${LogGroup}
                 -Component "PSM" -Configuration ${PSMConfigurationsLog} -CfnInitLogStream ${ComponentsCfnInitLogStream}
                 -SetLocalService "psm" -Registration ${PSMRegistrationLog}
-        configPVWA:  
+        configPVWA:
           commands:
             101-configurePVWAService:
               command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
               waitAfterCompletion: 0
             102-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
@@ -928,10 +928,10 @@ Resources:
             105-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: 0
-        configCPM:  
+        configCPM:
           commands:
             201-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
@@ -956,10 +956,10 @@ Resources:
             206-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: 0
-        configPSM:  
+        configPSM:
           commands:
             301-configuration:
-              command: !Sub 
+              command: !Sub
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
@@ -974,11 +974,11 @@ Resources:
             304-PSMserviceConfig:
               command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: 0
-        configSignal:  
+        configSignal:
           commands:
             98-restart:
               command: powershell.exe -Command "Restart-Computer -Force"
-              waitAfterCompletion: forever  
+              waitAfterCompletion: forever
             99-SignalCompletion:
               command: !Sub 'cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource ComponentsMachine --region ${AWS::Region}'
     CreationPolicy:
@@ -1207,7 +1207,7 @@ Metadata:
       ComponentsInstanceSubnetId:
         default: Components Instance Subnet Id
 Conditions:
-  SecretEmpty: !Equals 
+  SecretEmpty: !Equals
     - ''
     - !Ref Secret
 Mappings:
