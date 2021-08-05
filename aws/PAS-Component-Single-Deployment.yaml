@@ -1018,9 +1018,9 @@ Mappings:
       PSM: ami-0da1fe71a548811c4
       PSMP: ami-0fb8551089808cc9f
     me-south-1:
-      CPM: ami-1234
-      PVWA: ami-1234
-      PSM: ami-1234
+      CPM: ami-0cf04a8445834b34e
+      PVWA: ami-0f22410e004aec692
+      PSM: ami-09ca4caa674c25d3a
       PSMP: ami-1234
     us-gov-west-1:
       CPM: ami-01a1d4653ffdfa908
