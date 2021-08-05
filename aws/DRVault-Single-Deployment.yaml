@@ -578,6 +578,6 @@ Mappings:
     me-south-1:
       Vault: ami-1234
     us-gov-west-1:
-      Vault: ami-0e5100972290c3cf9
+      Vault: ami-0f977ab459adff29a
     us-gov-east-1:
-      Vault: ami-0c8a16586ca544e78
+      Vault: ami-0d1fe90a793e652fc
