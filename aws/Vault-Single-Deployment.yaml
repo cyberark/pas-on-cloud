@@ -164,7 +164,7 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: 
+      Password:
         Fn::If:
           - SecretEmpty
           - "EmptyValue"
@@ -206,7 +206,7 @@ Resources:
       key: !GetAtt 'StoreSecret.SsmId'
     DependsOn:
       - LambdaDeployRole
-      - VaultMachine     
+      - VaultMachine
   LambdaRemovePermissionsRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -490,11 +490,11 @@ Resources:
             1-postInstallWithDR:
               command: !Sub
               - >-
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID 
-                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} 
-                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" 
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
+                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
+                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
                 -Region ${AWS::Region} ${Secret}
-              - Secret: !If 
+              - Secret: !If
                   - SecretEmpty
                   - ''
                   - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
@@ -666,7 +666,7 @@ Metadata:
           - RetypeDRVaultPassword
           - Secret
           - SecretRetype
-      - Label: 
+      - Label:
           default: Primary Vault Machine Information
         Parameters:
           - VaultInstanceName
@@ -712,44 +712,46 @@ Metadata:
       SecretRetype:
         default: Retype DR User Secret
 Conditions:
-  SecretEmpty: !Equals 
+  SecretEmpty: !Equals
     - ''
     - !Ref Secret
 Mappings:
   RegionMap:
     us-east-1:
-      Vault: ami-05ad2b7bb117d064d
+      Vault: ami-0f9fba410e4b5b5e8
     us-east-2:
-      Vault: ami-0ba34074ff95c6a9b
+      Vault: ami-0d68869e888d7dd2d
     eu-west-2:
-      Vault: ami-0d8099cc7ba5d452c
+      Vault: ami-01b3bf309e06a63fd
     eu-west-3:
-      Vault: ami-08e2ab590a0dea634
+      Vault: ami-0e317eef0bd2561a5
     eu-north-1:
-      Vault: ami-036c01f4dab663417
+      Vault: ami-01890377aae7ff367
     us-west-1:
-      Vault: ami-0105fe8c6a9fad8c1
+      Vault: ami-041b1d1b5ad6f1647
     us-west-2:
-      Vault: ami-0353948cc75dc4160
+      Vault: ami-011a35e97a0110026
     ca-central-1:
-      Vault: ami-071532fbb023f3107
+      Vault: ami-097ba0085dfb1cc8a
     eu-west-1:
-      Vault: ami-0b3bfde34f267dcb2
+      Vault: ami-029d014ac3fc50414
     eu-central-1:
-      Vault: ami-0fe305af50263c06d
+      Vault: ami-04a87cd0ee27dc283
     ap-southeast-1:
-      Vault: ami-01263202c96d9988e
+      Vault: ami-02c5657e99a781efb
     ap-southeast-2:
-      Vault: ami-0d1cb2cb7c8803cdb
+      Vault: ami-05aaeb1d83fc592f8
     ap-northeast-2:
-      Vault: ami-0d687ae9bd0bb5ce0
+      Vault: ami-0450cefaec1d64ef6
     ap-northeast-1:
-      Vault: ami-0dc24a348d2146743
+      Vault: ami-07e5803dfa62c5461
     ap-south-1:
-      Vault: ami-0e2c349d77eef16c4
+      Vault: ami-040dcbb7289b83f68
     sa-east-1:
-      Vault: ami-08a34ccf19521eb28
+      Vault: ami-071f36a553f862fc7
+    me-south-1:
+      Vault: ami-01986101ffd05cb86
     us-gov-west-1:
-      Vault: ami-0e5100972290c3cf9
+      Vault: ami-0f977ab459adff29a
     us-gov-east-1:
-      Vault: ami-0c8a16586ca544e78
+      Vault: ami-0d1fe90a793e652fc

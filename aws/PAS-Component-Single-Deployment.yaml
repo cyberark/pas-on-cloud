@@ -938,94 +938,99 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      CPM: ami-09acb8040cd1ff689
-      PVWA: ami-06247d8ebc51c688d
-      PSM: ami-0d26711802f24a07a
+      CPM: ami-0fa7235fdca4af459
+      PVWA: ami-09a0ba13eec5c1673
+      PSM: ami-08c60f686d5fe1b13
       PSMP: ami-045192f07c75c8660
     us-east-2:
-      CPM: ami-0a8c87f4565c0d82b
-      PVWA: ami-0e2190b89f364fb5b
-      PSM: ami-0875137ec3231ae48
+      CPM: ami-02d94af9afc444571
+      PVWA: ami-0d94d81b6abe18189
+      PSM: ami-08af892587cfdd13a
       PSMP: ami-046a920160a5cf937
     eu-west-2:
-      CPM: ami-09d6d7a14a11ba226
-      PVWA: ami-0631050ea904ce024
-      PSM: ami-046b644ecf27280b6
+      CPM: ami-0331d6a1ed8a049a8
+      PVWA: ami-042941065ee81a59a
+      PSM: ami-074fbecca986d1b2b
       PSMP: ami-0795ef88e843f8ce6
     eu-west-3:
-      CPM: ami-0018609651302bcb2
-      PVWA: ami-06403b056332da174
-      PSM: ami-05d79f62846c0d161
+      CPM: ami-0b264e7217b403c0d
+      PVWA: ami-04c4b7bb2b12b04b6
+      PSM: ami-05fb930a696363322
       PSMP: ami-0be971a4d5935a5fc
     eu-north-1:
-      CPM: ami-055c6c4a8da4ec7ac
-      PVWA: ami-04cc24bb2cc1827f4
-      PSM: ami-03a32ef9c578997bd
+      CPM: ami-0d55ff73f37d312bb
+      PVWA: ami-0aa5d54d0ff86230d
+      PSM: ami-0bd1bf1c86ee5c1a5
       PSMP: ami-0a4d7e330876bc0ee
     us-west-1:
-      CPM: ami-0f91b9cf0c67dfa22
-      PVWA: ami-06220e837d5e1b0c7
-      PSM: ami-01b176098058da406
+      CPM: ami-059ecb8c9757f0ecf
+      PVWA: ami-061104d049b5629a7
+      PSM: ami-0e75dfebc0e1be53e
       PSMP: ami-0c0bdaf112ad53df7
     us-west-2:
-      CPM: ami-08f351d5c59d853ef
-      PVWA: ami-01cc9f04b450c905d
-      PSM: ami-0a439e38c83ad453b
+      CPM: ami-07ca14fdf238ac8e5
+      PVWA: ami-0f2bf0eb42881283a
+      PSM: ami-0fed7e9dc82cc8162
       PSMP: ami-08f13c95b8249d6ed
     ca-central-1:
-      CPM: ami-0ec60a4296195d219
-      PVWA: ami-0c2672689a73d9a0b
-      PSM: ami-0042d99bcc6e32bf9
+      CPM: ami-009404793983186f3
+      PVWA: ami-09bc016d230377c41
+      PSM: ami-03326e1d251c4cf95
       PSMP: ami-0a8cfc7763a049ae0
     eu-west-1:
-      CPM: ami-01cfef0b23c8219b6
-      PVWA: ami-026634bcc21494b79
-      PSM: ami-09d90aac4cd1b6fe3
+      CPM: ami-0701c8444eab04c4a
+      PVWA: ami-09181fbdc505af43b
+      PSM: ami-040fd517999f6cd27
       PSMP: ami-0db1fbddc4d449603
     eu-central-1:
-      CPM: ami-01134eb0cc3387c9c
-      PVWA: ami-0270b0694f2884cc2
-      PSM: ami-0f3c30dff6f7ea47c
+      CPM: ami-0b795537046186073
+      PVWA: ami-0b103939a7cf9bfa3
+      PSM: ami-0f317a8c4a354fa81
       PSMP: ami-0e327fd2d532a3b21
     ap-southeast-1:
-      CPM: ami-0ed2ce7f91798d256
-      PVWA: ami-0eb1328a4af95f537
-      PSM: ami-0bc7542884ef57300
+      CPM: ami-0b608b26490a083be
+      PVWA: ami-0d7b67684a73a6fee
+      PSM: ami-0b4b9bd4c4f503f01
       PSMP: ami-0fbc9959ea2520ab9
     ap-southeast-2:
-      CPM: ami-0fb4e377dccdfa745
-      PVWA: ami-09a56e2c245373246
-      PSM: ami-082f34eaf29901d41
+      CPM: ami-0e083a68e91d54a46
+      PVWA: ami-067663fa87473933e
+      PSM: ami-0cca19b9f0f237e3c
       PSMP: ami-08a23c6f7e97dbe41
     ap-northeast-2:
-      CPM: ami-0934dea1fd446ab10
-      PVWA: ami-042b8730b87ef84ae
-      PSM: ami-0152cac9812be43d8
+      CPM: ami-0b0a26bf47d607bd3
+      PVWA: ami-0d0a01797bfed97e2
+      PSM: ami-0f65e94ea97339dae
       PSMP: ami-0e47211f7bc3210ff
     ap-northeast-1:
-      CPM: ami-07d7a28fc8f001d8d
-      PVWA: ami-0ff5b3dd040c172fc
-      PSM: ami-09dd1aa8d07ae483e
+      CPM: ami-09ff7cc884cb144f5
+      PVWA: ami-0957ffdbb46fb9c73
+      PSM: ami-05df62135cff20a2d
       PSMP: ami-0e4180b4a39d45600
     ap-south-1:
-      CPM: ami-0cacf7b27ec91ffcd
-      PVWA: ami-0d34d614c01e20f7b
-      PSM: ami-0ea6dd6b3a570313e
+      CPM: ami-0f77618dc0c265430
+      PVWA: ami-0ddf80dd635074687
+      PSM: ami-0de477e2db3dedbbc
       PSMP: ami-05f262775f6f8a170
     sa-east-1:
-      CPM: ami-057c2c0ef557b203e
-      PVWA: ami-0b9a74b60728d8000
-      PSM: ami-0d99de18cca368e15
+      CPM: ami-0fd41ecec8d29ffd2
+      PVWA: ami-0caa7b0990467a0c5
+      PSM: ami-0da1fe71a548811c4
       PSMP: ami-0fb8551089808cc9f
+    me-south-1:
+      CPM: ami-0cf04a8445834b34e
+      PVWA: ami-0f22410e004aec692
+      PSM: ami-09ca4caa674c25d3a
+      PSMP: ami-03e5c15e720d72c77
     us-gov-west-1:
-      CPM: ami-0b1606b1e7656ca98
-      PVWA: ami-000b073030fa01344
-      PSM: ami-034a3371664da2df2
+      CPM: ami-01a1d4653ffdfa908
+      PVWA: ami-00fb3ba40bc5ef3b1
+      PSM: ami-0531d46ff83b09a88
       PSMP: ami-0e1cdbee4c5caa767
     us-gov-east-1:
-      CPM: ami-08ddb3d9d0da8f384
-      PVWA: ami-0e8c33f79a1d52875
-      PSM: ami-0f62022a4843af5d6
+      CPM: ami-0b8f222b3e7fa55eb
+      PVWA: ami-092040fe63dd0324f
+      PSM: ami-063aa2d042f07a965
       PSMP: ami-0b9ebda7f33c9a021
 Outputs:
   CloudWatchLogGroupName:
