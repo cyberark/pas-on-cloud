@@ -16,7 +16,7 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 
 1. Manually add the PTA Server entry to the hosts file in the PVWA server:
 
-        a. Edit C:\Windows\System32\drivers\etc\hosts and add to the file:
+        Edit C:\Windows\System32\drivers\etc\hosts and add to the file:
             <PTA-IP>      PTAServer
 
 2. If you are using self sign certificate, upload PTA self-sign certificate to PVWA server following this:

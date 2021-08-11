@@ -377,9 +377,6 @@ Conditions:
   EULACondition: !Equals
     - Accept
     - !Ref EULA
-  DRValueEmpty: !Equals
-    - ''
-    - !Ref DRPrivateIP
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
