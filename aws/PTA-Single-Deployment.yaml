@@ -473,6 +473,6 @@ Mappings:
     me-south-1:
       PTA: ami-08dbcbb3830cc0566
     us-gov-west-1:
-      PTA: ami-1234
+      PTA: ami-09be91bb6569dae81
     us-gov-east-1:
-      PTA: ami-1234
+      PTA: ami-0e3b8979953d68ae0
