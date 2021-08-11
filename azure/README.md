@@ -26,5 +26,10 @@ Parameters:
 | location       | Yes  | None | |
 | release        | No   | **v10.8** | |
 
- 
+## In order to enable PTA with self sign certificate after successful installation please do the below:
+
+Upload PTA self-sign certificate to PVWA server following this:
+https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Validating-Self-signed-Certificate-Browser.htm?tocpath=Installation%7CInstall%20PAS%7CInstall%20PTA%7CPTA%20Server%7CPTA%20Certificate%20Procedures%7C_____2
+
+
 To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.
