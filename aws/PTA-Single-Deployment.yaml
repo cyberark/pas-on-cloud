@@ -40,20 +40,12 @@ Resources:
                   - 's3:DeleteObject'
                   - 's3:DeleteObjectVersion'
                 Resource:
-<<<<<<< HEAD
                   - !Join
-=======
-                  - !Join
->>>>>>> master
                     - ''
                     - - 'arn:aws:s3:::'
                       - !Ref DeployBucket
                       - /*
-<<<<<<< HEAD
                   - !Join
-=======
-                  - !Join
->>>>>>> master
                     - ''
                     - - 'arn:aws:s3:::'
                       - !Ref PTALicenseBucket
@@ -111,19 +103,11 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-<<<<<<< HEAD
 
       Runtime: python3.7
       Timeout: 60
       Handler: index.lambda_handler
       Role: !GetAtt
-=======
-
-      Runtime: python3.7
-      Timeout: 60
-      Handler: index.lambda_handler
-      Role: !GetAtt
->>>>>>> master
         - LambdaDeployRole
         - Arn
     Condition: EULACondition
@@ -148,11 +132,6 @@ Resources:
               physicalResourceId = str(uuid.uuid4())
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
-<<<<<<< HEAD
-
-=======
-
->>>>>>> master
               try:
                   if event['RequestType'] == 'Create':
                       deletePassword(event['ResourceProperties']['key'])
@@ -167,30 +146,18 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-<<<<<<< HEAD
 
       Runtime: python3.7
       Timeout: 60
       Handler: index.lambda_handler
       Role: !GetAtt
-=======
-
-      Runtime: python3.7
-      Timeout: 60
-      Handler: index.lambda_handler
-      Role: !GetAtt
->>>>>>> master
         - LambdaDeployRole
         - Arn
     Condition: EULACondition
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
-<<<<<<< HEAD
       ServiceToken: !GetAtt
-=======
-      ServiceToken: !GetAtt
->>>>>>> master
         - StorePasswordLambda
         - Arn
       Password: !Ref VaultAdminPassword
@@ -201,17 +168,10 @@ Resources:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
     Properties:
-<<<<<<< HEAD
       ServiceToken: !GetAtt
         - DeletePasswordLambda
         - Arn
       key: !GetAtt
-=======
-      ServiceToken: !GetAtt
-        - DeletePasswordLambda
-        - Arn
-      key: !GetAtt
->>>>>>> master
         - StoreAdminPassword
         - SsmId
     Condition: EULACondition
@@ -247,29 +207,16 @@ Resources:
           Value: !Ref PTAInstanceName
       SecurityGroupIds: !Ref PTAInstanceSecurityGroups
       SubnetId: !Ref PTAInstanceSubnetId
-<<<<<<< HEAD
       ImageId: !FindInMap
-=======
-      ImageId: !FindInMap
->>>>>>> master
         - RegionMap
         - !Ref 'AWS::Region'
         - PTA
       InstanceType: !Ref PTAInstanceType
-<<<<<<< HEAD
       UserData: !Base64
-=======
-      UserData: !Base64
->>>>>>> master
         'Fn::Sub': >
           #!/bin/bash -e
 
           cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
-<<<<<<< HEAD
-
-=======
-
->>>>>>> master
           cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
 
       KeyName: !Ref KeyName
@@ -282,24 +229,16 @@ Resources:
         install_pta:
           files:
             /tmp/deploy.py:
-<<<<<<< HEAD
               content: !Sub |
                 import boto3
                 import time
 
-=======
-              content: !Sub |
-                import boto3
-                import time
-
->>>>>>> master
                 time.sleep(120)
 
                 def downloadFile(bucket,filePath,target):
                     s3Client = boto3.client('s3', region_name='${AWS::Region}')
                     s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
                     return target
-<<<<<<< HEAD
 
                 licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
 
@@ -308,33 +247,17 @@ Resources:
                 #!/bin/bash
 
                 export vault_ip=${VaultPrivateIP}
-=======
-
-                licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
-
-            /tmp/register.sh:
-              content: !Sub |
-                #!/bin/bash
-
-                export vault_ip=${VaultPrivateIP}
->>>>>>> master
                 export vault_adminUser=${VaultAdminUser}
                 export vault_adminPassword=${VaultAdminPassword}
                 export pvwa_host=${PVWAPrivateDNS}
                 export vault_timezone=${VaultTimeZone}
                 export timezone=${PTAServerTimeZone}
                 export vault_port=1858
-<<<<<<< HEAD
-
-=======
-
->>>>>>> master
                 if [ ! -z "${DRPrivateIP}" ]; then
                     export vault_ipsDR=${DRPrivateIP}
                 fi;
 
                 echo $vault_ip
-<<<<<<< HEAD
                 echo $vault_ipsDR
                 echo $vault_timezone
                 echo $timezone
@@ -345,18 +268,6 @@ Resources:
 
                 python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
 
-=======
-                echo $vault_ipsDR
-                echo $vault_timezone
-                echo $timezone
-                echo $vault_port
-                echo $vault_adminUser
-                echo $vault_adminPassword
-                echo $pvwa_host
-
-                python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
-
->>>>>>> master
               mode: '000755'
           commands:
             01-copylicensefrombucket:
@@ -417,11 +328,7 @@ Parameters:
     Type: String
     Description: >-
       Enter the time zone of the PTA Server.
-<<<<<<< HEAD
       https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm
-=======
-      https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm
->>>>>>> master
   VaultPrivateIP:
     Type: String
     Description: Enter the IP of the Vault instance.
@@ -429,11 +336,7 @@ Parameters:
     Type: String
     Description: >-
       Enter the IPs of the Vault DR instances, separated by comma (,).
-<<<<<<< HEAD
       (Optional).
-=======
-      (Optional).
->>>>>>> master
   VaultTimeZone:
     Type: String
     Description: Enter the time zone of the Vault Server.
