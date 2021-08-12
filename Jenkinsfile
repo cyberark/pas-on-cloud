@@ -37,7 +37,7 @@ pipeline {
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/DRVault-Single-Deployment.yaml", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-Component-Single-Deployment.yaml", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-AIO-DR-Deployment.yaml", returnStdout: true)
-          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/pta/PTA-Single-Deployment.json", returnStdout: true)
+          sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PTA-Single-Deployment.yaml", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-NAT.json", returnStdout: true)
           sh(script: "aws cloudformation validate-template --region $AWS_REGION --template-url $TEMPLATE_URL/PAS-network-environment-PrivateLink.json", returnStdout: true)
         }
@@ -51,7 +51,7 @@ pipeline {
           sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-DR-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/pta/PTA-Single-Deployment.json --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PTA-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json --ignore-checks W1001", returnStdout: true)
           sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-PrivateLink.json --ignore-checks W1001", returnStdout: true)
         }
