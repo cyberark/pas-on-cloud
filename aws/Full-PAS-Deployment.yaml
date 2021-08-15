@@ -1157,7 +1157,7 @@ Resources:
             01-CreateCredFile:
               command: !Sub >-
                 sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
-                Password -Username Administrator -Password ${VaultAdminPassword} -Hostname
+                Password -Username Administrator -Password ${VaultAdminPassword} -EntropyFile
             02-PSMPdeploy:
               command:
                 'Fn::Sub':
