@@ -764,7 +764,7 @@ Resources:
                 adminpassword=`aws ssm get-parameters --names $2 --region $3 \
                 --with-decryption --output text --query Parameters[0].Value`
                 /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred \
-                Password -Username $1 -Password $adminpassword -HostName
+                Password -Username $1 -Password $adminpassword -EntropyFile
           commands:
             1-ScriptsPermissions:
               command: >-
