@@ -1144,7 +1144,7 @@ Resources:
               group: root
           commands:
             01_create_state_directory:
-              command: mkdir -p /var/awslogs/state
+              command: mkdir -p /var/lib/awslogs/state
           services:
             sysvinit:
               awslogs:
