@@ -732,13 +732,10 @@ Resources:
             01_create_state_directory:
               command: mkdir -p /var/lib/awslogs/state
               waitAfterCompletion: 0
-          services:
-            sysvinit:
-              awslogs:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/awslogs/awslogs.conf
+            02_start_awslogsd:
+              command: systemctl start awslogsd
+            03_enable_awslogsd:
+              command: systemctl enable awslogsd
         install_psmp:
           files:
             /root/CD-Image/preinstall.sh:
