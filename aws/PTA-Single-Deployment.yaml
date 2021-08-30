@@ -132,7 +132,6 @@ Resources:
               physicalResourceId = str(uuid.uuid4())
               if 'PhysicalResourceId' in event:
                   physicalResourceId = event['PhysicalResourceId']
-
               try:
                   if event['RequestType'] == 'Create':
                       deletePassword(event['ResourceProperties']['key'])
@@ -218,7 +217,6 @@ Resources:
           #!/bin/bash -e
 
           cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
-
           cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
 
       KeyName: !Ref KeyName
@@ -255,7 +253,6 @@ Resources:
                 export vault_timezone=${VaultTimeZone}
                 export timezone=${PTAServerTimeZone}
                 export vault_port=1858
-
                 if [ ! -z "${DRPrivateIP}" ]; then
                     export vault_ipsDR=${DRPrivateIP}
                 fi;
