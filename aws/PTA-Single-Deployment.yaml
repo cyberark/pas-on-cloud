@@ -214,9 +214,9 @@ Resources:
       InstanceType: !Ref PTAInstanceType
       UserData: !Base64
         'Fn::Sub': >
-          #!/bin/bash -e
+          #!/bin/bash -e;
 
-          cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackName} --resource PTAMachine --configsets install_all --region ${AWS::Region};
           cfn-signal -e $? --stack ${AWS::StackName} --resource PTAMachine --region ${AWS::Region}
 
       KeyName: !Ref KeyName
