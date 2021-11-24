@@ -111,7 +111,7 @@
     "outputs": {
         "guidOutput": {
             "type": "string",
-            "value": "[parameters('GuidSubstring')]"
+            "value": "[variables('GuidSubstring')]"
         }
     }
 }
