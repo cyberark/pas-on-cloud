@@ -37,7 +37,7 @@
         }
     },
     "variables": {
-        "GuidSubstring": "[uniqueString( resourceGroup().id, deployment().name )]"
+        "GuidSubstring": "[uniqueString( newGuid() )]"
     },
     "resources": [
         {
@@ -104,4 +104,9 @@
             ]
         }
     ]
+    "outputs": {
+        "guidOutput": {
+            "type": "string",
+            "value": "[variables('GuidSubstring')]"
+    }
 }
