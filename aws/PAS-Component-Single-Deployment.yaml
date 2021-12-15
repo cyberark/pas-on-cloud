@@ -269,6 +269,64 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     Condition: EULACondition
+  DescribeImagesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: ec2:DescribeImages
+                Effect: Allow
+                Resource: "*"
+  GetLatestAMI:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.6
+      Handler: index.handler
+      Role: !Sub ${DescribeImagesRole.Arn}
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
+          def handler(event, context):
+            try:
+              response = boto3.client('ec2').describe_images(
+                  Filters=[
+                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
+                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
+                  ],
+              )
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+        
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+  CPMAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "cpm"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -277,10 +335,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - CPM
+      ImageId: !Ref CPMAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -400,6 +455,13 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
+  PVWAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "pvwa"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -408,10 +470,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PVWA
+      ImageId: !Ref PVWAAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -536,6 +595,13 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
+  PSMAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "psm"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -544,10 +610,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PSM
+      ImageId: !Ref PSMAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -651,6 +714,13 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
+  PSMPAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "psmp"
+      OS: "Amazon-Linux-2"
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -659,10 +729,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PSMP
+      ImageId: !Ref PSMPAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >
@@ -802,6 +869,13 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  WinVersion:
+    Type: String
+    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
+    AllowedValues:
+      - Windows Server 2016
+      - Windows Server 2019
+    Default: Windows Server 2016
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -880,6 +954,9 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
+  WinVersionIs16: !Equals
+    - 'Windows Server 2016'
+    - !Ref "WinVersion"
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -888,6 +965,7 @@ Metadata:
         Parameters:
           - EULA
           - KeyName
+          - WinVersion
       - Label:
           default: Primary Vault and DR information
         Parameters:
@@ -908,6 +986,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      WinVersion:
+        default: Windows Server Version
       KeyName:
         default: Key Pair
       VaultPrivateIP:
@@ -932,103 +1012,6 @@ Metadata:
         default: Component Instance Subnet ID
       PVWAHostName:
         default: PVWA FQDN (Optional)
-Mappings:
-  RegionMap:
-    us-east-1:
-      CPM: ami-0fa7235fdca4af459
-      PVWA: ami-09a0ba13eec5c1673
-      PSM: ami-08c60f686d5fe1b13
-      PSMP: ami-02c0f96793391c22e
-    us-east-2:
-      CPM: ami-02d94af9afc444571
-      PVWA: ami-0d94d81b6abe18189
-      PSM: ami-08af892587cfdd13a
-      PSMP: ami-07111cc368840b22c
-    eu-west-2:
-      CPM: ami-0331d6a1ed8a049a8
-      PVWA: ami-042941065ee81a59a
-      PSM: ami-074fbecca986d1b2b
-      PSMP: ami-0664054848d7e0dbd
-    eu-west-3:
-      CPM: ami-0b264e7217b403c0d
-      PVWA: ami-04c4b7bb2b12b04b6
-      PSM: ami-05fb930a696363322
-      PSMP: ami-0d2d1e511a4e264d1
-    eu-north-1:
-      CPM: ami-0d55ff73f37d312bb
-      PVWA: ami-0aa5d54d0ff86230d
-      PSM: ami-0bd1bf1c86ee5c1a5
-      PSMP: ami-08c24ced7b62686db
-    us-west-1:
-      CPM: ami-059ecb8c9757f0ecf
-      PVWA: ami-061104d049b5629a7
-      PSM: ami-0e75dfebc0e1be53e
-      PSMP: ami-0f3153752d2d9e8de
-    us-west-2:
-      CPM: ami-07ca14fdf238ac8e5
-      PVWA: ami-0f2bf0eb42881283a
-      PSM: ami-0fed7e9dc82cc8162
-      PSMP: ami-0cdb64214c34682f6
-    ca-central-1:
-      CPM: ami-009404793983186f3
-      PVWA: ami-09bc016d230377c41
-      PSM: ami-03326e1d251c4cf95
-      PSMP: ami-0389581abb34a7abe
-    eu-west-1:
-      CPM: ami-0701c8444eab04c4a
-      PVWA: ami-09181fbdc505af43b
-      PSM: ami-040fd517999f6cd27
-      PSMP: ami-08ac861dee64cf090
-    eu-central-1:
-      CPM: ami-0b795537046186073
-      PVWA: ami-0b103939a7cf9bfa3
-      PSM: ami-0f317a8c4a354fa81
-      PSMP: ami-00cf9d94978df90b1
-    ap-southeast-1:
-      CPM: ami-0b608b26490a083be
-      PVWA: ami-0d7b67684a73a6fee
-      PSM: ami-0b4b9bd4c4f503f01
-      PSMP: ami-08703d4455e743d1d
-    ap-southeast-2:
-      CPM: ami-0e083a68e91d54a46
-      PVWA: ami-067663fa87473933e
-      PSM: ami-0cca19b9f0f237e3c
-      PSMP: ami-0610dcf1d56bf03eb
-    ap-northeast-2:
-      CPM: ami-0b0a26bf47d607bd3
-      PVWA: ami-0d0a01797bfed97e2
-      PSM: ami-0f65e94ea97339dae
-      PSMP: ami-008c6bfcfa35bdb82
-    ap-northeast-1:
-      CPM: ami-09ff7cc884cb144f5
-      PVWA: ami-0957ffdbb46fb9c73
-      PSM: ami-05df62135cff20a2d
-      PSMP: ami-075ceb9c5f2897800
-    ap-south-1:
-      CPM: ami-0f77618dc0c265430
-      PVWA: ami-0ddf80dd635074687
-      PSM: ami-0de477e2db3dedbbc
-      PSMP: ami-0fb2655b2a806004e
-    sa-east-1:
-      CPM: ami-0fd41ecec8d29ffd2
-      PVWA: ami-0caa7b0990467a0c5
-      PSM: ami-0da1fe71a548811c4
-      PSMP: ami-02d26663b92382528
-    me-south-1:
-      CPM: ami-0cf04a8445834b34e
-      PVWA: ami-0f22410e004aec692
-      PSM: ami-09ca4caa674c25d3a
-      PSMP: ami-0f26186e21eabdb45
-    us-gov-west-1:
-      CPM: ami-01a1d4653ffdfa908
-      PVWA: ami-00fb3ba40bc5ef3b1
-      PSM: ami-0531d46ff83b09a88
-      PSMP: ami-09e30a08f31d8867c
-    us-gov-east-1:
-      CPM: ami-0b8f222b3e7fa55eb
-      PVWA: ami-092040fe63dd0324f
-      PSM: ami-063aa2d042f07a965
-      PSMP: ami-0a41374ef903a19ed
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

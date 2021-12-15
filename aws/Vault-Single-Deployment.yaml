@@ -426,6 +426,64 @@ Resources:
                   - iam:PutRolePolicy
                 Resource: '*'
     DeletionPolicy: Retain
+  DescribeImagesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: ec2:DescribeImages
+                Effect: Allow
+                Resource: "*"
+  GetLatestAMI:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.6
+      Handler: index.handler
+      Role: !Sub ${DescribeImagesRole.Arn}
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
+          def handler(event, context):
+            try:
+              response = boto3.client('ec2').describe_images(
+                  Filters=[
+                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
+                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
+                  ],
+              )
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+        
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+  VaultAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "vault"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -439,10 +497,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - Vault
+      ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -527,6 +582,13 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  WinVersion:
+    Type: String
+    Description: Select a Windows Server version for all Windows-based components.
+    AllowedValues:
+      - Windows Server 2016
+      - Windows Server 2019
+    Default: Windows Server 2016
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
@@ -655,6 +717,7 @@ Metadata:
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
+          - WinVersion
       - Label:
           default: Vault information
         Parameters:
@@ -677,6 +740,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      WinVersion:
+        default: Windows Server Version
       KeyName:
         default: Key Pair
       VaultFilesBucket:
@@ -715,43 +780,6 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-Mappings:
-  RegionMap:
-    us-east-1:
-      Vault: ami-0f9fba410e4b5b5e8
-    us-east-2:
-      Vault: ami-0d68869e888d7dd2d
-    eu-west-2:
-      Vault: ami-01b3bf309e06a63fd
-    eu-west-3:
-      Vault: ami-0e317eef0bd2561a5
-    eu-north-1:
-      Vault: ami-01890377aae7ff367
-    us-west-1:
-      Vault: ami-041b1d1b5ad6f1647
-    us-west-2:
-      Vault: ami-011a35e97a0110026
-    ca-central-1:
-      Vault: ami-097ba0085dfb1cc8a
-    eu-west-1:
-      Vault: ami-029d014ac3fc50414
-    eu-central-1:
-      Vault: ami-04a87cd0ee27dc283
-    ap-southeast-1:
-      Vault: ami-02c5657e99a781efb
-    ap-southeast-2:
-      Vault: ami-05aaeb1d83fc592f8
-    ap-northeast-2:
-      Vault: ami-0450cefaec1d64ef6
-    ap-northeast-1:
-      Vault: ami-07e5803dfa62c5461
-    ap-south-1:
-      Vault: ami-040dcbb7289b83f68
-    sa-east-1:
-      Vault: ami-071f36a553f862fc7
-    me-south-1:
-      Vault: ami-01986101ffd05cb86
-    us-gov-west-1:
-      Vault: ami-0f977ab459adff29a
-    us-gov-east-1:
-      Vault: ami-0d1fe90a793e652fc
+  WinVersionIs16: !Equals
+    - 'Windows Server 2016'
+    - !Ref "WinVersion"
