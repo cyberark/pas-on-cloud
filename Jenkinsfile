@@ -46,14 +46,14 @@ pipeline {
     stage('cfn-lint') {
       steps {
         script {
-          sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-DR-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PTA-Single-Deployment.yaml --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json --ignore-checks W1001", returnStdout: true)
-          sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-PrivateLink.json --ignore-checks W1001", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/Full-PAS-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/Vault-Single-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/DRVault-Single-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-Component-Single-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-AIO-DR-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PTA-Single-Deployment.yaml --ignore-checks W2506", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-NAT.json", returnStdout: true)
+          sh(script: "testenv/bin/cfn-lint aws/PAS-network-environment-PrivateLink.json", returnStdout: true)
         }
       }
     }
