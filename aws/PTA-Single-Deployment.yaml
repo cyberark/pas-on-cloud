@@ -50,7 +50,6 @@ Resources:
                     - - 'arn:aws:s3:::'
                       - !Ref PTALicenseBucket
                       - /*
-    Condition: EULACondition
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -110,7 +109,6 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -153,7 +151,6 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -161,7 +158,6 @@ Resources:
         - StorePasswordLambda
         - Arn
       Password: !Ref VaultAdminPassword
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CleanAdminPassword:
@@ -174,7 +170,6 @@ Resources:
       key: !GetAtt
         - StoreAdminPassword
         - SsmId
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
@@ -183,7 +178,6 @@ Resources:
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
-    Condition: EULACondition
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -198,7 +192,6 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-    Condition: EULACondition
   PTAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -281,7 +274,6 @@ Resources:
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
-    Condition: EULACondition
     DependsOn:
       - StoreAdminPassword
     CreationPolicy:
@@ -302,7 +294,6 @@ Resources:
                 arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
       Roles:
         - !Ref ComponentInstanceRole
-    Condition: EULACondition
 Parameters:
   EULA:
     Type: String
@@ -368,10 +359,13 @@ Parameters:
   PTAInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PTA instance will reside.
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref EULA
+Rules:
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref EULA
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:

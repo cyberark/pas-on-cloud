@@ -159,7 +159,6 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -195,7 +194,6 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -203,7 +201,6 @@ Resources:
         - StorePasswordLambda
         - Arn
       Password: !Ref VaultAdminPassword
-    Condition: EULACondition
     DependsOn:
       - LambdaDeployRole
   CleanAdminPassword:
@@ -234,13 +231,11 @@ Resources:
             - !GetAtt
               - PSMPMachine
               - PrivateIp
-    Condition: EULACondition
   ComponentInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
-    Condition: EULACondition
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -268,7 +263,6 @@ Resources:
                   - 'logs:DescribeLogStreams'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
   DescribeImagesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -932,10 +926,14 @@ Parameters:
   PVWAHostName:
     Type: String
     Description: IP or FQDN of PVWA server
+Rules:
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref EULA
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref EULA
   CreateCPMCondition: !Equals
     - CPM
     - !Ref ComponentToInstall
