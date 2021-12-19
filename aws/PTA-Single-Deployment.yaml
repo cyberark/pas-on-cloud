@@ -192,6 +192,64 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+  DescribeImagesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: ec2:DescribeImages
+                Effect: Allow
+                Resource: "*"
+  GetLatestAMI:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.6
+      Handler: index.handler
+      Role: !Sub ${DescribeImagesRole.Arn}
+      Timeout: 60
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
+          def handler(event, context):
+            try:
+              response = boto3.client('ec2').describe_images(
+                  Filters=[
+                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
+                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
+                  ],
+              )
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+        
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+  PTAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !Sub ${GetLatestAMI.Arn}
+      Version: "12.2"
+      Component: "pta"
+      OS: CentOS-7
   PTAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -200,10 +258,7 @@ Resources:
           Value: !Ref PTAInstanceName
       SecurityGroupIds: !Ref PTAInstanceSecurityGroups
       SubnetId: !Ref PTAInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PTA
+      ImageId: !Ref PTAAmi
       InstanceType: !Ref PTAInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -424,41 +479,3 @@ Metadata:
         default: PTA Instance Security Groups
       PTAInstanceSubnetId:
         default: PTA Instance Subnet Id
-Mappings:
-  RegionMap:
-    us-east-1:
-      PTA: ami-057386a54facf83d3
-    us-east-2:
-      PTA: ami-08ab50f7213bffba8
-    eu-west-2:
-      PTA: ami-01482124541e569bd
-    us-west-1:
-      PTA: ami-0e790df828a8ac036
-    us-west-2:
-      PTA: ami-0c71b81bb24103af9
-    ca-central-1:
-      PTA: ami-08d9d984dc0f5575e
-    eu-west-1:
-      PTA: ami-08f48f357ad4505ce
-    eu-central-1:
-      PTA: ami-0aebb24c0918df88d
-    ap-southeast-1:
-      PTA: ami-09ebb6dc542184d32
-    ap-southeast-2:
-      PTA: ami-0bd920b1e4929d68c
-    ap-northeast-2:
-      PTA: ami-01e69b24306c1d6bf
-    ap-northeast-1:
-      PTA: ami-069c058631e1b90ea
-    ap-south-1:
-      PTA: ami-0b8a1789d56e5cb90
-    sa-east-1:
-      PTA: ami-0b1457604c053cbab
-    eu-west-3:
-      PTA: ami-06946f1da4e5e18b6
-    me-south-1:
-      PTA: ami-08dbcbb3830cc0566
-    us-gov-west-1:
-      PTA: ami-09be91bb6569dae81
-    us-gov-east-1:
-      PTA: ami-0e3b8979953d68ae0
