@@ -463,7 +463,7 @@ Mappings:
     eu-west-3:
       PTA: ami-014ae8f757077d130
     me-south-1:
-      PTA: ami-08dbcbb3830cc0566
+      PTA: ami-0acf20d5777e8bbbc
     us-gov-west-1:
       PTA: ami-06f90cae9f18e20af
     us-gov-east-1:
