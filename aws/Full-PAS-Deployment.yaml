@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template handles the deployment of CyberArk PAS solution to an existing network infrastructure
 Resources:
   LogGroup:
     Type: 'AWS::Logs::LogGroup'
@@ -279,6 +281,37 @@ Resources:
         - !Ref LambdaRemovePermissionsRole
     DependsOn:
       - RemovePermissionVaultDR
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt VaultDRInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
+  InstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: InstancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameters'
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+      Roles:
+        - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -322,74 +355,6 @@ Resources:
               - Effect: Allow
                 Action: 'ec2:DescribeImages'
                 Resource: "*"
-  StorePasswordLambda:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      Description: Saves given password to parameter store as SecureString
-      Code:
-        ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
-          def lambda_handler(event, context):
-              ssmClient = boto3.client('ssm')
-              physicalResourceId = str(uuid.uuid4())
-              if 'PhysicalResourceId' in event:
-                  physicalResourceId = event['PhysicalResourceId']
-              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
-                  print ('The property Password must not be empty')
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-              try:
-                  if event['RequestType'] == 'Delete':
-                      ssmClient.delete_parameter(Name=physicalResourceId)
-                      print ('Password successfully deleted. Id='+physicalResourceId)
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-                  if event['RequestType'] == 'Create':
-                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
-                      print ('The store parameter has been created. Id='+physicalResourceId)
-                      response = {'SsmId': physicalResourceId}
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
-              except ssmClient.exceptions.ParameterNotFound:
-                  print ('Item already removed')
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except Exception as E:
-                  print (E)
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Timeout: 60
-      Role: !GetAtt LambdaDeployRole.Arn
-  DeletePasswordLambda:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      Description: Delete password from parameter store
-      Code:
-        ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
-          def lambda_handler(event, context):
-              ssmClient = boto3.client('ssm')
-              physicalResourceId = str(uuid.uuid4())
-              if 'PhysicalResourceId' in event:
-                  physicalResourceId = event['PhysicalResourceId']
-              try:
-                  if event['RequestType'] == 'Create':
-                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
-                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-                  if event['RequestType'] == 'Delete':
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except ssmClient.exceptions.ParameterNotFound:
-                  print ('Item already removed')
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except Exception as E:
-                  print (E)
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Timeout: 60
-      Role: !GetAtt LambdaDeployRole.Arn
   LambdaLogDenyRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -446,23 +411,269 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-  VaultBootstrapIAMPolicy:
-    Type: AWS::IAM::Policy
+  VaultInstancesRole:
+    Type: AWS::IAM::Role
     Properties:
-      PolicyName: VaultBootstrapIAMPolicy
-      PolicyDocument:
+      AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
             Action:
-              - iam:GetRole
-              - iam:DeleteRolePolicy
-              - iam:PutRolePolicy
-            Resource:
-              - !GetAtt VaultInstancesRole.Arn
-              - !GetAtt VaultDRInstancesRole.Arn
-              - !GetAtt LambdaRemovePermissionsRole.Arn
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: VaultLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
+        - PolicyName: VaultFilesBucketAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}'
+        - PolicyName: VaultInstancesKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource: '*'
+    DeletionPolicy: Retain
+  VaultDRInstancesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: VaultLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
+        - PolicyName: VaultInstancesKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
+                Resource: '*'
+        - PolicyName: VaultBootstrapIAMPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
+                Resource: '*'
+    DeletionPolicy: Retain
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+    DeletionPolicy: Retain
+  VaultInstancesProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
       Roles:
-        - !Ref 'LambdaRemovePermissionsRole'
+        - !Ref VaultInstancesRole
+    DeletionPolicy: Retain
+  VaultDRInstancesProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref VaultDRInstancesRole
+    DeletionPolicy: Retain
+  ComponentInstanceProfile:
+    Type: 'A'WS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
+  StorePasswordLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Description: Saves given password to parameter store as SecureString
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                  print ('The property Password must not be empty')
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+              try:
+                  if event['RequestType'] == 'Delete':
+                      ssmClient.delete_parameter(Name=physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Create':
+                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = {'SsmId': physicalResourceId}
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
+  DeletePasswordLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Description: Delete password from parameter store
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              try:
+                  if event['RequestType'] == 'Create':
+                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -473,6 +684,7 @@ Resources:
           import boto3
           import uuid
           import cfnresponse
+
 
           def lambda_handler(event, context):
             physicalResourceId = str(uuid.uuid4())
@@ -544,6 +756,8 @@ Resources:
           import cfnresponse
           import json
           import traceback
+
+
           def handler(event, context):
             try:
               response = boto3.client('ec2').describe_images(
@@ -714,197 +928,6 @@ Resources:
     DeletionPolicy: Retain
     DependsOn:
       - VaultAmi
-  VaultInstancesProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Path: /
-      Roles:
-        - !Ref VaultInstancesRole
-    DeletionPolicy: Retain
-  VaultDRInstancesProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref 'VaultDRInstancesRole'
-    DeletionPolicy: Retain
-  VaultInstancesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
-        - PolicyName: VaultSSMPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:GetParameters
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreMasterPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreAdminPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
-        - PolicyName: VaultFilesBucketAccess
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${LicenseFile}'
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/${RecoveryPublicKey}'
-              - Effect: Allow
-                Action:
-                  - s3:GetBucketLocation
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}'
-        - PolicyName: VaultInstancesKMSPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:CreateKey
-                  - kms:GenerateRandom
-                  - kms:TagResource
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:EnableKeyRotation
-                  - kms:UpdateKeyDescription
-                  - kms:CreateAlias
-                Resource: '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource: '*'
-    DeletionPolicy: Retain
-  VaultDRInstancesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}'
-        - PolicyName: VaultSSMPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:GetParameters
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
-        - PolicyName: VaultInstancesKMSPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:CreateKey
-                  - kms:GenerateRandom
-                  - kms:TagResource
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:EnableKeyRotation
-                  - kms:UpdateKeyDescription
-                  - kms:CreateAlias
-                Resource: '*'
-        - PolicyName: VaultBootstrapIAMPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - iam:DeleteRolePolicy
-                  - iam:PutRolePolicy
-                Resource: '*'
-    DeletionPolicy: Retain
-  ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref ComponentInstanceRole
-    DeletionPolicy: Retain
-  ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    DeletionPolicy: Retain
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1253,20 +1276,6 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
-    DeletionPolicy: Retain
-  InstancesSSMPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: InstancesSsmAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'ssm:GetParameters'
-            Resource:
-              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-      Roles:
-        - !Ref ComponentInstanceRole
     DeletionPolicy: Retain
 Parameters:
   EULA:

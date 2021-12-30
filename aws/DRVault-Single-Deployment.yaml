@@ -28,7 +28,117 @@ Resources:
       LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+  VaultAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "vault"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  StoreDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'VaultDRPassword'
+    DependsOn:
+      - LambdaDeployRole
+  StoreSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
+      Password: !Ref 'Secret'
+    DependsOn:
+      - LambdaDeployRole
+  CleanDRPassword:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreDRPassword.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultDRMachine
+  CleanSecret:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
+      key: !GetAtt 'StoreSecret.SsmId'
+    DependsOn:
+      - LambdaDeployRole
+      - VaultDRMachine
+  RemovePermissionVault:
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
+      vault_role_name: !Ref 'VaultInstancesRole'
+      lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
+      instance: !Ref 'VaultDRMachine'
+      region: !Ref 'AWS::Region'
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
   LambdaDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+        - PolicyName: SSM
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
+  LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -54,16 +164,77 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   - '*'
-        - PolicyName: SSM
+        - PolicyName: KMSPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - ssm:PutParameter
-                  - ssm:DeleteParameter
+                  - kms:DescribeKey
                 Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+                  - '*'
+  VaultInstancesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: VaultLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
+              - Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
+        - PolicyName: VaultSSMPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
+        - PolicyName: VaultInstancesKMSPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:CreateKey
+                  - kms:GenerateRandom
+                  - kms:TagResource
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:EnableKeyRotation
+                  - kms:UpdateKeyDescription
+                  - kms:CreateAlias
+                Resource: '*'
+    DeletionPolicy: Retain
+  VaultInstancesProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
   StorePasswordLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -139,89 +310,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
-  StoreDRPassword:
-    Type: AWS::CloudFormation::CustomResource
-    Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'VaultDRPassword'
-    DependsOn:
-      - LambdaDeployRole
-  StoreSecret:
-    Type: AWS::CloudFormation::CustomResource
-    Properties:
-      ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'Secret'
-    DependsOn:
-      - LambdaDeployRole
-  CleanDRPassword:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreDRPassword.SsmId'
-    DependsOn:
-      - LambdaDeployRole
-      - VaultDRMachine
-  CleanSecret:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'DeletePasswordLambda.Arn'
-      key: !GetAtt 'StoreSecret.SsmId'
-    DependsOn:
-      - LambdaDeployRole
-      - VaultDRMachine
-  LambdaRemovePermissionsRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: CloudWatch
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                  - logs:PutLogEvents
-                Resource:
-                  - '*'
-        - PolicyName: KMSPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:DescribeKey
-                Resource:
-                  - '*'
-  VaultBootstrapIAMPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultBootstrapIAMPolicy
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - iam:GetRole
-              - iam:DeleteRolePolicy
-              - iam:PutRolePolicy
-            Resource:
-              - !GetAtt VaultInstancesRole.Arn
-              - !GetAtt LambdaRemovePermissionsRole.Arn
-      Roles:
-        - !Ref 'LambdaRemovePermissionsRole'
   RemovePermissionLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -294,113 +382,21 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
-  RemovePermissionVault:
-    Type: AWS::CloudFormation::CustomResource
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt 'RemovePermissionLambda.Arn'
-      vault_role_name: !Ref 'VaultInstancesRole'
-      lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
-      instance: !Ref 'VaultDRMachine'
-      region: !Ref 'AWS::Region'
-  VaultInstancesProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    DeletionPolicy: Retain
-  VaultInstancesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
-        - PolicyName: VaultSSMPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:GetParameters
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreDRPassword.SsmId}'
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${StoreSecret.SsmId}'
-        - PolicyName: VaultInstancesKMSPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:CreateKey
-                  - kms:GenerateRandom
-                  - kms:TagResource
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:EnableKeyRotation
-                  - kms:UpdateKeyDescription
-                  - kms:CreateAlias
-                Resource: '*'
-    DeletionPolicy: Retain
-  DescribeImagesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: DescribeImages
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Action: ec2:DescribeImages
-                Effect: Allow
-                Resource: "*"
-  GetLatestAMI:
+  GetLatestAMILambda:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.6
-      Handler: index.handler
-      Role: !Sub ${DescribeImagesRole.Arn}
-      Timeout: 60
       Code:
         ZipFile: |
           import boto3
           import cfnresponse
           import json
           import traceback
+
+
           def handler(event, context):
             try:
               response = boto3.client('ec2').describe_images(
+                  Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
                   Filters=[
                     {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
                     {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
@@ -416,13 +412,10 @@ Resources:
             except:
               traceback.print_last()
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
-  VaultAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "vault"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      Runtime: python3.6
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -492,6 +485,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultAmi
 Parameters:
   EULA:
     Type: String
@@ -614,3 +609,7 @@ Conditions:
   WinVersionIs16: !Equals
     - 'Windows Server 2016'
     - !Ref "WinVersion"
+Outputs:
+  CloudWatchLogGroupName:
+    Description: The name of the CloudWatch log group
+    Value: !Ref LogGroup

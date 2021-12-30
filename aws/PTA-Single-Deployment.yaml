@@ -1,8 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template handles the deployment of CyberArk PTA to an existing network infrastructure
 Resources:
   DeployBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: Private
+  PTAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "pta"
+      OS: CentOS-7
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  StoreAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Properties:
+      ServiceToken: !GetAtt
+        - StorePasswordLambda
+        - Arn
+      Password: !Ref VaultAdminPassword
+    DependsOn:
+      - LambdaDeployRole
+  CleanAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt
+        - DeletePasswordLambda
+        - Arn
+      key: !GetAtt
+        - StoreAdminPassword
+        - SsmId
+    DependsOn:
+      - LambdaDeployRole
+      - StorePasswordLambda
+  ComponentInstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: ComponentInsancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+            Resource:
+              - !Sub >-
+                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+      Roles:
+        - !Ref ComponentInstanceRole
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -50,6 +98,32 @@ Resources:
                     - - 'arn:aws:s3:::'
                       - !Ref PTALicenseBucket
                       - /*
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -151,83 +225,21 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-  StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Properties:
-      ServiceToken: !GetAtt
-        - StorePasswordLambda
-        - Arn
-      Password: !Ref VaultAdminPassword
-    DependsOn:
-      - LambdaDeployRole
-  CleanAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt
-        - DeletePasswordLambda
-        - Arn
-      key: !GetAtt
-        - StoreAdminPassword
-        - SsmId
-    DependsOn:
-      - LambdaDeployRole
-      - StorePasswordLambda
-  ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref ComponentInstanceRole
-  ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-  DescribeImagesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: DescribeImages
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Action: ec2:DescribeImages
-                Effect: Allow
-                Resource: "*"
-  GetLatestAMI:
+  GetLatestAMILambda:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.6
-      Handler: index.handler
-      Role: !Sub ${DescribeImagesRole.Arn}
-      Timeout: 60
       Code:
         ZipFile: |
           import boto3
           import cfnresponse
           import json
           import traceback
+
+
           def handler(event, context):
             try:
               response = boto3.client('ec2').describe_images(
+                  Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
                   Filters=[
                     {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
                     {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
@@ -243,13 +255,10 @@ Resources:
             except:
               traceback.print_last()
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
-  PTAAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "pta"
-      OS: CentOS-7
+      Runtime: python3.6
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   PTAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -331,24 +340,11 @@ Resources:
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     DependsOn:
       - StoreAdminPassword
+      - PTAAmi
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
-  ComponentInstancesSSMPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: ComponentInsancesSsmAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'ssm:GetParameter'
-            Resource:
-              - !Sub >-
-                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
-      Roles:
-        - !Ref ComponentInstanceRole
 Parameters:
   EULA:
     Type: String
