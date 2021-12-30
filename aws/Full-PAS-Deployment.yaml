@@ -112,6 +112,56 @@ Resources:
       LogStreamName: VaultDRMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+  VaultAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "vault"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  PVWAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "pvwa"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  CPMAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "cpm"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  PSMAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "psm"
+      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
+  PSMPAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "12.2"
+      Component: "psmp"
+      OS: "Amazon-Linux-2"
+    DependsOn:
+      - LambdaDeployRole
+      - GetLatestAMILambda
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -265,6 +315,13 @@ Resources:
                   - 'ssm:DeleteParameter'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -478,33 +535,9 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
-  DescribeImagesRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: DescribeImages
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Action: ec2:DescribeImages
-                Effect: Allow
-                Resource: "*"
-  GetLatestAMI:
+  GetLatestAMILambda:
     Type: AWS::Lambda::Function
     Properties:
-      Runtime: python3.6
-      Handler: index.handler
-      Role: !Sub ${DescribeImagesRole.Arn}
-      Timeout: 60
       Code:
         ZipFile: |
           import boto3
@@ -530,13 +563,10 @@ Resources:
             except:
               traceback.print_last()
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
-  VaultAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "vault"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      Runtime: python3.6
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -612,6 +642,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultAmi
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -680,6 +712,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultAmi
   VaultInstancesProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -871,13 +905,6 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     DeletionPolicy: Retain
-  PVWAAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "pvwa"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -969,13 +996,8 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-  CPMAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "cpm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+    DependsOn:
+      - PVWAAmi
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1058,14 +1080,8 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
+      - CPMAmi
       - PVWAMachine
-  PSMAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "psm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1138,14 +1154,8 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
+      - PSMAmi
       - CPMMachine
-  PSMPAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !Sub ${GetLatestAMI.Arn}
-      Version: "12.2"
-      Component: "psmp"
-      OS: "Amazon-Linux-2"
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1238,6 +1248,7 @@ Resources:
               command: !Sub >-
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     DependsOn:
+      - PSMPAmi
       - PSMMachine
     CreationPolicy:
       ResourceSignal:
