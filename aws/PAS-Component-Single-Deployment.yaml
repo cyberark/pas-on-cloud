@@ -89,7 +89,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "12.2"
       Component: "pvwa"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
       - GetLatestAMILambda
@@ -99,7 +99,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "12.2"
       Component: "cpm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
       - GetLatestAMILambda
@@ -109,7 +109,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "12.2"
       Component: "psm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
       - GetLatestAMILambda
@@ -875,9 +875,9 @@ Parameters:
     Type: String
     Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
     AllowedValues:
-      - Windows Server 2016
-      - Windows Server 2019
-    Default: Windows Server 2016
+      - Win2016
+      - Win2019
+    Default: Win2016
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -1015,9 +1015,6 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
-  WinVersionIs16: !Equals
-    - 'Windows Server 2016'
-    - !Ref "WinVersion"
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

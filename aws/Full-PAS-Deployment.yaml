@@ -140,7 +140,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "12.2"
       Component: "cpm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
       - GetLatestAMILambda
@@ -1285,13 +1285,24 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select a CyberArk official release version.
+    AllowedValues:
+      - '12.2'
+      - '12.1'
+      - '12.0'
+      - '11.7'
+      - '11.6'
+      - '11.5'
+    Default: '12.2'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
     AllowedValues:
-      - Windows Server 2016
-      - Windows Server 2019
-    Default: Windows Server 2016
+      - Win2016
+      - Win2019
+    Default: Win2016
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -1486,6 +1497,16 @@ Rules:
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
+  VersionSupport:
+    Assertions:
+      - Assert: !And
+        - !Equals
+          - !Ref WinVersion
+          - Win2019
+        - !Contains
+          - ['11.5','11.6','11.7','12.0','12.1']
+          - !Ref ReleaseVersion
+        AssertDescription: The release version is not supported with the selected Windows Version.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -1623,9 +1644,6 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
-  WinVersionIs16: !Equals
-    - 'Windows Server 2016'
-    - !Ref "WinVersion"
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
