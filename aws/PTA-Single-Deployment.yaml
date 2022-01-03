@@ -9,7 +9,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "pta"
       OS: CentOS-7
     DependsOn:
@@ -254,7 +254,7 @@ Resources:
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ami not found")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60
@@ -353,6 +353,12 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select a CyberArk official release version.
+    AllowedValues:
+      - '12.2'
+    Default: '12.2'
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -424,6 +430,7 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
+          - ReleaseVersion
           - KeyName
       - Label:
           default: Vault and DR information
@@ -447,6 +454,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk Release Version
       KeyName:
         default: Key Pair
       VaultPrivateIP:

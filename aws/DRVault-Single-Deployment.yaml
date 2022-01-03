@@ -32,7 +32,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "vault"
       OS: !Ref WinVersion
     DependsOn:
@@ -395,14 +395,30 @@ Resources:
 
           def handler(event, context):
             try:
-              response = boto3.client('ec2').describe_images(
-                  Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
-                  Filters=[
-                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
-                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
-                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
-                  ],
-              )
+              ver= event['ResourceProperties']['Version']
+              major= int(ver.split(".")[0])
+              minor= int(ver.split(".")[1])
+              response = {
+                  "Images": []
+              }
+
+              # In release versions previous to 12.2, "os" filter didn't exist
+              os_filter = {} if ver in ['11.5','11.6','11.7','12.0','12.1'] else \
+              {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
+
+              while (response['Images'] == []) and (major >= 0):
+                while (response['Images'] == []) and (minor >= 0):
+                  response = boto3.client('ec2').describe_images(
+                      Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
+                      Filters=[
+                        {'Name': 'tag:Cyberark_version', 'Values':  [str(major)+'.'+str(minor)]},
+                        {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                        os_filter,
+                      ],
+                  )
+                  minor -= 1
+                major -= 1
+                minor = 9
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
@@ -411,7 +427,7 @@ Resources:
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ami not found")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60
@@ -495,6 +511,17 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select a CyberArk official release version.
+    AllowedValues:
+      - '12.2'
+      - '12.1'
+      - '12.0'
+      - '11.7'
+      - '11.6'
+      - '11.5'
+    Default: '12.2'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
@@ -559,6 +586,17 @@ Rules:
           - !Ref 'EULA'
           - Accept
         AssertDescription: You must accept EULA to continue.
+  VersionSupport:
+    Assertions:
+      - Assert: !Or
+        - !Equals
+          - !Ref WinVersion
+          - Win2016
+        - !Not
+          - 'Fn::Contains':
+            - ['11.5','11.6','11.7','12.0','12.1']
+            - !Ref ReleaseVersion
+        AssertDescription: The selected versions are not supported together.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -566,8 +604,9 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - KeyName
+          - ReleaseVersion
           - WinVersion
+          - KeyName
       - Label:
           default: Primary Vault and DR information
         Parameters:
@@ -585,6 +624,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk Release Version
       WinVersion:
         defualt: Windows Server Version
       KeyName:
