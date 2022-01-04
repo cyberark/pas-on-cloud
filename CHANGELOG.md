@@ -2,6 +2,18 @@
 
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
+## [12.2] (Release date 2022/03/08)
+
+### Added
+- AWS : Added - Windows Server 2019 compatibility
+- AWS : Added - CyberArk PAS release version selection within the CloudFormation parameters.
+- Azure : Added - Windows Server 2019 compatibility
+### Changed
+- AWS: the required ImageIds are gathered on demand via a lambda function, 
+  the previously used ImageId mapping by region was removed
+### Note
+- Choosing deployment on Windows Server 2019 is not supported for CyberArk PAS release versions prior to v12.2 
+
 ## [10.8.1] (Release date 2019/01/23)
 
 ### Added

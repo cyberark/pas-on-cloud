@@ -454,30 +454,30 @@ Resources:
 
           def handler(event, context):
             try:
-              ver= event['ResourceProperties']['Version']
-              major= int(ver.split(".")[0])
-              minor= int(ver.split(".")[1])
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_major= int(pas_ver.split(".")[0])
+              pas_ver_minor= int(pas_ver.split(".")[1])
               response = {
                   "Images": []
               }
 
-              # In release versions previous to 12.2, "os" filter didn't exist
-              os_filter = {} if ver in ['11.5','11.6','11.7','12.0','12.1'] else \
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
+              os_filter = {} if pas_ver in pas_ver_without_os_filter else \
               {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
 
-              while (response['Images'] == []) and (major >= 0):
-                while (response['Images'] == []) and (minor >= 0):
+              while (response['Images'] == []) and (pas_ver_major >= 0):
+                while (response['Images'] == []) and (pas_ver_minor >= 0):
                   response = boto3.client('ec2').describe_images(
                       Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
                       Filters=[
-                        {'Name': 'tag:Cyberark_version', 'Values':  [str(major)+'.'+str(minor)]},
+                        {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
                         {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
                         os_filter,
                       ],
                   )
-                  minor -= 1
-                major -= 1
-                minor = 9
+                  pas_ver_minor -= 1
+                pas_ver_major -= 1
+                pas_ver_minor = 9
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
@@ -736,7 +736,7 @@ Rules:
           - 'Fn::Contains':
             - ['11.5','11.6','11.7','12.0','12.1']
             - !Ref ReleaseVersion
-        AssertDescription: The selected versions are not supported together.
+        AssertDescription: The selected versions are not compatible.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
