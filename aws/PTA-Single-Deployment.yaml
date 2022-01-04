@@ -355,7 +355,7 @@ Parameters:
     Default: Decline
   ReleaseVersion:
     Type: String
-    Description: Select a CyberArk official release version.
+    Description: Select an official CyberArk PAS release version.
     AllowedValues:
       - '12.2'
     Default: '12.2'
@@ -402,7 +402,7 @@ Parameters:
   PTAInstanceName:
     Type: String
     Description: Enter a name for the PTA instance.
-    Default: PTA_Component
+    Default: CyberArk PTA
   PTAInstanceType:
     Type: String
     Description: Select the instance type of the PTA instance.
@@ -455,7 +455,7 @@ Metadata:
       EULA:
         default: License Agreement
       ReleaseVersion:
-        default: CyberArk Release Version
+        default: CyberArk PAS Release Version
       KeyName:
         default: Key Pair
       VaultPrivateIP:

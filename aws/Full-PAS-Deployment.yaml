@@ -1303,7 +1303,7 @@ Parameters:
     Default: Decline
   ReleaseVersion:
     Type: String
-    Description: Select a CyberArk official release version.
+    Description: Select an official CyberArk PAS release version.
     AllowedValues:
       - '12.2'
       - '12.1'
@@ -1586,7 +1586,7 @@ Metadata:
       EULA:
         default: License Agreement
       ReleaseVersion:
-        default: CyberArk Release Version
+        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       KeyName:
