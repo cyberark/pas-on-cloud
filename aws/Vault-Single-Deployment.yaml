@@ -460,15 +460,15 @@ Resources:
               response = {
                   "Images": []
               }
-
+              cyberark_account_ids = ['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***']
               pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
               os_filter = {} if pas_ver in pas_ver_without_os_filter else \
               {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
-
+              
               while (response['Images'] == []) and (pas_ver_major >= 0):
                 while (response['Images'] == []) and (pas_ver_minor >= 0):
                   response = boto3.client('ec2').describe_images(
-                      Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
+                      Owners= cyberark_account_ids,
                       Filters=[
                         {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
                         {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
@@ -484,9 +484,11 @@ Resources:
               id = amis[0]['ImageId']
         
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ami not found")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60

@@ -27,7 +27,7 @@ Parameters:
 | Parameter Name | Required | Default | Comments |
 |----------------|----------------|----------------------|----------|
 | location       | Yes  | None | |
-| release        | No   | **v10.8** | |
+| release        | No   | **v12.2** | |
 
 
 To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.
