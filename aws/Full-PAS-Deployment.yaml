@@ -123,7 +123,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
@@ -133,7 +132,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -143,7 +141,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -153,7 +150,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
@@ -163,7 +159,6 @@ Resources:
       OS: "Amazon-Linux-2"
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -874,8 +869,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -944,8 +937,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1037,8 +1028,6 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-    DependsOn:
-      - PVWAAmi
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1121,7 +1110,6 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - CPMAmi
       - PVWAMachine
   PSMMachine:
     Type: 'AWS::EC2::Instance'
@@ -1195,7 +1183,6 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PSMAmi
       - CPMMachine
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
@@ -1288,13 +1275,12 @@ Resources:
             99-SignalCompletion:
               command: !Sub >-
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
-    DependsOn:
-      - PSMPAmi
-      - PSMMachine
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
+    DependsOn:
+      - PSMMachine
 Parameters:
   EULA:
     Type: String
