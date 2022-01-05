@@ -239,7 +239,7 @@ Resources:
           def handler(event, context):
             try:
               response = boto3.client('ec2').describe_images(
-                  Owners=['***REMOVED***', '***REMOVED***', '***REMOVED***', '***REMOVED***'],
+
                   Filters=[
                     {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
                     {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
