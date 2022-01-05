@@ -14,7 +14,6 @@ Resources:
       OS: CentOS-7
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -340,7 +339,6 @@ Resources:
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     DependsOn:
       - StoreAdminPassword
-      - PTAAmi
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M

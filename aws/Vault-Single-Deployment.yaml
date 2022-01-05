@@ -37,7 +37,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -583,8 +582,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
 Parameters:
   EULA:
     Type: String

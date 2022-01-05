@@ -108,7 +108,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   ComponentsAmi:
     Type: Custom::FindAMI
     Properties:
@@ -118,7 +117,6 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -843,8 +841,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -913,8 +909,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   ComponentsMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -1059,8 +1053,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - ComponentsAmi
 Parameters:
   EULA:
     Type: String
