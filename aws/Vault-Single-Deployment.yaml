@@ -481,7 +481,6 @@ Resources:
                             key=lambda x: x['CreationDate'],
                             reverse=True)
               id = amis[0]['ImageId']
-        
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
             except IndexError:
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
