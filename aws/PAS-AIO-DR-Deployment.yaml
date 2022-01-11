@@ -106,6 +106,7 @@ Resources:
       Version: !Ref ReleaseVersion
       Component: "vault"
       OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
   ComponentsAmi:
@@ -741,7 +742,7 @@ Resources:
               while (response['Images'] == []) and (pas_ver_major >= 0):
                 while (response['Images'] == []) and (pas_ver_minor >= 0):
                   response = boto3.client('ec2').describe_images(
-                      Owners= cyberark_account_ids,
+                      Owners= [event['ResourceProperties']['OwnerAccountId']],
                       Filters=[
                         {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
                         {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
@@ -1078,6 +1079,12 @@ Parameters:
       - Win2016
       - Win2019
     Default: Win2016
+  CyberarkAccountId:
+    Type: Number
+    Description: Enter the CyberArk Account ID (AMI Owner account ID).
+    MinValue: 100000000000
+    MaxValue: 999999999999
+    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
@@ -1232,6 +1239,7 @@ Metadata:
           - EULA
           - ReleaseVersion
           - WinVersion
+          - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
           - LicenseFile
@@ -1266,6 +1274,8 @@ Metadata:
         default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
+      CyberarkAccountId:
+        default: CyberArk Account ID
       KeyName:
         default: Key Pair
       VaultFilesBucket:
