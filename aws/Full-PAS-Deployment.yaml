@@ -118,52 +118,47 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "vault"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "pvwa"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "cpm"
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "psm"
-      OS: !If [WinVersionIs16, 'Win2016', 'Win2019']
+      OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "psmp"
       OS: "Amazon-Linux-2"
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -597,7 +592,7 @@ Resources:
         - !Ref VaultDRInstancesRole
     DeletionPolicy: Retain
   ComponentInstanceProfile:
-    Type: 'A'WS::IAM::InstanceProfile'
+    Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
@@ -760,23 +755,40 @@ Resources:
 
           def handler(event, context):
             try:
-              response = boto3.client('ec2').describe_images(
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_major= int(pas_ver.split(".")[0])
+              pas_ver_minor= int(pas_ver.split(".")[1])
+              response = {
+                  "Images": []
+              }
 
-                  Filters=[
-                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
-                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
-                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
-                  ],
-              )
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
+              os_filter = {} if pas_ver in pas_ver_without_os_filter else \
+              {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
+              
+              while (response['Images'] == []) and (pas_ver_major >= 0):
+                while (response['Images'] == []) and (pas_ver_minor >= 0):
+                  response = boto3.client('ec2').describe_images(
+                      Owners= cyberark_account_ids,
+                      Filters=[
+                        {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
+                        {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                        os_filter,
+                      ],
+                  )
+                  pas_ver_minor -= 1
+                pas_ver_major -= 1
+                pas_ver_minor = 9
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
               id = amis[0]['ImageId']
-        
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60
@@ -856,8 +868,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -926,8 +936,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-    DependsOn:
-      - VaultAmi
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1019,8 +1027,6 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-    DependsOn:
-      - PVWAAmi
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1103,7 +1109,6 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - CPMAmi
       - PVWAMachine
   PSMMachine:
     Type: 'AWS::EC2::Instance'
@@ -1177,7 +1182,6 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PSMAmi
       - CPMMachine
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
@@ -1270,13 +1274,12 @@ Resources:
             99-SignalCompletion:
               command: !Sub >-
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
-    DependsOn:
-      - PSMPAmi
-      - PSMMachine
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
+    DependsOn:
+      - PSMMachine
 Parameters:
   EULA:
     Type: String
@@ -1287,7 +1290,7 @@ Parameters:
     Default: Decline
   ReleaseVersion:
     Type: String
-    Description: Select a CyberArk official release version.
+    Description: Select an official CyberArk PAS release version.
     AllowedValues:
       - '12.2'
       - '12.1'
@@ -1499,14 +1502,15 @@ Rules:
         AssertDescription: You must accept EULA to continue.
   VersionSupport:
     Assertions:
-      - Assert: !And
+      - Assert: !Or
         - !Equals
           - !Ref WinVersion
-          - Win2019
-        - !Contains
-          - ['11.5','11.6','11.7','12.0','12.1']
-          - !Ref ReleaseVersion
-        AssertDescription: The release version is not supported with the selected Windows Version.
+          - Win2016
+        - !Not
+          - 'Fn::Contains':
+            - ['11.5','11.6','11.7','12.0','12.1']
+            - !Ref ReleaseVersion
+        AssertDescription: The selected versions are not compatible.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -1514,11 +1518,12 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
+          - ReleaseVersion
+          - WinVersion
           - KeyName
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
-          - WinVersion
       - Label:
           default: Primary Vault and DR Vault configuration
         Parameters:
@@ -1567,6 +1572,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       KeyName:

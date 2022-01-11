@@ -87,42 +87,38 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "pvwa"
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "cpm"
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "psm"
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "psmp"
       OS: "Amazon-Linux-2"
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -236,6 +232,7 @@ Resources:
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -321,23 +318,40 @@ Resources:
 
           def handler(event, context):
             try:
-              response = boto3.client('ec2').describe_images(
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_major= int(pas_ver.split(".")[0])
+              pas_ver_minor= int(pas_ver.split(".")[1])
+              response = {
+                  "Images": []
+              }
 
-                  Filters=[
-                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
-                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
-                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
-                  ],
-              )
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
+              os_filter = {} if pas_ver in pas_ver_without_os_filter else \
+              {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
+              
+              while (response['Images'] == []) and (pas_ver_major >= 0):
+                while (response['Images'] == []) and (pas_ver_minor >= 0):
+                  response = boto3.client('ec2').describe_images(
+                      Owners= cyberark_account_ids,
+                      Filters=[
+                        {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
+                        {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
+                        os_filter,
+                      ],
+                  )
+                  pas_ver_minor -= 1
+                pas_ver_major -= 1
+                pas_ver_minor = 9
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
               id = amis[0]['ImageId']
-        
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60
@@ -475,8 +489,6 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-    DependsOn:
-      - PVWAAmi
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -605,8 +617,6 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-    DependsOn:
-      - CPMAmi
   PSMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -719,8 +729,6 @@ Resources:
       ResourceSignal:
         Timeout: PT15M
     DeletionPolicy: Retain
-    DependsOn:
-      - PSMAmi
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -861,8 +869,6 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
-    DependsOn:
-      - PSMPAmi
 Parameters:
   EULA:
     Type: String
@@ -871,6 +877,17 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select an official CyberArk PAS release version.
+    AllowedValues:
+      - '12.2'
+      - '12.1'
+      - '12.0'
+      - '11.7'
+      - '11.6'
+      - '11.5'
+    Default: '12.2'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
@@ -941,6 +958,17 @@ Rules:
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
+  VersionSupport:
+    Assertions:
+      - Assert: !Or
+        - !Equals
+          - !Ref WinVersion
+          - Win2016
+        - !Not
+          - 'Fn::Contains':
+            - ['11.5','11.6','11.7','12.0','12.1']
+            - !Ref ReleaseVersion
+        AssertDescription: The selected versions are not compatible.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -948,8 +976,9 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - KeyName
+          - ReleaseVersion
           - WinVersion
+          - KeyName
       - Label:
           default: Primary Vault and DR information
         Parameters:
@@ -970,6 +999,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       KeyName:

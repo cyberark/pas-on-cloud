@@ -9,12 +9,11 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.2"
+      Version: !Ref ReleaseVersion
       Component: "pta"
       OS: CentOS-7
     DependsOn:
       - LambdaDeployRole
-      - GetLatestAMILambda
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -239,7 +238,7 @@ Resources:
           def handler(event, context):
             try:
               response = boto3.client('ec2').describe_images(
-
+                  Owners=cyberark_account_ids,
                   Filters=[
                     {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
                     {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
@@ -250,11 +249,12 @@ Resources:
                             key=lambda x: x['CreationDate'],
                             reverse=True)
               id = amis[0]['ImageId']
-        
               cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
             except:
               traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "ok")
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
       Runtime: python3.6
       Handler: index.handler
       Timeout: 60
@@ -340,7 +340,6 @@ Resources:
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     DependsOn:
       - StoreAdminPassword
-      - PTAAmi
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
@@ -353,6 +352,12 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select an official CyberArk PAS release version.
+    AllowedValues:
+      - '12.2'
+    Default: '12.2'
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -396,7 +401,7 @@ Parameters:
   PTAInstanceName:
     Type: String
     Description: Enter a name for the PTA instance.
-    Default: PTA_Component
+    Default: CyberArk PTA
   PTAInstanceType:
     Type: String
     Description: Select the instance type of the PTA instance.
@@ -424,6 +429,7 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
+          - ReleaseVersion
           - KeyName
       - Label:
           default: Vault and DR information
@@ -447,6 +453,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk PAS Release Version
       KeyName:
         default: Key Pair
       VaultPrivateIP:
