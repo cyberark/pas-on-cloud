@@ -781,7 +781,6 @@ Resources:
                       Filters=[
                         {'Name': 'Name', 'Values':  [ami_name]},
                       ],
-                      ],
                   )
                   pas_ver_minor -= 1
                 pas_ver_major -= 1
