@@ -779,7 +779,7 @@ Resources:
                   response = boto3.client('ec2').describe_images(
                       Owners= [event['ResourceProperties']['OwnerAccountId']],
                       Filters=[
-                        {'Name': 'Name', 'Values':  [ami_name]},
+                        {'Name': 'name', 'Values':  [ami_name]},
                       ],
                   )
                   pas_ver_minor -= 1
