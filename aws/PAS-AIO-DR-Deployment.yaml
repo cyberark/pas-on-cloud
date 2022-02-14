@@ -104,7 +104,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
-      Component: "vault"
+      Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
@@ -114,7 +114,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
-      Component: "aio"
+      Component: "Components"
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
@@ -728,6 +728,7 @@ Resources:
 
           def handler(event, context):
             try:
+              component = event['ResourceProperties']['Component']
               pas_ver= event['ResourceProperties']['Version']
               pas_ver_major= int(pas_ver.split(".")[0])
               pas_ver_minor= int(pas_ver.split(".")[1])
@@ -736,17 +737,16 @@ Resources:
               }
 
               pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
-              os_filter = {} if pas_ver in pas_ver_without_os_filter else \
-              {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]}
+              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
+              event['ResourceProperties']['OS']
               
               while (response['Images'] == []) and (pas_ver_major >= 0):
                 while (response['Images'] == []) and (pas_ver_minor >= 0):
+                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
                   response = boto3.client('ec2').describe_images(
                       Owners= [event['ResourceProperties']['OwnerAccountId']],
                       Filters=[
-                        {'Name': 'tag:Cyberark_version', 'Values':  [str(pas_ver_major)+'.'+str(pas_ver_minor)]},
-                        {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
-                        os_filter,
+                        {'Name': 'name', 'Values':  [ami_name]},
                       ],
                   )
                   pas_ver_minor -= 1

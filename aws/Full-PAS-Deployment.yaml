@@ -755,7 +755,6 @@ Resources:
           import boto3
           import cfnresponse
           import json
-          import re
           import traceback
 
 

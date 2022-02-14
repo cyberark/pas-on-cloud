@@ -10,7 +10,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
-      Component: "pta"
+      Component: "PTA"
       OS: "CentOS-7"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
@@ -238,14 +238,19 @@ Resources:
 
           def handler(event, context):
             try:
-              response = boto3.client('ec2').describe_images(
-                  Owners=[event['ResourceProperties']['OwnerAccountId']],
-                  Filters=[
-                    {'Name': 'tag:Cyberark_version', 'Values': [event['ResourceProperties']['Version']]},
-                    {'Name': 'tag:component', 'Values': [event['ResourceProperties']['Component']]},
-                    {'Name': 'tag:os', 'Values': [event['ResourceProperties']['OS']]},
-                  ],
-              )
+              component = event['ResourceProperties']['Component']
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_without_os_filter = ['12.2']
+              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
+              event['ResourceProperties']['OS']
+
+                  ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
+                  response = boto3.client('ec2').describe_images(
+                      Owners= [event['ResourceProperties']['OwnerAccountId']],
+                      Filters=[
+                        {'Name': 'name', 'Values':  [ami_name]},
+                      ],
+                  )
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
