@@ -93,6 +93,7 @@
         "Availability Zone": {
             "defaultValue": "1",
             "allowedValues": [
+                " ",
                 "1",
                 "2",
                 "3"
@@ -170,7 +171,7 @@
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "zones": [
-                "[parameters('Availability Zone')]"
+                "[if(empty(parameters('Availability Zone')), json('[]'), array(parameters('availabilityZone')))]"
             ],
             "identity": {
                 "type": "SystemAssigned"
