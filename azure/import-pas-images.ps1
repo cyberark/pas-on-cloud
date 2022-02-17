@@ -43,11 +43,11 @@
     [Parameter(Mandatory = $false)]
     [String]
     $VaultAccessSAS,
-    # Supplied by CyberArk Vault/VaultDR AccessSAS
+    # Switch to start the copy process
     [Parameter(Mandatory = $false)]
     [switch]
     $Copy,
-    # Supplied by CyberArk Vault/VaultDR AccessSAS
+    # Switch to start the process of converting the VHD into a image.
     [Parameter(Mandatory = $false)]
     [switch]
     $Process
