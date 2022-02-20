@@ -85,6 +85,7 @@ Resources:
     DeletionPolicy: Retain
   PVWAAmi:
     Type: Custom::FindAMI
+    Condition: CreatePVWACondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
@@ -95,6 +96,7 @@ Resources:
       - LambdaDeployRole
   CPMAmi:
     Type: Custom::FindAMI
+    Condition: CreateCPMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
@@ -105,6 +107,7 @@ Resources:
       - LambdaDeployRole
   PSMAmi:
     Type: Custom::FindAMI
+    Condition: CreatePSMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
@@ -115,6 +118,7 @@ Resources:
       - LambdaDeployRole
   PSMPAmi:
     Type: Custom::FindAMI
+    Condition: CreatePSMPCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: !Ref ReleaseVersion
