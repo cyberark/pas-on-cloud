@@ -1259,6 +1259,7 @@ Resources:
                 curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
                 chmod +x ./awslogs-agent-setup.py
                 ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /etc/awslogs/awslogs.conf
+                systemctl daemon-reload
               mode: '000555'
               owner: root
               group: root

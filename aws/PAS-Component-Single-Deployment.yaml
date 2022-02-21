@@ -763,7 +763,7 @@ Resources:
         configSets:
           ascending:
             - update_ssmagent
-            - install_cwlogs
+            - install_logs
             - install_psmp
         update_ssmagent:
           commands:
@@ -773,7 +773,7 @@ Resources:
                 https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
               ignoreErrors: true
               waitAfterCompletion: 0
-        install_cwlogs:
+        install_logs:
           files:
             /etc/awslogs/awslogs.conf:
               content: !Sub |
@@ -811,67 +811,37 @@ Resources:
               mode: '000444'
               owner: root
               group: root
+            /etc/awslogs/install.sh:
+              content: !Sub |
+                #!/bin/bash
+                curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
+                chmod +x ./awslogs-agent-setup.py
+                ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /etc/awslogs/awslogs.conf
+              mode: '000555'
+              owner: root
+              group: root
           commands:
-            01_create_state_directory:
+            01_install_awslogs:
+              command: /etc/awslogs/install.sh
+            02_create_state_directory:
               command: mkdir -p /var/lib/awslogs/state
-              waitAfterCompletion: 0
-            02_start_awslogsd:
-              command: systemctl start awslogsd
-            03_enable_awslogsd:
-              command: systemctl enable awslogsd
+            03_start_awslogsd:
+              command: service awslogs start
         install_psmp:
-          files:
-            /root/CD-Image/preinstall.sh:
-              content: |-
-                #!/bin/bash -e
-
-                hostname $1
-
-                sed -i "s/localhost\\./$1./g" /etc/hosts
-
-                sed -i "s/localhost /$1 /g" /etc/hosts
-
-                chmod 646 /etc/sysconfig/network
-                sed -i "s/HOSTNAME=localhost.localdomain/HOSTNAME=$1/g" \
-                /etc/sysconfig/network
-
-                chmod 644 /etc/hosts
-
-                chmod 644 /etc/sysconfig/network
-            /root/CD-Image/createCredFile.sh:
-              content: |-
-                #!/bin/bash -e
-                adminpassword=`aws ssm get-parameters --names $2 --region $3 \
-                --with-decryption --output text --query Parameters[0].Value`
-                /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred \
-                Password -Username $1 -Password $adminpassword -EntropyFile
           commands:
-            1-ScriptsPermissions:
-              command: >-
-                sudo chmod 700 /root/CD-Image/preinstall.sh
-                /root/CD-Image/createCredFile.sh
-              waitAfterCompletion: 0
-            2-PreInstall:
-              command: !Sub >
-                sudo /root/CD-Image/preinstall.sh ${ComponentHostName}
-                waitAfterCompletion: 0
-            3-CreateCredFile:
-              command: !Sub >
-                sudo /root/CD-Image/createCredFile.sh ${VaultAdminUser}
-                ${StoreAdminPassword.SsmId} ${AWS::Region} ${ComponentHostName}
-                waitAfterCompletion: 0
-            4-PSMPdeploy:
-              command: !Sub
-                - >-
-                  hostname=`curl
-                  http://169.254.169.254/latest/meta-data/instance-id` &&
-                  /root/CD-Image/register_and_activation.sh
-                  /root/CD-Image/user.cred ${VaultIpAddress} $hostname y
-                - VaultIpAddress: !If
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-              waitAfterCompletion: 0
+            01-PSMPdeploy:
+              command:
+                'Fn::Sub':
+                  - >-
+                    /opt/CD-Image/register_and_activation.sh
+                    Administrator "${VaultAdminPassword}" "${VaultIpAddress}" $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            02-PostInstall:
+              command: sudo rm -rf /opt/CD-Image/
+            99-SignalCompletion:
+              command: !Sub >-
+                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     Condition: CreatePSMPCondition
     CreationPolicy:
       ResourceSignal:
