@@ -1217,59 +1217,66 @@ Resources:
             - install_psmp
         install_logs:
           files:
-            /etc/awslogs/awslogs.conf:
+            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
               content: !Sub |
-                [general]
-                state_file= /var/lib/awslogs/state/agent-state
-                [/var/log/cloud-init.log]
-                file = /var/log/cloud-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cloud-init.log
-                datetime_format =
-                [/var/log/cloud-init-output.log]
-                file = /var/log/cloud-init-output.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cloud-init-output.log
-                datetime_format =
-                [/var/log/cfn-init.log]
-                file = /var/log/cfn-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cfn-init.log
-                datetime_format =
-                [/var/log/cfn-wire.log]
-                file = /var/log/cfn-wire.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cfn-wire.log
-                datetime_format =
+                {
+                  "agent": {
+                    "metrics_collection_interval": 10,
+                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cloud-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cloud-init-output",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cfn-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/opt/CARKpsmp/temp/EnvManager.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/EnvManager",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/PSMPHardening_log",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
               mode: '000444'
-              owner: root
-              group: root
-            /etc/awslogs/awscli.conf:
-              content: !Sub |
-                [plugins]
-                cwlogs = cwlogs
-                [default]
-                region = ${AWS::Region}
-              mode: '000444'
-              owner: root
-              group: root
-            /etc/awslogs/install.sh:
-              content: !Sub |
-                #!/bin/bash
-                curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O
-                chmod +x ./awslogs-agent-setup.py
-                ./awslogs-agent-setup.py -n -r ${AWS::Region} -c /etc/awslogs/awslogs.conf
-                systemctl daemon-reload
-              mode: '000555'
               owner: root
               group: root
           commands:
-            01_install_awslogs:
-              command: /etc/awslogs/install.sh
-            02_create_state_directory:
-              command: mkdir -p /var/lib/awslogs/state
-            03_start_awslogsd:
-              command: service awslogs start
+            01_install_cwlogs:
+              command: yum install -y https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            02_start_awslogs:
+              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_psmp:
           commands:
             01-PSMPdeploy:
