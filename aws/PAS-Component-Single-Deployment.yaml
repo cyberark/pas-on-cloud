@@ -752,7 +752,7 @@ Resources:
           #!/bin/bash -e
 
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource
-          PSMPMachine --configsets ascending --region ${AWS::Region}
+          PSMPMachine --configsets install_all --region ${AWS::Region}
 
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
           PSMPMachine --region ${AWS::Region}
