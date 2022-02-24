@@ -1251,7 +1251,7 @@ Resources:
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
-                            "file_path": "/var/opt/CARKpsmp/temp/EnvManager.log",
+                            "file_path": "/tmp/temp/EnvManager.log",
                             "log_group_name": "${LogGroup}",
                             "log_stream_name": "PSMSSHMachine/EnvManager",
                             "timezone": "Local",
