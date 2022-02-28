@@ -1106,65 +1106,78 @@ Resources:
             - install_psmp
         install_logs:
           files:
-            /etc/awslogs/awslogs.conf:
+            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
               content: !Sub |
-                [general]
-                state_file= /var/lib/awslogs/state/agent-state
-                [/var/log/cloud-init.log]
-                file = /var/log/cloud-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cloud-init.log
-                datetime_format =
-                [/var/log/cloud-init-output.log]
-                file = /var/log/cloud-init-output.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cloud-init-output.log
-                datetime_format =
-                [/var/log/cfn-init.log]
-                file = /var/log/cfn-init.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cfn-init.log
-                datetime_format =
-                [/var/log/cfn-wire.log]
-                file = /var/log/cfn-wire.log
-                log_group_name = ${LogGroup}
-                log_stream_name = PSMSSHMachine/cfn-wire.log
-                datetime_format =
-              mode: '000444'
-              owner: root
-              group: root
-            /etc/awslogs/awscli.conf:
-              content: !Sub |
-                [plugins]
-                cwlogs = cwlogs
-                [default]
-                region = ${AWS::Region}
+                {
+                  "agent": {
+                    "metrics_collection_interval": 10,
+                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cloud-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cloud-init-output",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/cfn-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/tmp/temp/EnvManager.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/EnvManager",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PSMSSHMachine/PSMPHardening_log",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
               mode: '000444'
               owner: root
               group: root
           commands:
-            01_create_state_directory:
-              command: mkdir -p /var/lib/awslogs/state
-            02_start_awslogsd:
-              command: systemctl start awslogsd
-            03_enable_awslogsd:
-              command: systemctl enable awslogsd
+            01_install_cwlogs:
+              command: yum install -y https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            02_start_awslogs:
+              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_psmp:
           commands:
-            01-CreateCredFile:
-              command: !Sub >-
-                sudo /opt/CARKpsmp/bin/createcredfile /root/CD-Image/user.cred
-                Password -Username Administrator -Password ${VaultAdminPassword} -EntropyFile
-            02-PSMPdeploy:
+            01-PSMPdeploy:
               command:
                 'Fn::Sub':
                   - >-
-                    /root/CD-Image/register_and_activation.sh
-                    /root/CD-Image/user.cred ${VaultIpAddress} $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) y
+                    /opt/CD-Image/register_and_activation.sh
+                    Administrator "${VaultAdminPassword}" "${VaultIpAddress}" $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-            03-PostInstall:
-              command: sudo rm -rf /root/CD-Image/
+            02-PostInstall:
+              command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
                 /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
@@ -1543,7 +1556,7 @@ Mappings:
       CPM: ami-0331d6a1ed8a049a8
       PVWA: ami-042941065ee81a59a
       PSM: ami-074fbecca986d1b2b
-      PSMP: ami-0664054848d7e0dbd
+      PSMP: ami-006254b7973a531e2
     eu-west-3:
       Vault: ami-0e317eef0bd2561a5
       CPM: ami-0b264e7217b403c0d
