@@ -488,8 +488,8 @@ Parameters:
   VaultHostName:
     Type: String
     Description: Enter the host name for the DR Vault instance.
-    AllowedPattern: ^([a-zA-Z0-9][a-zA-Z0-9\-.]{2,14})
-    ConstraintDescription:  Hostname must include 3-15 characters, only alphanumeric characters, dashes and dots are allowed.
+    AllowedPattern: ^([a-zA-Z0-9][a-zA-Z0-9\-]{2,14})
+    ConstraintDescription:  Hostname must include 3-15 characters, only alphanumeric characters and hyphens are allowed.
     MinLength: 3
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
