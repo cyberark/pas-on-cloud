@@ -433,37 +433,37 @@ Metadata:
 Mappings:
   RegionMap:
     us-east-1:
-      PTA: ami-057386a54facf83d3
+      PTA: ami-072fd704a6537ff64
     us-east-2:
-      PTA: ami-08ab50f7213bffba8
+      PTA: ami-07cd1fffacf956410
     eu-west-2:
-      PTA: ami-01482124541e569bd
+      PTA: ami-02be09b59477862fa
     us-west-1:
-      PTA: ami-0e790df828a8ac036
+      PTA: ami-0fd97022f44788498
     us-west-2:
-      PTA: ami-0c71b81bb24103af9
+      PTA: ami-0a8b54db686c83829
     ca-central-1:
-      PTA: ami-08d9d984dc0f5575e
+      PTA: ami-0a95742f3d0f348c8
     eu-west-1:
-      PTA: ami-08f48f357ad4505ce
+      PTA: ami-02d6756e876ecad4b
     eu-central-1:
-      PTA: ami-0aebb24c0918df88d
+      PTA: ami-02e8618ffb7409de0
     ap-southeast-1:
-      PTA: ami-09ebb6dc542184d32
+      PTA: ami-07db8a1218787ff7e
     ap-southeast-2:
-      PTA: ami-0bd920b1e4929d68c
+      PTA: ami-08e2fd8bcb87d3216
     ap-northeast-2:
-      PTA: ami-01e69b24306c1d6bf
+      PTA: ami-0f6523f8be14268df
     ap-northeast-1:
-      PTA: ami-069c058631e1b90ea
+      PTA: ami-024e7c893a6db3b8f
     ap-south-1:
-      PTA: ami-0b8a1789d56e5cb90
+      PTA: ami-019043f7ce2cbf5a0
     sa-east-1:
-      PTA: ami-0b1457604c053cbab
+      PTA: ami-057397781884fece0
     eu-west-3:
-      PTA: ami-06946f1da4e5e18b6
+      PTA: ami-014ae8f757077d130
     me-south-1:
-      PTA: ami-08dbcbb3830cc0566
+      PTA: ami-0acf20d5777e8bbbc
     us-gov-west-1:
       PTA: ami-06f90cae9f18e20af
     us-gov-east-1:
