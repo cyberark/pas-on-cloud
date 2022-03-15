@@ -286,29 +286,6 @@
          ]
       },
       {
-         "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/enable_tls_1.2')]",
-         "apiVersion":"2021-11-01",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "publisher":"Microsoft.Compute",
-            "type":"CustomScriptExtension",
-            "typeHandlerVersion":"1.9",
-            "autoUpgradeMinorVersion":true,
-            "settings": {
-               "fileUris":[
-                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/tls-1.2/azure/enable-tls-1.2.ps1"
-               ]
-            },
-            "protectedSettings":{
-               "commandToExecute":"powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1"
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
-         ]
-      },
-      {
          "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_with_dr')]",
@@ -322,14 +299,17 @@
             "type":"CustomScriptExtension",
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
-
+            "settings": {
+               "fileUris":[
+                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/tls-1.2/azure/enable-tls-1.2.ps1"
+               ]
+            },
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
             }
          },
          "dependsOn":[
             "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'),'/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       },
@@ -349,16 +329,15 @@
             "autoUpgradeMinorVersion":true,
             "settings":{
                "fileUris":[
-
+                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/tls-1.2/azure/enable-tls-1.2.ps1"
                ]
             },
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters ('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters ('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'))]"
             }
          },
          "dependsOn":[
             "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'),'/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       }
