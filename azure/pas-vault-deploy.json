@@ -328,7 +328,8 @@
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows', '/extensions/enable_tls_1.2')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'),'/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       },
@@ -356,7 +357,8 @@
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows', '/extensions/enable_tls_1.2')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'),'/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       }
