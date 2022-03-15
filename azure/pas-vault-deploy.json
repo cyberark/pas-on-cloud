@@ -298,8 +298,12 @@
             "type":"CustomScriptExtension",
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
+            "settings": {
+               "fileUris":[
+                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/tls-1.2/azure/enable-tls-1.2.ps1"
+               ]
+            },
             "protectedSettings":{
-               "fileUris": "",
                "commandToExecute":"powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1"
             }
          },
