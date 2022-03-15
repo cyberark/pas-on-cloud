@@ -287,12 +287,9 @@
       },
       {
          "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'enable_tls_1.2')]",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/enable_tls_1.2')]",
          "apiVersion":"2021-11-01",
          "location":"[resourceGroup().location]",
-         "tags":{
-            "displayName":"activate-tls-1.2"
-         },
          "properties":{
             "publisher":"Microsoft.Compute",
             "type":"CustomScriptExtension",
@@ -331,7 +328,7 @@
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows', '/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       },
@@ -359,7 +356,7 @@
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows', '/extensions/enable_tls_1.2')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
       }
