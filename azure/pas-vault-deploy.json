@@ -164,6 +164,71 @@
          }
       },
       {
+         "type":"Microsoft.Network/networkInterfaces",
+         "name":"[variables('networkInterfaceName')]",
+         "apiVersion":"2016-09-01",
+         "location":"[resourceGroup().location]",
+         "properties":{
+            "ipConfigurations":[
+               {
+                  "name":"ipconfig1",
+                  "properties":{
+                     "subnet":{
+                        "id":"[variables('subnetRefVault')]"
+                     },
+                     "privateIPAllocationMethod":"Dynamic"
+                  }
+               }
+            ]
+         }
+      },
+      {
+         "type":"Microsoft.Compute/virtualMachines",
+         "name":"[parameters('Primary Vault VM Name')]",
+         "apiVersion":"2019-07-01",
+         "location":"[resourceGroup().location]",
+         "zones": [
+               "[parameters('Availability Zone')]"
+         ],
+         "identity":{
+            "type":"SystemAssigned"
+         },
+         "properties":{
+            "osProfile":{
+               "computerName":"[parameters('Primary Vault VM Name')]",
+               "adminUsername":"[parameters('Primary Vault VM Admin User')]",
+               "adminPassword":"[parameters('Primary Vault VM Admin Password')]",
+               "windowsConfiguration":{
+                  "provisionVmAgent":"true"
+               }
+            },
+            "hardwareProfile":{
+               "vmSize":"[parameters('Primary Vault VM Size')]"
+            },
+            "storageProfile":{
+               "imageReference":{
+                  "id":"[parameters('Image ID')]"
+               },
+               "osDisk":{
+                  "createOption":"FromImage",
+                  "managedDisk":{
+                     "storageAccountType":"Premium_LRS"
+                  }
+               }
+            },
+            "networkProfile":{
+               "networkInterfaces":[
+                  {
+                     "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                  }
+               ]
+            }
+         },
+         "dependsOn":[
+            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+         ]
+      },
+      {
          "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
          "name":"[variables('vaultName')]",
@@ -221,49 +286,25 @@
          ]
       },
       {
-         "type":"Microsoft.Compute/virtualMachines",
-         "name":"[parameters('Primary Vault VM Name')]",
-         "apiVersion":"2019-07-01",
+         "type":"Microsoft.Compute/virtualMachines/extensions",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'enable_tls_1.2')]",
+         "apiVersion":"2021-08-01",
          "location":"[resourceGroup().location]",
-         "zones": [
-               "[parameters('Availability Zone')]"
-         ],
-         "identity":{
-            "type":"SystemAssigned"
+         "tags":{
+            "displayName":"activate-tls-1.2"
          },
          "properties":{
-            "osProfile":{
-               "computerName":"[parameters('Primary Vault VM Name')]",
-               "adminUsername":"[parameters('Primary Vault VM Admin User')]",
-               "adminPassword":"[parameters('Primary Vault VM Admin Password')]",
-               "windowsConfiguration":{
-                  "provisionVmAgent":"true"
-               }
-            },
-            "hardwareProfile":{
-               "vmSize":"[parameters('Primary Vault VM Size')]"
-            },
-            "storageProfile":{
-               "imageReference":{
-                  "id":"[parameters('Image ID')]"
-               },
-               "osDisk":{
-                  "createOption":"FromImage",
-                  "managedDisk":{
-                     "storageAccountType":"Premium_LRS"
-                  }
-               }
-            },
-            "networkProfile":{
-               "networkInterfaces":[
-                  {
-                     "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-                  }
-               ]
+            "publisher":"Microsoft.Compute",
+            "type":"CustomScriptExtension",
+            "typeHandlerVersion":"1.9",
+            "autoUpgradeMinorVersion":true,
+            "protectedSettings":{
+               "fileUris": "",
+               "commandToExecute":"powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1"
             }
          },
          "dependsOn":[
-            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
          ]
       },
       {
@@ -317,25 +358,6 @@
             "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
             "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
          ]
-      },
-      {
-         "type":"Microsoft.Network/networkInterfaces",
-         "name":"[variables('networkInterfaceName')]",
-         "apiVersion":"2016-09-01",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "ipConfigurations":[
-               {
-                  "name":"ipconfig1",
-                  "properties":{
-                     "subnet":{
-                        "id":"[variables('subnetRefVault')]"
-                     },
-                     "privateIPAllocationMethod":"Dynamic"
-                  }
-               }
-            ]
-         }
       }
    ],
    "outputs":{
