@@ -288,7 +288,7 @@
       {
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'enable_tls_1.2')]",
-         "apiVersion":"2021-08-01",
+         "apiVersion":"2021-11-01",
          "location":"[resourceGroup().location]",
          "tags":{
             "displayName":"activate-tls-1.2"
