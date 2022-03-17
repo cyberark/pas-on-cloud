@@ -1646,13 +1646,13 @@ Mappings:
       CPM: ami-01a1d4653ffdfa908
       PVWA: ami-00fb3ba40bc5ef3b1
       PSM: ami-0531d46ff83b09a88
-      PSMP: ami-09e30a08f31d8867c
+      PSMP: ami-07061e4b64d89bb63
     us-gov-east-1:
       Vault: ami-0d1fe90a793e652fc
       CPM: ami-0b8f222b3e7fa55eb
       PVWA: ami-092040fe63dd0324f
       PSM: ami-063aa2d042f07a965
-      PSMP: ami-0a41374ef903a19ed
+      PSMP: ami-0bf7ad208070f8290
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
