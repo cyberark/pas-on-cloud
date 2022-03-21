@@ -11,7 +11,8 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
 ### Changed
 - AWS: the required ImageIds are gathered on demand via a lambda function,
   the previously used ImageId mapping by region was removed
-  
+
+
 ## [PAS on Cloud v12.2.4] (8/3/2022)
 
 ### Added
