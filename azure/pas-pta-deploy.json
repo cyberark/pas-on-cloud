@@ -249,7 +249,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "ptaipconfig",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetRefComponent')]"
