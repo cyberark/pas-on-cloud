@@ -242,7 +242,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "componentipconfig",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetRefComponent')]"

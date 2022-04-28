@@ -262,7 +262,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "componentipconfig",
                         "properties": {
                             "subnet": {
                                 "id": "[if(equals(parameters('Component To Install'),'CPM'), variables('subnetRefComponent'), variables('subnetRefWeb'))]"

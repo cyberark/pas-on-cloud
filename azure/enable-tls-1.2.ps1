@@ -1,200 +1,39 @@
-PARAM(
-    # release number
-    [Parameter(Mandatory = $false)]
-    [String]
-    $release="v12.2",
-    # location to import Cyberark images to
-    [Parameter(Mandatory = $true)]
-    [String]
-    $location,
-    # storageName to import Cyberark images to
-    [Parameter(Mandatory = $false)]
-    [String]
-    $storageName="cyberarkimages",
-    # containerName to import Cyberark images to
-    [Parameter(Mandatory = $false)]
-    [String]
-    $containerName="cyberarkimages",
-    # resourceGroupName to import Cyberark images to
-    [Parameter(Mandatory = $false)]
-    [String]
-    $resourceGroupName="Cyberark-Images",
-    # Supplied by CyberArk CPM AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $CpmAccessSAS,
-    # Supplied by CyberArk PVWA AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $PvwaAccessSAS,
-    # Supplied by CyberArk PSM AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $PsmAccessSAS,
-    # Supplied by CyberArk PSMP AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $PsmpAccessSAS,
-    # Supplied by CyberArk PTA AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $PtaAccessSAS,
-    # Supplied by CyberArk Vault/VaultDR AccessSAS
-    [Parameter(Mandatory = $false)]
-    [String]
-    $VaultAccessSAS
-)
- 
-#Set variables
-$cpmDestBlob = "pas-cpm-$release.vhd"
-$pvwaDestBlob = "pas-pvwa-$release.vhd"
-$psmDestBlob = "pas-psm-$release.vhd"
-$psmpDestBlob = "pas-psmp-$release.vhd"
-$ptaDestBlob = "pas-pta-$release.vhd"
-$vaultDestBlob = "pas-vault-$release.vhd"
+# source: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/reference-connect-tls-enforcement
 
-Try
+If (-Not (Test-Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319'))
 {
-    #Create Resource Group
-    New-AzureRmResourceGroup -Name $resourceGroupName -Location $location -Force
-     
-    #Create Storage Account, if not exists
-    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageName
-    if (!$storageAccount)
-    {  
-        $storageAccount = New-AzureRmStorageAccount -ResourceGroupName $resourceGroupName -Name $storageName -Location $location -SkuName Standard_LRS 
-    }
-    $destContext = $storageAccount.Context
-
-    #Create Blob Storage Container, if not exists
-    if (!(Get-AzureStorageContainer -Name $containerName -Context $destContext))
-    {
-        New-AzureStorageContainer -Name $containerName -Permission Off -Context $destContext
-    }
-     
-    #Start copy cpm
-    if ($CpmAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $CpmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $cpmDestBlob -Force
-    }
-    
-    #Start copy pvwa
-    if ($PvwaAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $PvwaAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $pvwaDestBlob -Force
-    }
-
-    #Start copy psm
-    if ($PsmAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $PsmAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmDestBlob -Force
-    }
-      
-    #Start copy psmp
-    if ($PsmpAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $PsmpAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $psmpDestBlob -Force
-    }
-
-    #Start copy pta
-    if ($PtaAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $PtaAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $ptaDestBlob -Force
-    }
-    
-    #Start copy vault
-    if ($VaultAccessSAS)
-    {
-        Start-AzureStorageBlobCopy -AbsoluteUri $VaultAccessSAS -DestContainer $containerName -DestContext $destContext -DestBlob $vaultDestBlob -Force
-    }
-     
-    #Wait for vhd to be fully copied (~40 minutes)
-        
-    #Create Cpm Image from blob
-    if ($CpmAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $cpmDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $cpmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $cpmDestBlob)
-        $vmOSType = "Windows"
-        $imageName = "PAS-CPM-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $cpmblobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    
-    #Create Pvwa Image from blob
-    if ($PvwaAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $pvwaDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $pvwablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $pvwaDestBlob)
-        $vmOSType = "Windows"
-        $imageName = "PAS-PVWA-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $pvwablobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    
-    #Create Psm Image from blob
-    if ($PsmAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $psmDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $psmblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmDestBlob)
-        $vmOSType = "Windows"
-        $imageName = "PAS-PSM-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmblobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    
-    #Create Psmp Image from blob
-    if ($PsmpAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $psmpDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $psmpblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
-        $vmOSType = "Linux"
-        $imageName = "PAS-PSMP-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmpblobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    
-    #Create Pta Image from blob
-    if ($PtaAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $ptaDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $ptablobUri = ($destContext.BlobEndPoint + $containerName + "/" + $ptaDestBlob)
-        $vmOSType = "Linux"
-        $imageName = "PAS-PTA-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $ptablobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }
-    
-    #Create Vault Image from blob
-    if ($VaultAccessSAS)
-    {
-        Get-AzureStorageBlobCopyState -Blob $vaultDestBlob -Container $containerName -Context $destContext -WaitForComplete
-        $vaultblobUri = ($destContext.BlobEndPoint + $containerName + "/" + $vaultDestBlob)
-        $vmOSType = "Windows"
-        $imageName = "PAS-Vault-$release"
-        $imageConfig = New-AzureRmImageConfig -Location $location
-        $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $vaultblobUri
-        $image = New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
-    }    
+    New-Item 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
 }
-Catch
+New-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name 'SystemDefaultTlsVersions' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+
+If (-Not (Test-Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319'))
 {
-    $ErrorMessage = $_.Exception.Message
-    $FailedItem = $_.Exception.ItemName
-    Write-Host("Error: $ErrorMessage")
-    Break
+    New-Item 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Force | Out-Null
 }
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name 'SystemDefaultTlsVersions' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319' -Name 'SchUseStrongCrypto' -Value '1' -PropertyType 'DWord' -Force | Out-Null
 
+If (-Not (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server'))
+{
+    New-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Force | Out-Null
+}
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Name 'Enabled' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
+
+If (-Not (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client'))
+{
+    New-Item 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Force | Out-Null
+}
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'Enabled' -Value '1' -PropertyType 'DWord' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client' -Name 'DisabledByDefault' -Value '0' -PropertyType 'DWord' -Force | Out-Null
+
+Write-Host 'TLS 1.2 has been enabled. You must restart the Windows Server for the changes to take affect.' -ForegroundColor Cyan
 # SIG # Begin signature block
 # MIIgTQYJKoZIhvcNAQcCoIIgPjCCIDoCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBVhZc/ejx8MVio
-# iH+0xoJBE7rAS1Pmf3ssi4Oa7IqeJaCCDl8wggboMIIE0KADAgECAhB3vQ4Ft1kL
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCldGEBgt2wlMJ8
+# svBx8WY3ySb81FzlyC1gdoXrPUaR+6CCDl8wggboMIIE0KADAgECAhB3vQ4Ft1kL
 # th1HYVMeP3XtMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDA3MjgwMDAwMDBaFw0zMDA3MjgwMDAwMDBaMFwx
@@ -275,23 +114,23 @@ Catch
 # R2xvYmFsU2lnbiBudi1zYTEyMDAGA1UEAxMpR2xvYmFsU2lnbiBHQ0MgUjQ1IEVW
 # IENvZGVTaWduaW5nIENBIDIwMjACDHBNxPwWOpXgXVV8DDANBglghkgBZQMEAgEF
 # AKB8MBAGCisGAQQBgjcCAQwxAjAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEE
-# MBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJBDEiBCCa
-# nsn94rFUq32We9/Y19DWqtF+nuaJymiRnHi3rmYXMDANBgkqhkiG9w0BAQEFAASC
-# AgCCe3Iye08NNzfPjlTI87B+kuSGU2ksuDQIUtTrx2bQpQNIVMIyTxo0pCn4KUto
-# QXpIh1/OJd3r1dCleSoTBi0+SwgXfKqGmWfceZBamV+J1iiXZpGPSleTSKt3+o5V
-# J24jjI1iDy2oLddcpGOPL6nkR7VTBWfTpnt6d1p+y5/UKVyxtwdV2JppgDRO2nk+
-# G9vrEF4GWkj3HbIqdEHaYBE6jghyh5clowd+tt4mDsf8WHqr38UONs7O9aHRpVOq
-# xso2Yper/JJSRreWAFtNhIzbazlEBxxUO0rhpeQB0PWC+43/uhYy/UsHgzcWhumt
-# ffXCiOFtSChdslJzpUwZ1iMlUclg4sRsnAa03VT6rEPv+1Mogsi9YII00CUASgLN
-# IuKfmPYa1qfbbdHj1iM7sMqZ8qqLt383vC15z2VBxeHpGURaa2159MVNLFX4u4yy
-# QSQr07uT0TR+Ga/Gm3w9gpXzQA5VDSyBYRWJbO6m+RJ5znHR4oYKHbVGzdtHagpA
-# 2xbZUOhHkxM7BmLv0PsLwGJPYQ0DT2nlRlmAg+BfgKbweA5syAP7pOb6+PjqfO+1
-# nHw9QsuSPjsw4iX7jTOLCP2mUeGsZzWsRUrItBszSxhEhfXzziEw21XK9uZacq9W
-# WMymjzGsCEhLAqybY8GTGCxl7juZoEI0BBca3gw7xorqJaGCDiswgg4nBgorBgEE
+# MBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJBDEiBCDm
+# UyUYDYEurtVHyconG8JLAGoIBPE96WiLuWhXG2tydDANBgkqhkiG9w0BAQEFAASC
+# AgAkR2MQkRd+VEIU4Aqas1mYIbsEsajTVOkoKj5GyJFiyXu/ohFeYtcNudD7+Q/e
+# h7tbCQOebYcM7nRbz1Q+JCnsbkvgt74IAX7xu9V+tJ2GQx4RLcXZQsd3/5wuuM7L
+# eg3N/RN0vt/ob8p5E7BtamQCEbRD24izC2AmojnH/FSUMGYiFudaXpzOI6vINd9w
+# 5+jckf6xf5IRA5Nta/i1Vw8p5KH4xzM+GEDB4/omA5N+m7JoMfyun8c7iArE/4wT
+# EaeZg54p01AaktXRJqhlSWNzWweuRFFImh5mTuiWc/fHwRoJNSe2yxCJijzPM6Uz
+# lQyXMgD4JVPdGrDk9c62K32+QqtA8iaOaqY0NfbqIiZEH4rFZwImHStzsuM4t7K9
+# +QZF/jP3PU2HG47quJ5vuUBU0N5rBrEXOSNdLwznhFrb7PcixIzdmfHrBuNr6Oju
+# 3mX4Z5flj/bn0r7CMugpa+y+cY/zkswW+gbZ9GT/Wo3ElPdS4gxf785MQ557mqwP
+# fnZKNnQA4HthJeTla03gaXiDjMm51ihLUGNVekrzDnH7JzJ9s3x8PVFozlG+KoBd
+# n+qBrvXKQfHUrW0gNtoN5ELMBBuJJoqKcjUHxPHN/C8bNqusFDcsKt9WDg54gayE
+# HAdVfYUKUtgUhgSRE0Be9NVU2z2AhojdjmlTprW9yWwoZKGCDiswgg4nBgorBgEE
 # AYI3AwMBMYIOFzCCDhMGCSqGSIb3DQEHAqCCDgQwgg4AAgEDMQ0wCwYJYIZIAWUD
 # BAIBMIH+BgsqhkiG9w0BCRABBKCB7gSB6zCB6AIBAQYLYIZIAYb4RQEHFwMwITAJ
-# BgUrDgMCGgUABBTi1v6u0XmvmD5Wlg7b5c9ugGHIzwIUITkPBcr+e7YkdVDGZhcJ
-# u9ShT38YDzIwMjIwMzIyMTYxNTUwWjADAgEeoIGGpIGDMIGAMQswCQYDVQQGEwJV
+# BgUrDgMCGgUABBRIutX/1a3MIn8V1eRDw7X5c4r9mwIUFXOXXfLnZGx8Stb6LVXP
+# u2bn8yEYDzIwMjIwMzIyMTYxNzI4WjADAgEeoIGGpIGDMIGAMQswCQYDVQQGEwJV
 # UzEdMBsGA1UEChMUU3ltYW50ZWMgQ29ycG9yYXRpb24xHzAdBgNVBAsTFlN5bWFu
 # dGVjIFRydXN0IE5ldHdvcmsxMTAvBgNVBAMTKFN5bWFudGVjIFNIQTI1NiBUaW1l
 # U3RhbXBpbmcgU2lnbmVyIC0gRzOgggqLMIIFODCCBCCgAwIBAgIQewWx1EloUUT3
@@ -355,13 +194,13 @@ Catch
 # HzAdBgNVBAsTFlN5bWFudGVjIFRydXN0IE5ldHdvcmsxKDAmBgNVBAMTH1N5bWFu
 # dGVjIFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEHvU5a+6zAc/oQEjBCJBTRIwCwYJ
 # YIZIAWUDBAIBoIGkMBoGCSqGSIb3DQEJAzENBgsqhkiG9w0BCRABBDAcBgkqhkiG
-# 9w0BCQUxDxcNMjIwMzIyMTYxNTUwWjAvBgkqhkiG9w0BCQQxIgQg9QQloR4IDDHP
-# 40GCUEvJoPmYlsojJdrNyaZpzMhzWG0wNwYLKoZIhvcNAQkQAi8xKDAmMCQwIgQg
+# 9w0BCQUxDxcNMjIwMzIyMTYxNzI4WjAvBgkqhkiG9w0BCQQxIgQgKtulqFuZ7ssY
+# 2cgA0tmZU/gSYfk7krBn7+xu+Rhs+tcwNwYLKoZIhvcNAQkQAi8xKDAmMCQwIgQg
 # xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U+9dtx/fYfgwCwYJKoZIhvcNAQEBBIIB
-# AF3BRYayBjyFkWSwUUBRBE2m/Nd67P73UsujCPXRL5G8uz8s1NjHy3m9QhjGRoxe
-# bXyn1SgUPhZOLrezsbSM1OCx3RKyT9sjOFQCtj3nDQmozA7ghUiE3SgnwPyx6Ck7
-# IXwfBGHKBbsnz+xtlNiqiJaGmMj1uPi5Q3Or6aXCcuMTGAt2Aj8UjiF5NDQLkLCt
-# WEb/IeKFPey5teISejByBLTb+L2r0PFal1ouKYgFxq+CERBOAQfDS10zsUONa1h8
-# iHLJyp7ZvDOAwdJbKKJTN5VLKQDZF9y8IeSvlAaUYDdYIsp/ZNFeVHozu0yXseeX
-# M/jCXN3bE78LRktEB1kvX/I=
+# AEOI1D+dFKqb/+o+9fHKjM+gHnraJpDBnRYGnW4WtsB8r70cIR6ndlxDZvrPcnJv
+# FYEuIJyQJvYy9hj8LC50XALEf00vFyEi5L1QXfmaHWUCYnUWJ3uycPwSUTspGdKu
+# 38wmL2kz51dXfMBQ5cGXtV/5v5qAdT+WarJP63xYk+IMuqHD9s2x3NNQDyhD2mJo
+# teqBnUi1JSqiIo8aH0khFrW1+aOVo3+HGHSAiLFlixTTmhKONoEYQ2F22R1m2NHr
+# qjpyrwjoRKQi/DUONcDCuZVdtHkHIMSDRMRqmm0yOb4rbLnas+bTsKbrI4IMX00v
+# g4poSYydknH8lR8/wjP8Um8=
 # SIG # End signature block
