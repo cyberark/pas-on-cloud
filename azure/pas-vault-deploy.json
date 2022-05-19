@@ -71,16 +71,15 @@
       "DR User Password":{
          "type":"SecureString",
          "minLength":8,
-         "defaultValue": "",
          "metadata":{
             "description":"Enter the DR user password."
          }
       },
       "DR User Secret":{
          "type":"SecureString",
-         "defaultValue": "",
+         "minLength":10,
          "metadata":{
-            "description":"Enter a secret string for the DR user (Optional). Secret must include 10 characters:\none or more digits(0-9),\none or more letters(a-Z),\nand one or more special characters exluding ^\\\/-;"
+            "description":"Enter a secret string for the DR user. Secret must include 10 characters:\none or more digits(0-9),\none or more letters(a-Z),\nand one or more special characters exluding ^\\\/-;"
          }
       },
       "Primary Vault VM Name":{
@@ -269,7 +268,7 @@
       {
          "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_with_dr')]",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'registration_script')]",
          "apiVersion":"2015-06-15",
          "location":"[resourceGroup().location]",
          "tags":{
@@ -283,34 +282,6 @@
 
             "protectedSettings":{
                "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
-            "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
-         ]
-      },
-      {
-         "condition":"[empty(parameters ('DR User Secret'))]",
-         "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_no_dr')]",
-         "apiVersion":"2015-06-15",
-         "location":"[resourceGroup().location]",
-         "tags":{
-            "displayName":"activate-vault"
-         },
-         "properties":{
-            "publisher":"Microsoft.Compute",
-            "type":"CustomScriptExtension",
-            "typeHandlerVersion":"1.9",
-            "autoUpgradeMinorVersion":true,
-            "settings":{
-               "fileUris":[
-
-               ]
-            },
-            "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters ('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'))]"
             }
          },
          "dependsOn":[
