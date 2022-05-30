@@ -289,42 +289,9 @@ Resources:
           install_all:
             - install_pta
         install_pta:
-          files:
-            /tmp/deploy.py:
-              content: !Sub |
-                import boto3
-                import time
-
-                time.sleep(120)
-
-                def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-                    return target
-
-                licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
-
-            /tmp/register.sh:
-              content: !Sub |
-                #!/bin/bash
-
-                export vault_ip=$1
-                export vault_adminUser=$2
-                export vault_adminPassword=$3
-                export pvwa_host=$4
-                export vault_timezone=$5
-                export timezone=$6
-                export vault_port=1858
-                if [ ! -z "${DRPrivateIP}" ]; then
-                    export vault_ipsDR=${DRPrivateIP}
-                fi;
-
-                python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
-
-              mode: '000755'
           commands:
             01-copylicensefrombucket:
-              command: python /tmp/deploy.py
+              command: python /tmp/download-license.py "${AWS::Region}" "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
@@ -333,7 +300,7 @@ Resources:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
             04-executeptaconfigurationscript: 
               command: !Sub >-
-                sudo /tmp/register_prep.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}"
+                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
