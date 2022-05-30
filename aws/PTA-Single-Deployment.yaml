@@ -245,13 +245,13 @@ Resources:
               os_filter = '' if pas_ver in pas_ver_without_os_filter else \
               event['ResourceProperties']['OS']
 
-                  ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
-                  response = boto3.client('ec2').describe_images(
-                      Owners= [event['ResourceProperties']['OwnerAccountId']],
-                      Filters=[
-                        {'Name': 'name', 'Values':  [ami_name]},
-                      ],
-                  )
+              ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
+              response = boto3.client('ec2').describe_images(
+                  Owners= [event['ResourceProperties']['OwnerAccountId']],
+                  Filters=[
+                    {'Name': 'name', 'Values':  [ami_name]},
+                  ],
+              )
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
