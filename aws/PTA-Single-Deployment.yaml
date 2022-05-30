@@ -378,9 +378,9 @@ Parameters:
     Type: String
     Description: Select the instance type of the PTA instance.
     AllowedValues:
-      - m4.2xlarge
-      - m4.4xlarge
-    Default: m4.2xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: m5.2xlarge
   PTAInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PTA instance.
