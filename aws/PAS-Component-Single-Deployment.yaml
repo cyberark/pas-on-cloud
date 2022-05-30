@@ -832,9 +832,9 @@ Resources:
               command:
                 'Fn::Sub':
                   - >-
-                    /opt/CD-Image/register_and_activation.sh
-                    Administrator "${VaultAdminPassword}" "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                    /opt/CD-Image/register_prep.sh
+                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
                   - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/

@@ -37,6 +37,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
+      - PTAMachine
   ComponentInstancesSSMPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -307,25 +308,16 @@ Resources:
               content: !Sub |
                 #!/bin/bash
 
-                export vault_ip=${VaultPrivateIP}
-                export vault_adminUser=${VaultAdminUser}
-                export vault_adminPassword=${VaultAdminPassword}
-                export pvwa_host=${PVWAPrivateDNS}
-                export vault_timezone=${VaultTimeZone}
-                export timezone=${PTAServerTimeZone}
+                export vault_ip=$1
+                export vault_adminUser=$2
+                export vault_adminPassword=$3
+                export pvwa_host=$4
+                export vault_timezone=$5
+                export timezone=$6
                 export vault_port=1858
                 if [ ! -z "${DRPrivateIP}" ]; then
                     export vault_ipsDR=${DRPrivateIP}
                 fi;
-
-                echo $vault_ip
-                echo $vault_ipsDR
-                echo $vault_timezone
-                echo $timezone
-                echo $vault_port
-                echo $vault_adminUser
-                echo $vault_adminPassword
-                echo $pvwa_host
 
                 python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
 
@@ -339,8 +331,9 @@ Resources:
                 /opt/tomcat/diamond-resources/license.xml
             03-setpermissions:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
-            04-executeptaconfigurationscript:
-              command: sudo ./tmp/register.sh
+            04-executeptaconfigurationscript: 
+              command: !Sub >-
+                sudo /tmp/register_prep.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
