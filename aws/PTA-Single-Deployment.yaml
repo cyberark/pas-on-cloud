@@ -241,9 +241,7 @@ Resources:
             try:
               component = event['ResourceProperties']['Component']
               pas_ver= event['ResourceProperties']['Version']
-              pas_ver_without_os_filter = ['12.2']
-              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
-              event['ResourceProperties']['OS']
+              os_filter = event['ResourceProperties']['OS']
 
               ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
               response = boto3.client('ec2').describe_images(
@@ -291,7 +289,8 @@ Resources:
         install_pta:
           commands:
             01-copylicensefrombucket:
-              command: python /tmp/download-license.py "${AWS::Region}" "${PTALicenseBucket}" "${LicenseFile}"
+              command: !Sub >-
+                python /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
@@ -322,8 +321,9 @@ Parameters:
     Type: String
     Description: Select an official CyberArk PAS release version.
     AllowedValues:
+      - '12.6'
       - '12.2'
-    Default: '12.2'
+    Default: '12.6'
   CyberarkAccountId:
     Type: Number
     Description: Enter the CyberArk Account ID (AMI Owner account ID).

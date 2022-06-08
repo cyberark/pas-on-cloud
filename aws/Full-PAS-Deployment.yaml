@@ -768,7 +768,7 @@ Resources:
                   "Images": []
               }
 
-              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
               os_filter = '' if pas_ver in pas_ver_without_os_filter else \
               event['ResourceProperties']['OS']
               
@@ -1310,13 +1310,14 @@ Parameters:
     Type: String
     Description: Select an official CyberArk PAS release version.
     AllowedValues:
+      - '12.6'
       - '12.2'
       - '12.1'
       - '12.0'
       - '11.7'
       - '11.6'
       - '11.5'
-    Default: '12.2'
+    Default: '12.6'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
@@ -1532,7 +1533,7 @@ Rules:
           - Win2016
         - !Not
           - 'Fn::Contains':
-            - ['11.5','11.6','11.7','12.0','12.1']
+            - ['11.5','11.6','11.7','12.0','12.1','12.2']
             - !Ref ReleaseVersion
         AssertDescription: The selected versions are not compatible.
 Metadata:
