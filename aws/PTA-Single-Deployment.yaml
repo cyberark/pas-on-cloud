@@ -37,6 +37,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
+      - PTAMachine
   ComponentInstancesSSMPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -240,17 +241,15 @@ Resources:
             try:
               component = event['ResourceProperties']['Component']
               pas_ver= event['ResourceProperties']['Version']
-              pas_ver_without_os_filter = ['12.2']
-              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
-              event['ResourceProperties']['OS']
+              os_filter = event['ResourceProperties']['OS']
 
-                  ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
-                  response = boto3.client('ec2').describe_images(
-                      Owners= [event['ResourceProperties']['OwnerAccountId']],
-                      Filters=[
-                        {'Name': 'name', 'Values':  [ami_name]},
-                      ],
-                  )
+              ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
+              response = boto3.client('ec2').describe_images(
+                  Owners= [event['ResourceProperties']['OwnerAccountId']],
+                  Filters=[
+                    {'Name': 'name', 'Values':  [ami_name]},
+                  ],
+              )
               amis = sorted(response['Images'],
                             key=lambda x: x['CreationDate'],
                             reverse=True)
@@ -288,59 +287,19 @@ Resources:
           install_all:
             - install_pta
         install_pta:
-          files:
-            /tmp/deploy.py:
-              content: !Sub |
-                import boto3
-                import time
-
-                time.sleep(120)
-
-                def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-                    return target
-
-                licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
-
-            /tmp/register.sh:
-              content: !Sub |
-                #!/bin/bash
-
-                export vault_ip=${VaultPrivateIP}
-                export vault_adminUser=${VaultAdminUser}
-                export vault_adminPassword=${VaultAdminPassword}
-                export pvwa_host=${PVWAPrivateDNS}
-                export vault_timezone=${VaultTimeZone}
-                export timezone=${PTAServerTimeZone}
-                export vault_port=1858
-                if [ ! -z "${DRPrivateIP}" ]; then
-                    export vault_ipsDR=${DRPrivateIP}
-                fi;
-
-                echo $vault_ip
-                echo $vault_ipsDR
-                echo $vault_timezone
-                echo $timezone
-                echo $vault_port
-                echo $vault_adminUser
-                echo $vault_adminPassword
-                echo $pvwa_host
-
-                python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
-
-              mode: '000755'
           commands:
             01-copylicensefrombucket:
-              command: python /tmp/deploy.py
+              command: !Sub >-
+                python /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
                 /opt/tomcat/diamond-resources/license.xml
             03-setpermissions:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
-            04-executeptaconfigurationscript:
-              command: sudo ./tmp/register.sh
+            04-executeptaconfigurationscript: 
+              command: !Sub >-
+                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
@@ -362,8 +321,9 @@ Parameters:
     Type: String
     Description: Select an official CyberArk PAS release version.
     AllowedValues:
+      - '12.6'
       - '12.2'
-    Default: '12.2'
+    Default: '12.6'
   CyberarkAccountId:
     Type: Number
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -418,9 +378,9 @@ Parameters:
     Type: String
     Description: Select the instance type of the PTA instance.
     AllowedValues:
-      - m4.2xlarge
-      - m4.4xlarge
-    Default: m4.2xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: m5.2xlarge
   PTAInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PTA instance.
