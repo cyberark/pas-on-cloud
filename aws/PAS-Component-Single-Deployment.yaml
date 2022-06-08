@@ -334,7 +334,7 @@ Resources:
                   "Images": []
               }
 
-              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1']
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
               os_filter = '' if pas_ver in pas_ver_without_os_filter else \
               event['ResourceProperties']['OS']
               
@@ -832,9 +832,9 @@ Resources:
               command:
                 'Fn::Sub':
                   - >-
-                    /opt/CD-Image/register_and_activation.sh
-                    Administrator "${VaultAdminPassword}" "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                    /opt/CD-Image/register_prep.sh
+                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
                   - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
@@ -858,13 +858,14 @@ Parameters:
     Type: String
     Description: Select an official CyberArk PAS release version.
     AllowedValues:
+      - '12.6'
       - '12.2'
       - '12.1'
       - '12.0'
       - '11.7'
       - '11.6'
       - '11.5'
-    Default: '12.2'
+    Default: '12.6'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
@@ -949,7 +950,7 @@ Rules:
           - Win2016
         - !Not
           - 'Fn::Contains':
-            - ['11.5','11.6','11.7','12.0','12.1']
+            - ['11.5','11.6','11.7','12.0','12.1','12.2']
             - !Ref ReleaseVersion
         AssertDescription: The selected versions are not compatible.
 Metadata:

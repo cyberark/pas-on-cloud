@@ -1304,6 +1304,34 @@
         }
       }
     },
+    "PVWASGIngress9": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "PVWASG"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "PTAMainSubnetCIDR"
+        }
+      }
+    },
+    "PVWASGIngress10": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "PVWASG"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "PTADRSubnetCIDR"
+        }
+      }
+    },
     "PVWASGEgress1": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
