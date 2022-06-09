@@ -1283,7 +1283,7 @@ Resources:
               command:
                 'Fn::Sub':
                   - >-
-                    /opt/CD-Image/register_prep.sh
+                    /opt/CD-Image/register-arguments.sh
                     Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
                     http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
