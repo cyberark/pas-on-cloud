@@ -240,7 +240,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]",
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'), '/extensions/customscript')]"
+                "[concat('Microsoft.Compute/virtualMachines/extensions/', parameters('Component VM Host Name'), '/customscript')]"
             ],
             "tags": {
                 "displayName": "config-component"
@@ -254,7 +254,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]"
                 }
             },
             "condition": "[equals(parameters('Component To Install'), 'CPM')]"
