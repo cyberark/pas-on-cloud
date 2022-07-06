@@ -233,34 +233,34 @@
             },
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
-        {
-            "condition": "[equals(parameters('Component To Install'), 'CPM')]",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2015-06-15",
-            "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript-hardening')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]",
-                "[concat('Microsoft.Compute/virtualMachines/extensions/', parameters('Component VM Host Name'), '/customscript')]"
-            ],
-            "tags": {
-                "displayName": "config-component"
-            },
-            "properties": {
-                "publisher": "Microsoft.Compute",
-                "type": "CustomScriptExtension",
-                "typeHandlerVersion": "1.9",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": []
-                },
-                "protectedSettings": {
-                    "commandToExecute": "[if((equals(parameters('Component To Install'), 'CPM')),'concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')','')]"
+        // {
+        //     "condition": "[equals(parameters('Component To Install'), 'CPM')]",
+        //     "type": "Microsoft.Compute/virtualMachines/extensions",
+        //     "apiVersion": "2015-06-15",
+        //     "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript-hardening')]",
+        //     "location": "[resourceGroup().location]",
+        //     "dependsOn": [
+        //         "[concat('Microsoft.Compute/virtualMachines/', parameters('Component VM Host Name'))]",
+        //         "[concat('Microsoft.Compute/virtualMachines/extensions/', parameters('Component VM Host Name'), '/customscript')]"
+        //     ],
+        //     "tags": {
+        //         "displayName": "config-component"
+        //     },
+        //     "properties": {
+        //         "publisher": "Microsoft.Compute",
+        //         "type": "CustomScriptExtension",
+        //         "typeHandlerVersion": "1.9",
+        //         "autoUpgradeMinorVersion": true,
+        //         "settings": {
+        //             "fileUris": []
+        //         },
+        //         "protectedSettings": {
+        //             "commandToExecute": "[if((equals(parameters('Component To Install'), 'CPM')),'concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')','')]"
                     
-                }
-            }
+        //         }
+        //     }
             
-        },
+        // },
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2016-09-01",
