@@ -255,8 +255,7 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-                    // "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]",
-                    "commandToExecute": "[if(equals(parameters('Component To Install'), 'CPM')),concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]"
+                    "commandToExecute": "[if((equals(parameters('Component To Install'), 'CPM')),concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1'),'')]"
                     
                 }
             }
