@@ -234,6 +234,7 @@
             "condition": "[not(equals(parameters('Component To Install'), 'PSMP'))]"
         },
         {
+            "condition": "[equals(parameters('Component To Install'), 'CPM')]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2015-06-15",
             "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript-hardening')]",
@@ -254,10 +255,12 @@
                     "fileUris": []
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]"
+                    // "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]",
+                    "commandToExecute": "[if(equals(parameters('Component To Install'), 'CPM')),concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\Cyberark\\CPM\\InstallationAutomation\\CPM_Hardening.ps1')]"
+                    
                 }
-            },
-            "condition": "[equals(parameters('Component To Install'), 'CPM')]"
+            }
+            
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
