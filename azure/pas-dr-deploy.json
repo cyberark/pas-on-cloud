@@ -42,7 +42,7 @@
             }
         },
         "DR Vault VM Name": {
-            "defaultValue": "CyberArk DR Vault",
+            "defaultValue": "DRVault",
 	    "type": "String",
             "metadata": {
                 "description": "Enter a name for the DR Vault VM."
@@ -121,6 +121,71 @@
            }
         },
         {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "vaultdripconfig",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRefVault')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('DR Vault VM Name')]",
+            "apiVersion": "2017-03-30",
+            "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('Availability Zone')]"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "osProfile": {
+                    "computerName": "[parameters('DR Vault VM Name')]",
+                    "adminUsername": "[parameters('DR Vault VM Admin User')]",
+                    "adminPassword": "[parameters('DR Vault VM Admin Password')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('DR Vault VM Size')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('Image ID')]"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ]
+        },
+        {
             "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
             "type":"Microsoft.KeyVault/vaults",
             "name":"[parameters('Key Vault Name')]",
@@ -178,52 +243,6 @@
             ]
         },
         {
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('DR Vault VM Name')]",
-            "apiVersion": "2017-03-30",
-            "location": "[resourceGroup().location]",
-            "zones": [
-                "[parameters('Availability Zone')]"
-            ],
-            "identity": {
-                "type": "SystemAssigned"
-            },
-            "properties": {
-                "osProfile": {
-                    "computerName": "[parameters('DR Vault VM Name')]",
-                    "adminUsername": "[parameters('DR Vault VM Admin User')]",
-                    "adminPassword": "[parameters('DR Vault VM Admin Password')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
-                },
-                "hardwareProfile": {
-                    "vmSize": "[parameters('DR Vault VM Size')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "id": "[parameters('Image ID')]"
-                    },
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-                        }
-                    ]
-                }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-            ]
-        },
-        {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('DR Vault VM Name'),'/', 'customscript')]",
             "apiVersion": "2015-06-15",
@@ -236,9 +255,6 @@
                 "type": "CustomScriptExtension",
                 "typeHandlerVersion": "1.9",
                 "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": []
-                },
                 "protectedSettings": {
 					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
                 }
@@ -246,25 +262,6 @@
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]"
             ]
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-09-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('subnetRefVault')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic"
-                        }
-                    }
-                ]
-            }
         }
     ],
     "outputs": {

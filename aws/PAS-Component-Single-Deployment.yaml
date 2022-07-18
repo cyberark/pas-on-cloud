@@ -915,6 +915,9 @@ Parameters:
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
+    AllowedPattern: ^([a-zA-Z0-9][a-zA-Z0-9\-]{2,14})
+    ConstraintDescription:  Hostname can include letters (A-Z and a-z), numbers (0-9), and dashes (-).
+    MinLength: 3
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
