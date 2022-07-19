@@ -163,71 +163,6 @@
          }
       },
       {
-         "type":"Microsoft.Network/networkInterfaces",
-         "name":"[variables('networkInterfaceName')]",
-         "apiVersion":"2016-09-01",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "ipConfigurations":[
-               {
-                  "name":"vaultipconfig",
-                  "properties":{
-                     "subnet":{
-                        "id":"[variables('subnetRefVault')]"
-                     },
-                     "privateIPAllocationMethod":"Dynamic"
-                  }
-               }
-            ]
-         }
-      },
-      {
-         "type":"Microsoft.Compute/virtualMachines",
-         "name":"[parameters('Primary Vault VM Name')]",
-         "apiVersion":"2019-07-01",
-         "location":"[resourceGroup().location]",
-         "zones": [
-               "[parameters('Availability Zone')]"
-         ],
-         "identity":{
-            "type":"SystemAssigned"
-         },
-         "properties":{
-            "osProfile":{
-               "computerName":"[parameters('Primary Vault VM Name')]",
-               "adminUsername":"[parameters('Primary Vault VM Admin User')]",
-               "adminPassword":"[parameters('Primary Vault VM Admin Password')]",
-               "windowsConfiguration":{
-                  "provisionVmAgent":"true"
-               }
-            },
-            "hardwareProfile":{
-               "vmSize":"[parameters('Primary Vault VM Size')]"
-            },
-            "storageProfile":{
-               "imageReference":{
-                  "id":"[parameters('Image ID')]"
-               },
-               "osDisk":{
-                  "createOption":"FromImage",
-                  "managedDisk":{
-                     "storageAccountType":"Premium_LRS"
-                  }
-               }
-            },
-            "networkProfile":{
-               "networkInterfaces":[
-                  {
-                     "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-                  }
-               ]
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-         ]
-      },
-      {
          "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
          "name":"[variables('vaultName')]",
@@ -285,6 +220,52 @@
          ]
       },
       {
+         "type":"Microsoft.Compute/virtualMachines",
+         "name":"[parameters('Primary Vault VM Name')]",
+         "apiVersion":"2019-07-01",
+         "location":"[resourceGroup().location]",
+         "zones": [
+               "[parameters('Availability Zone')]"
+         ],
+         "identity":{
+            "type":"SystemAssigned"
+         },
+         "properties":{
+            "osProfile":{
+               "computerName":"[parameters('Primary Vault VM Name')]",
+               "adminUsername":"[parameters('Primary Vault VM Admin User')]",
+               "adminPassword":"[parameters('Primary Vault VM Admin Password')]",
+               "windowsConfiguration":{
+                  "provisionVmAgent":"true"
+               }
+            },
+            "hardwareProfile":{
+               "vmSize":"[parameters('Primary Vault VM Size')]"
+            },
+            "storageProfile":{
+               "imageReference":{
+                  "id":"[parameters('Image ID')]"
+               },
+               "osDisk":{
+                  "createOption":"FromImage",
+                  "managedDisk":{
+                     "storageAccountType":"Premium_LRS"
+                  }
+               }
+            },
+            "networkProfile":{
+               "networkInterfaces":[
+                  {
+                     "id":"[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                  }
+               ]
+            }
+         },
+         "dependsOn":[
+            "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+         ]
+      },
+      {
          "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'registration_script')]",
@@ -298,6 +279,7 @@
             "type":"CustomScriptExtension",
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
+
             "protectedSettings":{
                "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
             }

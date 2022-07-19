@@ -185,9 +185,7 @@
                     ]
                 }
             },
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-            ]
+            "dependsOn": []
         },
         {
             "condition":"[empty(parameters ('Vault DR Private IP'))]",
@@ -249,7 +247,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ptaipconfig",
+                        "name": "ipconfig1",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetRefComponent')]"
