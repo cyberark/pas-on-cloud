@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template handles the deployment of CyberArk Vault, Vault DR and AIO PAS solution to an existing network infrastructure
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -97,152 +99,25 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
-  LambdaDeployRole:
-    Type: AWS::IAM::Role
+  VaultAmi:
+    Type: Custom::FindAMI
     Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: CloudWatch
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                  - logs:PutLogEvents
-                Resource:
-                  - '*'
-        - PolicyName: SSM
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:PutParameter
-                  - ssm:DeleteParameter
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-        - PolicyName: S3
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:ListBucket
-                  - s3:PutObject
-                  - s3:DeleteObject
-                  - s3:DeleteObjectVersion
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
-  LambdaLogDenyRole:
-    Type: AWS::IAM::Role
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: !Ref ReleaseVersion
+      Component: "Vault"
+      OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  ComponentsAmi:
+    Type: Custom::FindAMI
     Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: denyLambdaLogging
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Deny
-                Action:
-                  - logs:*
-                Resource: '*'
-  StorePasswordLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: Saves given password to parameter store as SecureString
-      Code:
-        ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
-
-
-          def lambda_handler(event, context):
-              ssmClient = boto3.client('ssm')
-              physicalResourceId = str(uuid.uuid4())
-              if 'PhysicalResourceId' in event:
-                  physicalResourceId = event['PhysicalResourceId']
-              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
-                  print ('The property Password must not be empty')
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-              try:
-                  if event['RequestType'] == 'Delete':
-                      ssmClient.delete_parameter(Name=physicalResourceId)
-                      print ('Password successfully deleted. Id='+physicalResourceId)
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-                  if event['RequestType'] == 'Create':
-                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
-                      print ('The store parameter has been created. Id='+physicalResourceId)
-                      response = {'SsmId': physicalResourceId}
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
-              except ssmClient.exceptions.ParameterNotFound:
-                  print ('Item already removed')
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except Exception as E:
-                  print (E)
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-
-
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Timeout: 60
-      Role: !GetAtt 'LambdaDeployRole.Arn'
-  DeletePasswordLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: Delete password from parameter store
-      Code:
-        ZipFile: |-
-          import uuid
-          import boto3
-          import cfnresponse
-
-
-          def lambda_handler(event, context):
-              ssmClient = boto3.client('ssm')
-              physicalResourceId = str(uuid.uuid4())
-              if 'PhysicalResourceId' in event:
-                  physicalResourceId = event['PhysicalResourceId']
-              try:
-                  if event['RequestType'] == 'Create':
-                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
-                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-                  if event['RequestType'] == 'Delete':
-                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except ssmClient.exceptions.ParameterNotFound:
-                  print ('Item already removed')
-                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-              except Exception as E:
-                  print (E)
-                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Timeout: 60
-      Role: !GetAtt 'LambdaDeployRole.Arn'
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: !Ref ReleaseVersion
+      Component: "Components"
+      OS: !Ref WinVersion
+    DependsOn:
+      - LambdaDeployRole
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -293,7 +168,7 @@ Resources:
       - StorePasswordLambda
       - ComponentsMachine
   CleanDRPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt DeletePasswordLambda.Arn
@@ -360,6 +235,115 @@ Resources:
         - !Ref LambdaRemovePermissionsRole
     DependsOn:
       - RemovePermissionVaultDR
+  VaultBootstrapIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VaultBootstrapIAMPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:GetRole
+              - iam:DeleteRolePolicy
+              - iam:PutRolePolicy
+            Resource:
+              - !GetAtt VaultInstancesRole.Arn
+              - !GetAtt VaultDRInstancesRole.Arn
+              - !GetAtt LambdaRemovePermissionsRole.Arn
+      Roles:
+        - !Ref 'LambdaRemovePermissionsRole'
+  InstancesSSMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: InstancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+      Roles:
+        - !Ref 'ComponentInstanceRole'
+    DeletionPolicy: Retain
+  LambdaDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+        - PolicyName: SSM
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:PutParameter
+                  - ssm:DeleteParameter
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+        - PolicyName: S3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:ListBucket
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:s3:::${VaultFilesBucket}/*'
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
+  LambdaLogDenyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: denyLambdaLogging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Deny
+                Action:
+                  - logs:*
+                Resource: '*'
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -395,258 +379,6 @@ Resources:
                   - kms:DescribeKey
                 Resource:
                   - '*'
-  VaultBootstrapIAMPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: VaultBootstrapIAMPolicy
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - iam:GetRole
-              - iam:DeleteRolePolicy
-              - iam:PutRolePolicy
-            Resource:
-              - !GetAtt VaultInstancesRole.Arn
-              - !GetAtt VaultDRInstancesRole.Arn
-              - !GetAtt LambdaRemovePermissionsRole.Arn
-      Roles:
-        - !Ref 'LambdaRemovePermissionsRole'
-  RemovePermissionLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: Change Policies of VaultInstancesRole IAM Role
-      Code:
-        ZipFile: |-
-          import json
-          import boto3
-          import uuid
-          import cfnresponse
-
-          def lambda_handler(event, context):
-            physicalResourceId = str(uuid.uuid4())
-            if 'PhysicalResourceId' in event:
-              physicalResourceId = event['PhysicalResourceId']
-            if event['RequestType'] == 'Create':
-              try:
-                print("Creating AWS CloudFormation")
-                print("Start RemovePermissionLambda execution")
-                client = boto3.client('iam')
-
-                # Get vault role info
-                vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
-                print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
-
-                # Delete old Policies
-                list = [event['ResourceProperties']['vault_role_name']]
-                inline_policies = ["VaultInstancesKMSPolicy","VaultBootstrapIAMPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
-                print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-                for role in list:
-                  print("Delete policies in {0} IAM Role".format(role))
-                  for inline_policy in inline_policies:
-                    try:
-                      delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
-                      print("Delete policy: {0}".format(inline_policy))
-                    except:
-                      print("Didn\'t find policy: {0}".format(inline_policy))
-                print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
-
-                # Get KMS ID
-                kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
-                kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
-                print("Retrieve KMS ARN: {0}".format(kms_arn))
-
-                # Create inline policy
-                kms_policy =  {
-                  "Statement": [
-                    {
-                      "Action": [
-                        "kms:Encrypt",
-                        "kms:Decrypt"
-                        ],
-                        "Resource": kms_arn,
-                        "Effect": "Allow"
-                    }
-                  ]
-                }
-
-                response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
-                print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
-
-                return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
-              except Exception as E:
-                print("Error in Lambda execution: {0}".format(E))
-                return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
-            elif event['RequestType'] == 'Delete':
-              print("Deleting AWS CloudFormation")
-              return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Timeout: 60
-      Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
-  VaultMachine:
-    Type: AWS::EC2::Instance
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref 'VaultInstanceName'
-      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
-      SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - Vault
-      InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
-          </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'VaultInstancesProfile'
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          ascending:
-            - configSSMAndServerAndTagKMS
-            - configServices
-            - configSignal
-        configSSMAndServerAndTagKMS:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-configcw:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-        configServices:
-          commands:
-            1-download:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            2-postInstallWithDR:
-              command: !Sub
-              - >-
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
-                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
-                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
-                -Region ${AWS::Region} ${Secret}
-              - Secret: !If
-                  - SecretEmpty
-                  - ''
-                  - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
-              waitAfterCompletion: 0
-            3-changeKMSTag:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            4-restart:
-              command: powershell.exe -Command Restart-Computer
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT20M
-    DeletionPolicy: Retain
-  VaultDRMachine:
-    Type: AWS::EC2::Instance
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Sub '${VaultInstanceName} DR'
-      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
-      BlockDeviceMappings:
-        - DeviceName: "/dev/sda1"
-          Ebs:
-            VolumeSize: 30
-            Encrypted: true
-      SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - Vault
-      InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
-          </script>
-      KeyName: !Ref 'KeyName'
-      IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          ascending:
-            - configSSMAndHostnameAndTagKMS
-            - configServices
-            - configSignal
-        configSSMAndHostnameAndTagKMS:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-configCloudWatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream} -VaultInitLogStream ${VaultDRInitLogStream} -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 0
-        configServices:
-          commands:
-            1-postInstall:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
-              waitAfterCompletion: 0
-            2-changeKMSTag:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            3-restart:
-              command: powershell.exe -Command Restart-Computer
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT20M
-    DeletionPolicy: Retain
-  VaultInstancesProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref 'VaultInstancesRole'
-    DeletionPolicy: Retain
-  VaultDRInstancesProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref 'VaultDRInstancesRole'
-    DeletionPolicy: Retain
   VaultInstancesRole:
     Type: AWS::IAM::Role
     Properties:
@@ -790,12 +522,6 @@ Resources:
                   - iam:PutRolePolicy
                 Resource: '*'
     DeletionPolicy: Retain
-  ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref ComponentInstanceRole
-    DeletionPolicy: Retain
   ComponentInstanceRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -824,19 +550,364 @@ Resources:
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     DeletionPolicy: Retain
-  InstancesSSMPolicy:
-    Type: AWS::IAM::Policy
+  VaultInstancesProfile:
+    Type: AWS::IAM::InstanceProfile
     Properties:
-      PolicyName: InstancesSsmAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - ssm:GetParameter
-            Resource:
-              - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
+      Path: /
       Roles:
-        - !Ref 'ComponentInstanceRole'
+        - !Ref 'VaultInstancesRole'
+    DeletionPolicy: Retain
+  VaultDRInstancesProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref 'VaultDRInstancesRole'
+    DeletionPolicy: Retain
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
+  StorePasswordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Saves given password to parameter store as SecureString
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              if 'Password' not in event['ResourceProperties'] or not event['ResourceProperties']['Password']:
+                  print ('The property Password must not be empty')
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+              try:
+                  if event['RequestType'] == 'Delete':
+                      ssmClient.delete_parameter(Name=physicalResourceId)
+                      print ('Password successfully deleted. Id='+physicalResourceId)
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Create':
+                      ssmClient.put_parameter(Name=physicalResourceId, Value=event['ResourceProperties']['Password'], Type='SecureString')
+                      print ('The store parameter has been created. Id='+physicalResourceId)
+                      response = {'SsmId': physicalResourceId}
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, response, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaDeployRole.Arn'
+  DeletePasswordLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Delete password from parameter store
+      Code:
+        ZipFile: |-
+          import uuid
+          import boto3
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+              ssmClient = boto3.client('ssm')
+              physicalResourceId = str(uuid.uuid4())
+              if 'PhysicalResourceId' in event:
+                  physicalResourceId = event['PhysicalResourceId']
+              try:
+                  if event['RequestType'] == 'Create':
+                      ssmClient.delete_parameter(Name=event['ResourceProperties']['key'])
+                      print ('Password succesfully deleted. Id='+event['ResourceProperties']['key'])
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+                  if event['RequestType'] == 'Delete':
+                      return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except ssmClient.exceptions.ParameterNotFound:
+                  print ('Item already removed')
+                  return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+              except Exception as E:
+                  print (E)
+                  return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaDeployRole.Arn'
+  RemovePermissionLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Change Policies of VaultInstancesRole IAM Role
+      Code:
+        ZipFile: |-
+          import json
+          import boto3
+          import uuid
+          import cfnresponse
+
+
+          def lambda_handler(event, context):
+            physicalResourceId = str(uuid.uuid4())
+            if 'PhysicalResourceId' in event:
+              physicalResourceId = event['PhysicalResourceId']
+            if event['RequestType'] == 'Create':
+              try:
+                print("Creating AWS CloudFormation")
+                print("Start RemovePermissionLambda execution")
+                client = boto3.client('iam')
+
+                # Get vault role info
+                vault_role = client.get_role(RoleName=event['ResourceProperties']['vault_role_name'])['Role']
+                print("Retrieve IAM Role ID: {0}".format(vault_role["RoleId"]))
+
+                # Delete old Policies
+                list = [event['ResourceProperties']['vault_role_name']]
+                inline_policies = ["VaultInstancesKMSPolicy","VaultBootstrapIAMPolicy","VaultSSMPolicy","VaultFilesBucketAccess"]
+                print("Trying to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+                for role in list:
+                  print("Delete policies in {0} IAM Role".format(role))
+                  for inline_policy in inline_policies:
+                    try:
+                      delete = client.delete_role_policy(RoleName=role, PolicyName=inline_policy)
+                      print("Delete policy: {0}".format(inline_policy))
+                    except:
+                      print("Didn\'t find policy: {0}".format(inline_policy))
+                print("Finish to delete inline policies from {0} IAM Role".format(vault_role["RoleId"]))
+
+                # Get KMS ID
+                kms = boto3.client('kms', region_name=event['ResourceProperties']['region'])
+                kms_arn = kms.describe_key(KeyId="alias/vault/{0}".format(event['ResourceProperties']['instance']))['KeyMetadata']['Arn']
+                print("Retrieve KMS ARN: {0}".format(kms_arn))
+
+                # Create inline policy
+                kms_policy =  {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "kms:Encrypt",
+                        "kms:Decrypt"
+                        ],
+                        "Resource": kms_arn,
+                        "Effect": "Allow"
+                    }
+                  ]
+                }
+
+                response = client.put_role_policy(RoleName=vault_role['RoleName'], PolicyName="VaultInstancesKMSPolicy", PolicyDocument=json.dumps(kms_policy))
+                print("Add inline policy VaultInstancesKMSRestrictedPolicy to {0} IAM Role".format(vault_role["RoleId"]))
+
+                return cfnresponse.send(event, context, cfnresponse.SUCCESS, None, {}, physicalResourceId)
+              except Exception as E:
+                print("Error in Lambda execution: {0}".format(E))
+                return cfnresponse.send(event, context, cfnresponse.FAILED,E,{}, physicalResourceId)
+            elif event['RequestType'] == 'Delete':
+              print("Deleting AWS CloudFormation")
+              return cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, physicalResourceId)
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Timeout: 60
+      Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
+  GetLatestAMILambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
+
+
+          def handler(event, context):
+            try:
+              component = event['ResourceProperties']['Component']
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_major= int(pas_ver.split(".")[0])
+              pas_ver_minor= int(pas_ver.split(".")[1])
+              response = {
+                  "Images": []
+              }
+
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
+              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
+              event['ResourceProperties']['OS']
+              
+              while (response['Images'] == []) and (pas_ver_major >= 0):
+                while (response['Images'] == []) and (pas_ver_minor >= 0):
+                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
+                  response = boto3.client('ec2').describe_images(
+                      Owners= [event['ResourceProperties']['OwnerAccountId']],
+                      Filters=[
+                        {'Name': 'name', 'Values':  [ami_name]},
+                      ],
+                  )
+                  pas_ver_minor -= 1
+                pas_ver_major -= 1
+                pas_ver_minor = 9
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
+      Runtime: python3.6
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
+  VaultMachine:
+    Type: AWS::EC2::Instance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref 'VaultInstanceName'
+      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
+      SubnetId: !Ref 'VaultInstanceSubnetId'
+      ImageId: !Ref VaultAmi
+      InstanceType: !Ref 'VaultInstanceType'
+      UserData: !Base64
+        Fn::Sub: |-
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
+          </script>
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'VaultInstancesProfile'
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          ascending:
+            - configSSMAndServerAndTagKMS
+            - configServices
+            - configSignal
+        configSSMAndServerAndTagKMS:
+          services:
+            windows:
+              AmazonSSMAgent:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+          commands:
+            1-configcw:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
+              waitAfterCompletion: 10
+            2-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: 60
+        configServices:
+          commands:
+            1-download:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            2-postInstallWithDR:
+              command: !Sub
+              - >-
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
+                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
+                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
+                -Region ${AWS::Region} ${Secret}
+              - Secret: !If
+                  - SecretEmpty
+                  - ''
+                  - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
+              waitAfterCompletion: 0
+            3-changeKMSTag:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            4-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT20M
+    DeletionPolicy: Retain
+  VaultDRMachine:
+    Type: AWS::EC2::Instance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${VaultInstanceName} DR'
+      SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
+      SubnetId: !Ref 'DRInstanceSubnetId'
+      ImageId: !Ref VaultAmi
+      InstanceType: !Ref 'VaultInstanceType'
+      UserData: !Base64
+        Fn::Sub: |-
+          <script>
+          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
+          </script>
+      KeyName: !Ref 'KeyName'
+      IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          ascending:
+            - configSSMAndHostnameAndTagKMS
+            - configServices
+            - configSignal
+        configSSMAndHostnameAndTagKMS:
+          services:
+            windows:
+              AmazonSSMAgent:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+          commands:
+            1-configCloudWatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream} -VaultInitLogStream ${VaultDRInitLogStream} -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region ${AWS::Region}
+              waitAfterCompletion: 10
+            2-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: 0
+        configServices:
+          commands:
+            1-postInstall:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
+              waitAfterCompletion: 0
+            2-changeKMSTag:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
+              waitAfterCompletion: 0
+            3-restart:
+              command: powershell.exe -Command Restart-Computer
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT20M
     DeletionPolicy: Retain
   ComponentsMachine:
     Type: AWS::EC2::Instance
@@ -846,10 +917,7 @@ Resources:
           Value: !Ref 'ComponentsInstanceName'
       SecurityGroupIds: !Ref 'ComponentsInstanceSecurityGroups'
       SubnetId: !Ref 'ComponentsInstanceSubnetId'
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - Components
+      ImageId: !Ref ComponentsAmi
       InstanceType: !Ref 'ComponentsInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -993,6 +1061,31 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select an official CyberArk PAS release version.
+    AllowedValues:
+      - '12.6'
+      - '12.2'
+      - '12.1'
+      - '12.0'
+      - '11.7'
+      - '11.6'
+      - '11.5'
+    Default: '12.6'
+  WinVersion:
+    Type: String
+    Description: Select a Windows Server version for all Windows-based components.
+    AllowedValues:
+      - Win2016
+      - Win2019
+    Default: Win2016
+  CyberarkAccountId:
+    Type: Number
+    Description: Enter the CyberArk Account ID (AMI Owner account ID).
+    MinValue: 100000000000
+    MaxValue: 999999999999
+    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
@@ -1059,7 +1152,7 @@ Parameters:
     NoEcho: true
     AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: Secret must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
-      Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, except / \ - ; and controlled characters.
+      Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
     MinLength: 10
   SecretRetype:
     Type: String
@@ -1127,6 +1220,17 @@ Rules:
           - !Ref 'EULA'
           - Accept
         AssertDescription: You must accept EULA to continue.
+  VersionSupport:
+    Assertions:
+      - Assert: !Or
+        - !Equals
+          - !Ref WinVersion
+          - Win2016
+        - !Not
+          - 'Fn::Contains':
+            - ['11.5','11.6','11.7','12.0','12.1','12.2']
+            - !Ref ReleaseVersion
+        AssertDescription: The selected versions are not compatible.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -1134,6 +1238,9 @@ Metadata:
           default: General Parameters
         Parameters:
           - EULA
+          - ReleaseVersion
+          - WinVersion
+          - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
           - LicenseFile
@@ -1164,6 +1271,12 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk PAS Release Version
+      WinVersion:
+        default: Windows Server Version
+      CyberarkAccountId:
+        default: CyberArk Account ID
       KeyName:
         default: Key Pair
       VaultFilesBucket:
@@ -1210,65 +1323,6 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-Mappings:
-  RegionMap:
-    us-east-1:
-      Vault: ami-0f9fba410e4b5b5e8
-      Components: ami-013c220bf010c588d
-    us-east-2:
-      Vault: ami-0d68869e888d7dd2d
-      Components: ami-0694a0add81c9b9b9
-    eu-west-2:
-      Vault: ami-01b3bf309e06a63fd
-      Components: ami-027c4601e663aacd7
-    eu-west-3:
-      Vault: ami-0e317eef0bd2561a5
-      Components: ami-0ba599f15a600f541
-    eu-north-1:
-      Vault: ami-01890377aae7ff367
-      Components: ami-011a11e64ff9192ee
-    us-west-1:
-      Vault: ami-041b1d1b5ad6f1647
-      Components: ami-01ccc4ccca2468a51
-    us-west-2:
-      Vault: ami-011a35e97a0110026
-      Components: ami-02409c0fe7cf556d6
-    ca-central-1:
-      Vault: ami-097ba0085dfb1cc8a
-      Components: ami-062c834b60eefac19
-    eu-west-1:
-      Vault: ami-029d014ac3fc50414
-      Components: ami-04905e4b2943fa461
-    eu-central-1:
-      Vault: ami-04a87cd0ee27dc283
-      Components: ami-004906adcb77bd31d
-    ap-southeast-1:
-      Vault: ami-02c5657e99a781efb
-      Components: ami-088ea8cbcc8abc767
-    ap-southeast-2:
-      Vault: ami-05aaeb1d83fc592f8
-      Components: ami-0725e12a89a18151c
-    ap-northeast-2:
-      Vault: ami-0450cefaec1d64ef6
-      Components: ami-0dc75953bd1ecd92b
-    ap-northeast-1:
-      Vault: ami-07e5803dfa62c5461
-      Components: ami-0057f4c145f4db0e1
-    ap-south-1:
-      Vault: ami-040dcbb7289b83f68
-      Components: ami-0e5211589cc376fa2
-    sa-east-1:
-      Vault: ami-071f36a553f862fc7
-      Components: ami-0faa8d5a5637747e6
-    me-south-1:
-      Vault: ami-01986101ffd05cb86
-      Components: ami-078773d46707c77e1
-    us-gov-west-1:
-      Vault: ami-0f977ab459adff29a
-      Components: ami-05b0f11c581e05ddb
-    us-gov-east-1:
-      Vault: ami-0d1fe90a793e652fc
-      Components: ami-0f526bfae7ebc03fc
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

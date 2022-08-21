@@ -207,7 +207,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
+                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
                     "fileUris": []
                 }
             },
@@ -233,7 +233,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
+                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
                     "fileUris": []
                 }
             },
@@ -249,7 +249,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "ptaipconfig",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetRefComponent')]"

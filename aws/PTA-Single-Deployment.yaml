@@ -1,8 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template handles the deployment of CyberArk PTA to an existing network infrastructure
 Resources:
   DeployBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: Private
+  PTAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: !Ref ReleaseVersion
+      Component: "PTA"
+      OS: "CentOS-7"
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  StoreAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Properties:
+      ServiceToken: !GetAtt
+        - StorePasswordLambda
+        - Arn
+      Password: !Ref VaultAdminPassword
+    DependsOn:
+      - LambdaDeployRole
+  CleanAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt
+        - DeletePasswordLambda
+        - Arn
+      key: !GetAtt
+        - StoreAdminPassword
+        - SsmId
+    DependsOn:
+      - LambdaDeployRole
+      - StorePasswordLambda
+      - PTAMachine
+  ComponentInstancesSSMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: ComponentInsancesSsmAccess
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameter'
+            Resource:
+              - !Sub >-
+                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+      Roles:
+        - !Ref ComponentInstanceRole
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -50,7 +99,32 @@ Resources:
                     - - 'arn:aws:s3:::'
                       - !Ref PTALicenseBucket
                       - /*
-    Condition: EULACondition
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -110,7 +184,6 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -153,52 +226,44 @@ Resources:
       Role: !GetAtt
         - LambdaDeployRole
         - Arn
-    Condition: EULACondition
-  StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+  GetLatestAMILambda:
+    Type: AWS::Lambda::Function
     Properties:
-      ServiceToken: !GetAtt
-        - StorePasswordLambda
-        - Arn
-      Password: !Ref VaultAdminPassword
-    Condition: EULACondition
-    DependsOn:
-      - LambdaDeployRole
-  CleanAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt
-        - DeletePasswordLambda
-        - Arn
-      key: !GetAtt
-        - StoreAdminPassword
-        - SsmId
-    Condition: EULACondition
-    DependsOn:
-      - LambdaDeployRole
-      - StorePasswordLambda
-  ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref ComponentInstanceRole
-    Condition: EULACondition
-  ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-    Condition: EULACondition
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
+
+
+          def handler(event, context):
+            try:
+              component = event['ResourceProperties']['Component']
+              pas_ver= event['ResourceProperties']['Version']
+              os_filter = event['ResourceProperties']['OS']
+
+              ami_name = 'CyberArk PAS ' + component + ' v'+ pas_ver +'*'+ os_filter
+              response = boto3.client('ec2').describe_images(
+                  Owners= [event['ResourceProperties']['OwnerAccountId']],
+                  Filters=[
+                    {'Name': 'name', 'Values':  [ami_name]},
+                  ],
+              )
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
+      Runtime: python3.6
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   PTAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -207,10 +272,7 @@ Resources:
           Value: !Ref PTAInstanceName
       SecurityGroupIds: !Ref PTAInstanceSecurityGroups
       SubnetId: !Ref PTAInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PTA
+      ImageId: !Ref PTAAmi
       InstanceType: !Ref PTAInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -225,84 +287,28 @@ Resources:
           install_all:
             - install_pta
         install_pta:
-          files:
-            /tmp/deploy.py:
-              content: !Sub |
-                import boto3
-                import time
-
-                time.sleep(120)
-
-                def downloadFile(bucket,filePath,target):
-                    s3Client = boto3.client('s3', region_name='${AWS::Region}')
-                    s3Client.download_file(Bucket = bucket, Key = filePath, Filename = target)
-                    return target
-
-                licensef = downloadFile('${PTALicenseBucket}', '${LicenseFile}', '/opt/tomcat/diamond-resources/license.xml')
-
-            /tmp/register.sh:
-              content: !Sub |
-                #!/bin/bash
-
-                export vault_ip=${VaultPrivateIP}
-                export vault_adminUser=${VaultAdminUser}
-                export vault_adminPassword=${VaultAdminPassword}
-                export pvwa_host=${PVWAPrivateDNS}
-                export vault_timezone=${VaultTimeZone}
-                export timezone=${PTAServerTimeZone}
-                export vault_port=1858
-                if [ ! -z "${DRPrivateIP}" ]; then
-                    export vault_ipsDR=${DRPrivateIP}
-                fi;
-
-                echo $vault_ip
-                echo $vault_ipsDR
-                echo $vault_timezone
-                echo $timezone
-                echo $vault_port
-                echo $vault_adminUser
-                echo $vault_adminPassword
-                echo $pvwa_host
-
-                python /opt/tomcat/utility/internal/ptaAutomaticConfiguration.py aws
-
-              mode: '000755'
           commands:
             01-copylicensefrombucket:
-              command: python /tmp/deploy.py
+              command: !Sub >-
+                python /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
                 /opt/tomcat/diamond-resources/license.xml
             03-setpermissions:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
-            04-executeptaconfigurationscript:
-              command: sudo ./tmp/register.sh
+            04-executeptaconfigurationscript: 
+              command: !Sub >-
+                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
-    Condition: EULACondition
     DependsOn:
       - StoreAdminPassword
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
-  ComponentInstancesSSMPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: ComponentInsancesSsmAccess
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Action:
-              - 'ssm:GetParameter'
-            Resource:
-              - !Sub >-
-                arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
-      Roles:
-        - !Ref ComponentInstanceRole
-    Condition: EULACondition
 Parameters:
   EULA:
     Type: String
@@ -311,6 +317,19 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  ReleaseVersion:
+    Type: String
+    Description: Select an official CyberArk PAS release version.
+    AllowedValues:
+      - '12.6'
+      - '12.2'
+    Default: '12.6'
+  CyberarkAccountId:
+    Type: Number
+    Description: Enter the CyberArk Account ID (AMI Owner account ID).
+    MinValue: 100000000000
+    MaxValue: 999999999999
+    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -354,7 +373,7 @@ Parameters:
   PTAInstanceName:
     Type: String
     Description: Enter a name for the PTA instance.
-    Default: PTA_Component
+    Default: CyberArk PTA
   PTAInstanceType:
     Type: String
     Description: Select the instance type of the PTA instance.
@@ -368,10 +387,13 @@ Parameters:
   PTAInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PTA instance will reside.
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref EULA
+Rules:
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref EULA
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -379,6 +401,8 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
+          - ReleaseVersion
+          - CyberarkAccountId
           - KeyName
       - Label:
           default: Vault and DR information
@@ -402,6 +426,10 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      ReleaseVersion:
+        default: CyberArk PAS Release Version
+      CyberarkAccountId:
+        default: CyberArk Account ID
       KeyName:
         default: Key Pair
       VaultPrivateIP:
@@ -430,41 +458,3 @@ Metadata:
         default: PTA Instance Security Groups
       PTAInstanceSubnetId:
         default: PTA Instance Subnet Id
-Mappings:
-  RegionMap:
-    us-east-1:
-      PTA: ami-072fd704a6537ff64
-    us-east-2:
-      PTA: ami-07cd1fffacf956410
-    eu-west-2:
-      PTA: ami-02be09b59477862fa
-    us-west-1:
-      PTA: ami-0fd97022f44788498
-    us-west-2:
-      PTA: ami-0a8b54db686c83829
-    ca-central-1:
-      PTA: ami-0a95742f3d0f348c8
-    eu-west-1:
-      PTA: ami-02d6756e876ecad4b
-    eu-central-1:
-      PTA: ami-02e8618ffb7409de0
-    ap-southeast-1:
-      PTA: ami-07db8a1218787ff7e
-    ap-southeast-2:
-      PTA: ami-08e2fd8bcb87d3216
-    ap-northeast-2:
-      PTA: ami-0f6523f8be14268df
-    ap-northeast-1:
-      PTA: ami-024e7c893a6db3b8f
-    ap-south-1:
-      PTA: ami-019043f7ce2cbf5a0
-    sa-east-1:
-      PTA: ami-057397781884fece0
-    eu-west-3:
-      PTA: ami-014ae8f757077d130
-    me-south-1:
-      PTA: ami-0acf20d5777e8bbbc
-    us-gov-west-1:
-      PTA: ami-06f90cae9f18e20af
-    us-gov-east-1:
-      PTA: ami-0469dc58ae3976e00

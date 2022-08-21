@@ -42,7 +42,7 @@
             }
         },
         "DR Vault VM Name": {
-            "defaultValue": "DRVault",
+            "defaultValue": "CyberArk DR Vault",
 	    "type": "String",
             "metadata": {
                 "description": "Enter a name for the DR Vault VM."

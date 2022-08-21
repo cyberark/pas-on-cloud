@@ -2,7 +2,7 @@ PARAM(
     # release number
     [Parameter(Mandatory = $false)]
     [String]
-    $release="v12.2",
+    $release="v12.6",
     # location to import Cyberark images to
     [Parameter(Mandatory = $true)]
     [String]
