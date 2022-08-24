@@ -360,7 +360,7 @@ Resources:
             except:
               traceback.print_last()
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
-      Runtime: python3.6
+      Runtime: python3.7
       Handler: index.handler
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
