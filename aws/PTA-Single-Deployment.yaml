@@ -299,7 +299,7 @@ Resources:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
             04-executeptaconfigurationscript: 
               command: !Sub >-
-                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
+                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" "${VaultAdminUser}" "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}

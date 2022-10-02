@@ -83,7 +83,8 @@ class TestPASNetworkEnvironmentNatTemplate():
                       'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGIngress11', 'PTASGIngress13',
                       'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18',
                       'VaultSGIngress9','PVWASGIngress7','VaultSGIngress7','PTASGIngress19','VaultSGIngress4','PVWASGIngress3',
-                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6'
+                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6',
+                      'PVWASGIngress9','PVWASGIngress10'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
