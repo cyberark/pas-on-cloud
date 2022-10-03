@@ -290,7 +290,7 @@ Resources:
           commands:
             01-copylicensefrombucket:
               command: !Sub >-
-                python /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
+                python3 /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
