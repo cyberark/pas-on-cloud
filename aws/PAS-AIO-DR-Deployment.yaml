@@ -1081,10 +1081,9 @@ Parameters:
       - Win2019
     Default: Win2016
   CyberarkAccountId:
-    Type: Number
+    Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
-    MinValue: 100000000000
-    MaxValue: 999999999999
+    AllowedPattern: ^[\d]{12}$
     ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
