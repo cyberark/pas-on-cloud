@@ -124,6 +124,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CustomImageEmpty
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
@@ -806,7 +807,11 @@ Resources:
           Value: !Ref 'VaultInstanceName'
       SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -886,7 +891,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -1325,6 +1334,11 @@ Parameters:
       - Win2016
       - Win2019
     Default: Win2016
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -1544,6 +1558,7 @@ Metadata:
           - EULA
           - ReleaseVersion
           - WinVersion
+          - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
@@ -1601,6 +1616,8 @@ Metadata:
         default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
@@ -1678,6 +1695,9 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
+  CustomImageEmpty: !Equals
+    - ''
+    - !Ref VaultCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
