@@ -1174,7 +1174,7 @@ Resources:
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             3-PSMserviceConfig:
-              command: sc config "CyberArk Privileged Session Manager" start=auto
+              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: 0
         configSignal:
           commands:

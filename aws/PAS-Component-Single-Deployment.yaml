@@ -718,7 +718,7 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             3-PSMserviceConfig:
-              command: sc config "CyberArk Privileged Session Manager" start=auto
+              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
               waitAfterCompletion: 0
             4-ChangeHostName:
               command: !Sub >
