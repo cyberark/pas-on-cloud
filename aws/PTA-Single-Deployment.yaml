@@ -9,7 +9,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PTA"
       OS: "CentOS-7"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -299,7 +299,7 @@ Resources:
               command: sudo chmod 550 /opt/tomcat/diamond-resources/license.xml
             04-executeptaconfigurationscript: 
               command: !Sub >-
-                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
+                sudo /tmp/register-arguments.sh "${VaultPrivateIP}" "${VaultAdminUser}" "${StoreAdminPassword.SsmId}" ${AWS::Region} "${PVWAPrivateDNS}" "${VaultTimeZone}" "${PTAServerTimeZone}" "${DRPrivateIP}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
@@ -317,18 +317,10 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-    Default: '12.6'
   CyberarkAccountId:
-    Type: Number
+    Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
-    MinValue: 100000000000
-    MaxValue: 999999999999
+    AllowedPattern: ^[\d]{12}$
     ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
@@ -401,7 +393,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - CyberarkAccountId
           - KeyName
       - Label:
@@ -426,8 +417,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:

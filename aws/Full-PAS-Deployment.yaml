@@ -118,7 +118,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -128,7 +128,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -138,7 +138,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -148,7 +148,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -158,7 +158,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PSM SSH Proxy"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -1306,18 +1306,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-      - '12.1'
-      - '12.0'
-      - '11.7'
-      - '11.6'
-      - '11.5'
-    Default: '12.6'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
@@ -1326,10 +1314,9 @@ Parameters:
       - Win2019
     Default: Win2016
   CyberarkAccountId:
-    Type: Number
+    Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
-    MinValue: 100000000000
-    MaxValue: 999999999999
+    AllowedPattern: ^[\d]{12}$
     ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
@@ -1525,17 +1512,6 @@ Rules:
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
-  VersionSupport:
-    Assertions:
-      - Assert: !Or
-        - !Equals
-          - !Ref WinVersion
-          - Win2016
-        - !Not
-          - 'Fn::Contains':
-            - ['11.5','11.6','11.7','12.0','12.1','12.2']
-            - !Ref ReleaseVersion
-        AssertDescription: The selected versions are not compatible.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -1543,7 +1519,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - WinVersion
           - CyberarkAccountId
           - KeyName
@@ -1598,8 +1573,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       CyberarkAccountId:
