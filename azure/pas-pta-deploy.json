@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "License Agreement": {
@@ -152,7 +152,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('PTA VM Host Name')]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "zones": [
                 "[parameters('Availability Zone')]"
@@ -193,7 +193,7 @@
             "condition":"[empty(parameters ('Vault DR Private IP'))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_no_dr')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -219,7 +219,7 @@
             "condition":"[not(empty(parameters ('Vault DR Private IP')))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_with_dr')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -244,7 +244,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-09-01",
+            "apiVersion": "2022-05-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "ipConfigurations": [
@@ -267,7 +267,7 @@
             "value": "[parameters('PTA VM Admin User')]"
         },
         "networkInterface": {
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
             "type": "object"
         }
     }
