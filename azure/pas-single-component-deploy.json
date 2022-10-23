@@ -228,13 +228,7 @@
                                 "[concat('Microsoft.Compute/virtualMachines/', parameters('computerName'))]"
                             ]
                         }
-                    ],
-                    "outputs": {
-                        "guidOutput": {
-                            "type": "string",
-                            "value": "[variables('GuidSubstring')]"
-                        }
-                    }
+                    ]
                 },
                 "parameters": {
                     "VMname": {
