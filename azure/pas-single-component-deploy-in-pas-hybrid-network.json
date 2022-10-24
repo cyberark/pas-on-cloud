@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "License Agreement": {
@@ -105,11 +105,11 @@
         {
            "type":"Microsoft.Resources/deployments",
            "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-           "apiVersion": "2018-02-01",
+           "apiVersion": "2021-04-01",
            "properties": {
              "mode":"incremental",
              "template":{
-               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                "contentVersion":"1.0.0.0",
                "resources": []
              }
@@ -118,11 +118,11 @@
         {
             "type": "Microsoft.Resources/deployments",
             "name": "linkedTemplate",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v11.4.json",
+                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/nested/psmp-nested-template-v12.6.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -173,7 +173,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('Component VM Host Name')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "identity": {
                 "type": "SystemAssigned"
@@ -221,7 +221,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-component"
@@ -246,7 +246,7 @@
         {
             "type": "Microsoft.Compute/availabilitySets",
             "name": "[parameters('Component AvailablitySet Name')]",
-            "apiVersion": "2016-04-30-preview",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
@@ -257,7 +257,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-09-01",
+            "apiVersion": "2022-05-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "ipConfigurations": [
@@ -280,7 +280,7 @@
             "value": "[parameters('Component VM Admin User')]"
         },
         "networkInterface": {
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
             "type": "object"
         }
     }

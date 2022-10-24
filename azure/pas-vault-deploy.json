@@ -1,5 +1,5 @@
 {
-   "$schema":"http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
    "contentVersion":"1.0.0.0",
    "parameters":{
       "License Agreement":{
@@ -152,11 +152,11 @@
       {
          "type":"Microsoft.Resources/deployments",
          "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-         "apiVersion": "2018-02-01",
+         "apiVersion": "2021-04-01",
          "properties":{
             "mode":"incremental",
             "template":{
-               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                "contentVersion":"1.0.0.0",
                "resources": []
             }
@@ -166,7 +166,7 @@
          "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
          "type":"Microsoft.KeyVault/vaults",
          "name":"[variables('vaultName')]",
-         "apiVersion":"2015-06-01",
+         "apiVersion":"2022-07-01",
          "location":"[resourceGroup().location]",
          "properties":{
             "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
@@ -204,7 +204,7 @@
       {
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
-         "apiVersion":"2018-06-01",
+         "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "properties":{
             "publisher":"Microsoft.ManagedIdentity",
@@ -222,7 +222,7 @@
       {
          "type":"Microsoft.Compute/virtualMachines",
          "name":"[parameters('Primary Vault VM Name')]",
-         "apiVersion":"2019-07-01",
+         "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "zones": [
                "[parameters('Availability Zone')]"
@@ -269,7 +269,7 @@
          "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
          "name":"[concat(parameters('Primary Vault VM Name'),'/', 'registration_script')]",
-         "apiVersion":"2015-06-15",
+         "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "tags":{
             "displayName":"activate-vault"
@@ -292,7 +292,7 @@
       {
          "type":"Microsoft.Network/networkInterfaces",
          "name":"[variables('networkInterfaceName')]",
-         "apiVersion":"2016-09-01",
+         "apiVersion":"2022-05-01",
          "location":"[resourceGroup().location]",
          "properties":{
             "ipConfigurations":[
@@ -315,7 +315,7 @@
          "value":"[parameters('Primary Vault VM Admin User')]"
       },
       "networkInterface":{
-         "value":"[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+         "value":"[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
          "type":"object"
       }
    }
