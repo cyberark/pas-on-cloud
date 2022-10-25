@@ -9,7 +9,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PTA"
       OS: "CentOS-7"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -317,13 +317,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-    Default: '12.6'
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -400,7 +393,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - CyberarkAccountId
           - KeyName
       - Label:
@@ -425,8 +417,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
