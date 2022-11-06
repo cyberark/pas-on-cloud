@@ -902,6 +902,10 @@ Parameters:
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{1,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
+    MinLength: 1
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
