@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "PAS VNET CIDR": {
@@ -85,11 +85,11 @@
     {
        "type":"Microsoft.Resources/deployments",
        "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-       "apiVersion": "2018-02-01",
+       "apiVersion": "2021-04-01",
        "properties":{
           "mode":"incremental",
           "template":{
-             "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+             "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
              "contentVersion":"1.0.0.0",
              "resources": []
           }
@@ -99,7 +99,7 @@
       "comments": "Vault Network Security group",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('Vault_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -318,7 +318,7 @@
       "comments": "PVWA Components Security Group - User facing",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('PVWA_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -447,7 +447,7 @@
       "comments": "Network Security group CPM subnet",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('CPM_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -531,7 +531,7 @@
       "comments": "Network Security group PSM subnet",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('PSM_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -615,7 +615,7 @@
       "comments": "PSMP Components Security Group",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('PSMP_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -711,7 +711,7 @@
       "comments": "PTA Components Security Group",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('PTA_NSG_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
@@ -941,7 +941,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworks_Solution_VNet_name')]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "location": "[resourceGroup().location]",
       "properties": {
         "addressSpace": {
@@ -960,7 +960,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "name": "[concat(variables('virtualNetworks_Solution_VNet_name'), '/', variables('PVWA_Subnet_name'))]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "properties": {
         "addressPrefix": "[parameters('PVWA Subnet CIDR')]",
         "networkSecurityGroup": {
@@ -976,7 +976,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "name": "[concat(variables('virtualNetworks_Solution_VNet_name'), '/', variables('CPM_Subnet_name'))]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "properties": {
         "addressPrefix": "[parameters('CPM Subnet CIDR')]",
         "networkSecurityGroup": {
@@ -993,7 +993,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks/subnets",
       "name": "[concat(variables('virtualNetworks_Solution_VNet_name'), '/', variables('PSM_Subnet_name'))]",
-      "apiVersion": "2018-02-01",
+      "apiVersion": "2022-05-01",
       "properties": {
         "addressPrefix": "[parameters('PSM Subnet CIDR')]",
         "networkSecurityGroup": {
