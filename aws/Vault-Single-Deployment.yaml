@@ -505,6 +505,10 @@ Resources:
           Ebs:
             VolumeSize: 30
             Encrypted: true
+        - DeviceName: "/dev/sdb"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: 
         Fn::If:
