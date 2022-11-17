@@ -32,7 +32,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -595,18 +595,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-      - '12.1'
-      - '12.0'
-      - '11.7'
-      - '11.6'
-      - '11.5'
-    Default: '12.6'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
@@ -709,6 +697,9 @@ Parameters:
   VaultHostName:
     Type: String
     Description: Enter the host name for the Primary Vault instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{4,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
     MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -741,17 +732,6 @@ Rules:
           - !Ref 'EULA'
           - Accept
         AssertDescription: You must accept EULA to continue.
-  VersionSupport:
-    Assertions:
-      - Assert: !Or
-        - !Equals
-          - !Ref WinVersion
-          - Win2016
-        - !Not
-          - 'Fn::Contains':
-            - ['11.5','11.6','11.7','12.0','12.1','12.2']
-            - !Ref ReleaseVersion
-        AssertDescription: The selected versions are not compatible.
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -759,7 +739,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - WinVersion
           - VaultCustomAmi
           - CyberarkAccountId
@@ -789,8 +768,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       VaultCustomAmi:

@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: This template handles the deployment of CyberArk PTA to an existing network infrastructure
 Resources:
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 30
+    DeletionPolicy: Retain
   DeployBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -9,7 +14,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PTA"
       OS: "CentOS-7"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -65,6 +70,19 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Policies:
+        - PolicyName: CloudWatch
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - '*'
         - PolicyName: SSM
           PolicyDocument:
             Version: 2012-10-17
@@ -120,6 +138,19 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
   ComponentInstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
@@ -285,12 +316,75 @@ Resources:
       'AWS::CloudFormation::Init':
         configSets:
           install_all:
+            - install_logs
             - install_pta
+        install_logs:
+          files:
+            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
+              content: !Sub |
+                {
+                  "agent": {
+                    "metrics_collection_interval": 10,
+                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init-output",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cfn-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/opt/tomcat/logs/ptaAutomaticConfiguration.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/ptaAutomaticConfiguration",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                                                    {
+                            "file_path": "/opt/tomcat/logs/diamond.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/diamond",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: '000444'
+              owner: root
+              group: root
+          commands:
+            01_install_cloudwatch_agent:
+              command: sudo rpm -U https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            02_start_cloudwatch_agent:
+              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_pta:
           commands:
             01-copylicensefrombucket:
               command: !Sub >-
-                python /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
+                python3 /tmp/download-license.py ${AWS::Region} "${PTALicenseBucket}" "${LicenseFile}"
             02-addowner:
               command: >-
                 sudo chown tomcat:pta_server
@@ -317,13 +411,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-    Default: '12.6'
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -400,7 +487,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - CyberarkAccountId
           - KeyName
       - Label:
@@ -425,8 +511,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
@@ -457,3 +541,7 @@ Metadata:
         default: PTA Instance Security Groups
       PTAInstanceSubnetId:
         default: PTA Instance Subnet Id
+Outputs:
+  CloudWatchLogGroupName:
+    Description: The name of the CloudWatch log group
+    Value: !Ref LogGroup

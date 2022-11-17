@@ -88,7 +88,7 @@ Resources:
     Condition: CreatePVWACondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -99,7 +99,7 @@ Resources:
     Condition: CreateCPMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -110,7 +110,7 @@ Resources:
     Condition: CreatePSMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -121,7 +121,7 @@ Resources:
     Condition: CreatePSMPCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: !Ref ReleaseVersion
+      Version: "12.6"
       Component: "PSM SSH Proxy"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -718,7 +718,7 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             3-PSMserviceConfig:
-              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
+              command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
             4-ChangeHostName:
               command: !Sub >
@@ -854,18 +854,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  ReleaseVersion:
-    Type: String
-    Description: Select an official CyberArk PAS release version.
-    AllowedValues:
-      - '12.6'
-      - '12.2'
-      - '12.1'
-      - '12.0'
-      - '11.7'
-      - '11.6'
-      - '11.5'
-    Default: '12.6'
   WinVersion:
     Type: String
     Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
@@ -914,6 +902,10 @@ Parameters:
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{1,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
+    MinLength: 1
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
@@ -941,17 +933,6 @@ Rules:
           - !Ref EULA
           - Accept
         AssertDescription: You must accept EULA to continue.
-  VersionSupport:
-    Assertions:
-      - Assert: !Or
-        - !Equals
-          - !Ref WinVersion
-          - Win2016
-        - !Not
-          - 'Fn::Contains':
-            - ['11.5','11.6','11.7','12.0','12.1','12.2']
-            - !Ref ReleaseVersion
-        AssertDescription: The selected versions are not compatible.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -959,7 +940,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - ReleaseVersion
           - WinVersion
           - CyberarkAccountId
           - KeyName
@@ -983,8 +963,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      ReleaseVersion:
-        default: CyberArk PAS Release Version
       WinVersion:
         default: Windows Server Version
       CyberarkAccountId:

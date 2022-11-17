@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "License Agreement": {
@@ -112,7 +112,7 @@
     "resources": [
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "linkedTemplate",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
@@ -120,7 +120,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://pasnestedtemplates.blob.core.windows.net/nested/psmp-nested-template-v12.6.json",
+                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/nested/psmp-nested-template-v12.6.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -163,7 +163,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-08-01",
             "name": "[parameters('Component VM Host Name')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -210,7 +210,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "name": "[concat(parameters('Component VM Host Name'),'/', 'customscript')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -235,7 +235,7 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2016-09-01",
+            "apiVersion": "2022-05-01",
             "name": "[variables('networkInterfaceName')]",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -260,7 +260,7 @@
         },
         "networkInterface": {
             "type": "Object",
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]"
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]"
         }
     }
 }

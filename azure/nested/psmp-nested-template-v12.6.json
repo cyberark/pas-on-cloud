@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "VMname": {
@@ -47,7 +47,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('VMname')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "zones": [
                 "[parameters('AvailabilityZone')]"
@@ -85,7 +85,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('computerName'),'/', 'psmp-register-and-activation')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-component-psmp"
