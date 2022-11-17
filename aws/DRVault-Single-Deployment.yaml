@@ -445,6 +445,10 @@ Resources:
           Ebs:
             VolumeSize: 30
             Encrypted: true
+        - DeviceName: "/dev/sdb"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
       ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
