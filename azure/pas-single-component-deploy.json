@@ -120,7 +120,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/nested/psmp-nested-template-v12.6.json",
+                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/nested/psmp-nested-template-v13.0.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {

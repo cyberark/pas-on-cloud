@@ -14,7 +14,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "PTA"
       OS: "CentOS-7"
       OwnerAccountId: !Ref CyberarkAccountId
