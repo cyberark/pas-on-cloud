@@ -6,7 +6,7 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
 ## [PAS on Cloud v13.0] (TBD)
 
 ### Changed
-- AWS : 
+- #### AWS : 
     - Improved parameter validation
     - Lambda functions are running using Python 3.7
     - Vault disks are now encrypted
