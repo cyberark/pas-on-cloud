@@ -2,11 +2,22 @@
 
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
+
+## [PAS on Cloud v13.0] (TBD)
+
+### Changed
+- AWS : 
+    - Improved parameter validation
+    - Lambda functions are running using Python 3.7
+    - Vault disks are now encrypted
+- PTA is deployed on RHEL 8, instead of Centos 7
+- Vault safe data is being stored in a separated drive (E:)
+
+
 ## [PAS on Cloud v12.6] (21/8/2022)
 
 ### Added
 - AWS : Windows Server 2019 compatibility for all Windows-based components (for PAS version 12.6 and above)
-- AWS : CyberArk PAS release version selection within the CloudFormation parameters
 - Azure : Windows Server 2019 compatibility for all Windows-based components (for PAS version 12.6 and above)
 ### Changed
 - AWS: the required ImageIds are gathered on demand via a lambda function,
