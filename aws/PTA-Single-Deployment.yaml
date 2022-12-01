@@ -16,7 +16,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.0"
       Component: "PTA"
-      OS: "CentOS-7"
+      OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
