@@ -20,9 +20,6 @@
         "Imageid": {
             "type": "string"
         },
-        "AvailablitySetName": {
-            "type": "string"
-        },
         "NetworkInterfaceName": {
             "type": "string"
         },
@@ -31,6 +28,9 @@
         },
         "VaultAdminPassword": {
             "type": "SecureString"
+        },
+		"AvailablitySetName": {
+            "type": "string"
         },
         "VaultPrivateIP": {
             "type": "string"
@@ -65,15 +65,15 @@
                         }
                     }
                 },
+				"availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
+                },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
                         }
                     ]
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
                 }
             },
             "dependsOn": []
