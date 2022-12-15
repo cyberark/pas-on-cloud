@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "VMname": {
@@ -29,7 +29,7 @@
         "VaultAdminPassword": {
             "type": "SecureString"
         },
-        "AvailabilityZone": {
+		"AvailablitySetName": {
             "type": "string"
         },
         "VaultPrivateIP": {
@@ -43,11 +43,8 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('VMname')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
-            "zones": [
-                "[parameters('AvailabilityZone')]"
-            ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('computerName')]",
@@ -68,6 +65,9 @@
                         }
                     }
                 },
+				"availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
+                },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
@@ -81,7 +81,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('computerName'),'/', 'customscriptpsmp')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-component-psmp"
@@ -95,7 +95,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/register_and_activation.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
                     "fileUris": []
                 }
             },
