@@ -236,11 +236,13 @@
                 "type": "CustomScriptExtension",
                 "typeHandlerVersion": "1.9",
                 "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "fileUris": []
-                },
+                "settings":{
+                    "fileUris": [
+                       "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v12.0/azure/enable-tls-1.2.ps1"
+                   ]
+                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
                 }
             },
             "dependsOn": [
