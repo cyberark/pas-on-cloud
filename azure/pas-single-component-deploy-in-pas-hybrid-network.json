@@ -132,9 +132,6 @@
                     "computerName": {
                         "value": "[parameters('Component VM Host Name')]"
                     },
-                    "pvwaUrl": {
-                        "value": "[parameters('Password Vault Web Access FQDN')]"
-                    },
                     "adminUsername": {
                         "value": "[parameters('Component VM Admin User')]"
                     },
