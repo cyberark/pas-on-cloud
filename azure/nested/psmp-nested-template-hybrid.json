@@ -29,7 +29,7 @@
         "VaultAdminPassword": {
             "type": "SecureString"
         },
-        "AvailabilityZone": {
+		"AvailablitySetName": {
             "type": "string"
         },
         "VaultPrivateIP": {
@@ -45,9 +45,6 @@
             "name": "[parameters('VMname')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
-            "zones": [
-                "[parameters('AvailabilityZone')]"
-            ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('computerName')]",
@@ -67,6 +64,9 @@
                             "storageAccountType": "Premium_LRS"
                         }
                     }
+                },
+				"availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('AvailablitySetName'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -95,7 +95,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/register_and_activation.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
                     "fileUris": []
                 }
             },
