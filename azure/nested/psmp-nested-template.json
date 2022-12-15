@@ -29,12 +29,19 @@
         "VaultAdminPassword": {
             "type": "SecureString"
         },
+        "AvailabilityZone": {
+            "type": "string"
+        },
         "VaultPrivateIP": {
             "type": "string"
+        },
+        "guidValue": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
         }
     },
     "variables": {
-        "GuidSubstring": "[uniqueString( resourceGroup().id, deployment().name )]"
+        "GuidSubstring": "[uniqueString(parameters('guidValue'))]"
     },
     "resources": [
         {
@@ -42,6 +49,9 @@
             "name": "[parameters('VMname')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('AvailabilityZone')]"
+            ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('computerName')]",
@@ -74,7 +84,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('computerName'),'/', 'customscriptpsmp')]",
+            "name": "[concat(parameters('computerName'),'/', 'psmp-register-and-activation')]",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -97,5 +107,11 @@
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('computerName'))]"
             ]
         }
-    ]
+    ],
+    "outputs": {
+        "guidOutput": {
+            "type": "string",
+            "value": "[variables('GuidSubstring')]"
+        }
+    }
 }
