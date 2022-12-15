@@ -238,7 +238,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v11.5-new/azure/enable-tls-1.2.ps1"
+                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v11.5/azure/enable-tls-1.2.ps1"
                     ]
                   },
                   "protectedSettings":{
