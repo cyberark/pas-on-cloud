@@ -29,6 +29,9 @@
         "VaultAdminPassword": {
             "type": "SecureString"
         },
+        "AvailabilityZone": {
+            "type": "string"
+        },
         "VaultPrivateIP": {
             "type": "string"
         }
@@ -42,6 +45,9 @@
             "name": "[parameters('VMname')]",
             "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
+            "zones": [
+                "[parameters('AvailabilityZone')]"
+            ],
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('computerName')]",
