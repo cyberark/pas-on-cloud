@@ -103,7 +103,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -113,7 +113,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "Components"
       OS: !Ref WinVersion
     DependsOn:
@@ -773,6 +773,15 @@ Resources:
         - Key: Name
           Value: !Ref 'VaultInstanceName'
       SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
+        - DeviceName: "/dev/sdb"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -850,6 +859,10 @@ Resources:
       SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
+        - DeviceName: "/dev/sdb"
           Ebs:
             VolumeSize: 30
             Encrypted: true
@@ -1040,7 +1053,7 @@ Resources:
                   -VaultAdminUser "Administrator" -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             304-PSMserviceConfig:
-              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
+              command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
         configSignal:
           commands:

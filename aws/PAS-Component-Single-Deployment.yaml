@@ -88,7 +88,7 @@ Resources:
     Condition: CreatePVWACondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -99,7 +99,7 @@ Resources:
     Condition: CreateCPMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -110,7 +110,7 @@ Resources:
     Condition: CreatePSMCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -121,7 +121,7 @@ Resources:
     Condition: CreatePSMPCondition
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "PSM SSH Proxy"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -718,7 +718,7 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             3-PSMserviceConfig:
-              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
+              command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
             4-ChangeHostName:
               command: !Sub >
@@ -902,6 +902,10 @@ Parameters:
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{1,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
+    MinLength: 1
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.

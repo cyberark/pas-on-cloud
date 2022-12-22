@@ -32,7 +32,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -504,6 +504,10 @@ Resources:
           Ebs:
             VolumeSize: 30
             Encrypted: true
+        - DeviceName: "/dev/sdb"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -687,6 +691,9 @@ Parameters:
   VaultHostName:
     Type: String
     Description: Enter the host name for the Primary Vault instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{4,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
     MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>

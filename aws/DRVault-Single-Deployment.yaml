@@ -32,7 +32,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "12.6"
+      Version: "13.0"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -442,6 +442,10 @@ Resources:
       SecurityGroupIds: !Ref 'VaultInstanceSecurityGroups'
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 30
+            Encrypted: true
+        - DeviceName: "/dev/sdb"
           Ebs:
             VolumeSize: 30
             Encrypted: true
