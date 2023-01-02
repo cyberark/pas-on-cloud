@@ -410,7 +410,7 @@ Resources:
       Name: ptaserver.pas.local
       ResourceRecords:
       - !GetAtt PTAMachine.PrivateIp
-      TTL: 900
+      TTL: '900'
       Type: A
 Parameters:
   EULA:
