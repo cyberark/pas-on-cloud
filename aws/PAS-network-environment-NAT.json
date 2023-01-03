@@ -24,7 +24,7 @@
         "Name" : "pas.local",
         "VPCs" : [
         {
-          "VpcId": {
+          "VPCId": {
             "Ref": "PASVPC"
           },
           "VPCRegion": {
