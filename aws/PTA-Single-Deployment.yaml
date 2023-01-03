@@ -403,6 +403,15 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
+  PTADNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: ptaserver.pas.local
+      ResourceRecords:
+      - !GetAtt PTAMachine.PrivateIp
+      TTL: '900'
+      Type: A
 Parameters:
   EULA:
     Type: String
@@ -420,6 +429,9 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
+  PASHostedZoneId:
+    Type: 'AWS::Route53::HostedZone::Id'
+    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   PTALicenseBucket:
     Type: String
     Description: Enter the name of the bucket containing the license file.
@@ -489,6 +501,7 @@ Metadata:
           - EULA
           - CyberarkAccountId
           - KeyName
+          - PASHostedZoneId
       - Label:
           default: Vault and DR information
         Parameters:
@@ -515,6 +528,8 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
+      PASHostedZoneId:
+        default: PAS Hosted Zone Id
       VaultPrivateIP:
         default: Vault Private IP
       DRPrivateIP:
