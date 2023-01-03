@@ -139,8 +139,8 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
 
   def test_PASNetworkEnvironmentNat_HostedZone(self):
-      expected_VPC= {'PASHostedZone'}
-      assert set(self.resources['AWS::Route53::HostedZone']) == expected_VPC
+      expected_HostedZone= {'PASHostedZone'}
+      assert set(self.resources['AWS::Route53::HostedZone']) == expected_HostedZone
 
   def test_CleanupEnvironment(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)
