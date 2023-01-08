@@ -6,10 +6,6 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
-  DeployBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      AccessControl: Private
   PTAAmi:
     Type: Custom::FindAMI
     Properties:
@@ -109,12 +105,7 @@ Resources:
                 Resource:
                   - !Join
                     - ''
-                    - - 'arn:aws:s3:::'
-                      - !Ref DeployBucket
-                      - /*
-                  - !Join
-                    - ''
-                    - - 'arn:aws:s3:::'
+                    - - !Sub 'arn:${AWS::Partition}:s3:::'
                       - !Ref PTALicenseBucket
                       - /*
         - PolicyName: DescribeImages
