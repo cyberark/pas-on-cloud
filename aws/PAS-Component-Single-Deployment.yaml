@@ -122,7 +122,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.0"
-      Component: "PSM SSH Proxy"
+      Component: "PSMP"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:

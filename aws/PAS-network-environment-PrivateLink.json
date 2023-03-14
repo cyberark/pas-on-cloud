@@ -473,7 +473,7 @@
     "PSMSSHSG": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Security group for PSM SSH Proxy instances",
+        "GroupDescription": "Security group for PSMP instances",
         "VpcId": {
           "Ref": "PASVPC"
         },
