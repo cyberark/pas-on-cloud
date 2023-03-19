@@ -124,7 +124,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
+    Condition: VaultCustomImageEmpty
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
@@ -135,6 +135,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PVWACustomImageEmpty
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -145,6 +146,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CPMCustomImageEmpty
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -155,6 +157,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMCustomImageEmpty
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
@@ -165,6 +168,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMPCustomImageEmpty
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -818,7 +822,7 @@ Resources:
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: 
         Fn::If:
-          - CustomImageEmpty
+          - VaultCustomImageEmpty
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -908,7 +912,7 @@ Resources:
       SubnetId: !Ref 'DRInstanceSubnetId'
       ImageId: 
         Fn::If:
-          - CustomImageEmpty
+          - VaultCustomImageEmpty
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -975,7 +979,11 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: !Ref PVWAAmi
+      ImageId: 
+        Fn::If:
+          - PVWACustomImageEmpty
+          - !Ref PVWAAmi
+          - !Ref PVWACustomAmi
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1068,7 +1076,11 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: !Ref CPMAmi
+      ImageId: 
+        Fn::If:
+          - CPMCustomImageEmpty
+          - !Ref CPMAmi
+          - !Ref CPMCustomAmi
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1153,7 +1165,11 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: !Ref PSMAmi
+      ImageId: 
+        Fn::If:
+          - PSMCustomImageEmpty
+          - !Ref PSMAmi
+          - !Ref PSMCustomAmi
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1228,7 +1244,11 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: !Ref PSMPAmi
+      ImageId: 
+        Fn::If:
+          - PSMPCustomImageEmpty
+          - !Ref PSMPAmi
+          - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
         'Fn::Sub': >
@@ -1724,9 +1744,21 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
-  CustomImageEmpty: !Equals
+  VaultCustomImageEmpty: !Equals
     - ''
     - !Ref VaultCustomAmi
+  PVWACustomImageEmpty: !Equals
+    - ''
+    - !Ref PVWACustomAmi
+  CPMCustomImageEmpty: !Equals
+    - ''
+    - !Ref CPMCustomAmi
+  PSMCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMCustomAmi
+  PSMPCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMPCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
