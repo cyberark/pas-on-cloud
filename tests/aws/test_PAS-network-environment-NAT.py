@@ -60,7 +60,7 @@ class TestPASNetworkEnvironmentNatTemplate():
                   resource['ResourceChange']['LogicalResourceId'])
 
       # Validate expected number of elements
-      assert len(self.resources) == 15
+      assert len(self.resources) == 16
 
   def test_PASNetworkEnvironmentNat_SecurityGroups(self, region):
       expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG', 'PTASG'}
@@ -137,6 +137,10 @@ class TestPASNetworkEnvironmentNatTemplate():
   def test_PASNetworkEnvironmentNat_VPC(self):
       expected_VPC= {'PASVPC'}
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
+
+  def test_PASNetworkEnvironmentNat_HostedZone(self):
+      expected_HostedZone= {'PASHostedZone'}
+      assert set(self.resources['AWS::Route53::HostedZone']) == expected_HostedZone
 
   def test_CleanupEnvironment(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)
