@@ -159,7 +159,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.0"
-      Component: "PSM SSH Proxy"
+      Component: "PSMP"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
@@ -1493,11 +1493,11 @@ Parameters:
     Description: Select the Subnet Id where the PSM instance will reside.
   PSMPInstanceName:
     Type: String
-    Description: Enter a name for the PSM SSH Proxy instance.
-    Default: CyberArk PSM SSH Proxy
+    Description: Enter a name for the PSMP instance.
+    Default: CyberArk PSMP
   PSMPInstanceType:
     Type: String
-    Description: Select the instance type of the PSM SSH Proxy instance.
+    Description: Select the instance type of the PSMP instance.
     AllowedValues:
       - m5.large
       - m5.xlarge
@@ -1506,10 +1506,10 @@ Parameters:
     Default: m5.large
   PSMPInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the PSM SSH Proxy instance.
+    Description: Assign Security Groups to the PSMP instance.
   PSMPInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
+    Description: Select the Subnet Id where the PSMP instance will reside.
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -1587,7 +1587,7 @@ Metadata:
           - PSMInstanceSecurityGroups
           - PSMInstanceSubnetId
       - Label:
-          default: PSM SSH Proxy configuration
+          default: PSMP configuration
         Parameters:
           - PSMPInstanceName
           - PSMPInstanceType
@@ -1661,13 +1661,13 @@ Metadata:
       PSMInstanceSubnetId:
         default: PSM Instance Subnet Id
       PSMPInstanceName:
-        default: PSM SSH Proxy Instance Name
+        default: PSMP Instance Name
       PSMPInstanceType:
-        default: PSM SSH Proxy Instance Type
+        default: PSMP Instance Type
       PSMPInstanceSecurityGroups:
-        default: PSM SSH Proxy Instance Security Groups
+        default: PSMP Instance Security Groups
       PSMPInstanceSubnetId:
-        default: PSM SSH Proxy Instance Subnet Id
+        default: PSMP Instance Subnet Id
 Conditions:
   SecretEmpty: !Equals
     - ''
