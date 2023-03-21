@@ -1222,14 +1222,10 @@ Resources:
       ImageId: !Ref PSMPAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
-        'Fn::Sub': >
+        'Fn::Sub': |
           #!/bin/bash -e
-
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource
-          PSMPMachine --configsets install_all --region ${AWS::Region}
-
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
-          PSMPMachine --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1314,7 +1310,7 @@ Resources:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M

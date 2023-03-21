@@ -751,14 +751,10 @@ Resources:
       ImageId: !Ref PSMPAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
-        'Fn::Sub': >
+        'Fn::Sub': |
           #!/bin/bash -e
-
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource
-          PSMPMachine --configsets install_all --region ${AWS::Region}
-
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
-          PSMPMachine --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -843,7 +839,7 @@ Resources:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     Condition: CreatePSMPCondition
     CreationPolicy:
       ResourceSignal:
