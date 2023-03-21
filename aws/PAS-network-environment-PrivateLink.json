@@ -18,6 +18,21 @@
         ]
       }
     },
+    "PASHostedZone": {
+      "Type" : "AWS::Route53::HostedZone",
+      "Properties" : {
+        "Name" : "pas.local",
+        "VPCs" : [
+        {
+          "VPCId": {
+            "Ref": "PASVPC"
+          },
+          "VPCRegion": {
+            "Ref": "AWS::Region"
+          }
+        }]
+      }
+    },
     "VaultMainSubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
@@ -458,7 +473,7 @@
     "PSMSSHSG": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Security group for PSM SSH Proxy instances",
+        "GroupDescription": "Security group for PSMP instances",
         "VpcId": {
           "Ref": "PASVPC"
         },
@@ -1240,6 +1255,34 @@
         "ToPort": 443,
         "CidrIp": {
           "Ref": "PSMSSHSecondarySubnetCIDR"
+        }
+      }
+    },
+    "PVWASGIngress9": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "PVWASG"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "PTAMainSubnetCIDR"
+        }
+      }
+    },
+    "PVWASGIngress10": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "PVWASG"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": 443,
+        "ToPort": 443,
+        "CidrIp": {
+          "Ref": "PTADRSubnetCIDR"
         }
       }
     },

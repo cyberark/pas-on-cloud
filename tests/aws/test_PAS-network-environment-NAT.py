@@ -60,7 +60,7 @@ class TestPASNetworkEnvironmentNatTemplate():
                   resource['ResourceChange']['LogicalResourceId'])
 
       # Validate expected number of elements
-      assert len(self.resources) == 15
+      assert len(self.resources) == 16
 
   def test_PASNetworkEnvironmentNat_SecurityGroups(self, region):
       expected_SecurityGroups = {'CPMSG', 'PSMSG', 'PSMSSHSG', 'PVWASG', 'VaultSG', 'PTASG'}
@@ -83,7 +83,8 @@ class TestPASNetworkEnvironmentNatTemplate():
                       'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGIngress11', 'PTASGIngress13',
                       'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18',
                       'VaultSGIngress9','PVWASGIngress7','VaultSGIngress7','PTASGIngress19','VaultSGIngress4','PVWASGIngress3',
-                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6'
+                      'VaultSGIngress8','VaultSGIngress5','PVWASGIngress4','PVWASGIngress5','PVWASGIngress8','VaultSGIngress6','PVWASGIngress6',
+                      'PVWASGIngress9','PVWASGIngress10'
       }
       assert set(self.resources['AWS::EC2::SecurityGroupIngress']) == expected_SecurityGroupsIngress
 
@@ -136,6 +137,10 @@ class TestPASNetworkEnvironmentNatTemplate():
   def test_PASNetworkEnvironmentNat_VPC(self):
       expected_VPC= {'PASVPC'}
       assert set(self.resources['AWS::EC2::VPC']) == expected_VPC
+
+  def test_PASNetworkEnvironmentNat_HostedZone(self):
+      expected_HostedZone= {'PASHostedZone'}
+      assert set(self.resources['AWS::Route53::HostedZone']) == expected_HostedZone
 
   def test_CleanupEnvironment(self, region, branch, commitid, templateurl):
       cf_client = boto3.client('cloudformation', region_name=region)

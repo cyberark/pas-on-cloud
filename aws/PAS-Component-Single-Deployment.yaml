@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template handles the deployment of a selected CyberArk single component to an existing network infrastructure
 Resources:
   LogGroup:
     Type: 'AWS::Logs::LogGroup'
@@ -81,6 +83,87 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
+  PVWAAmi:
+    Type: Custom::FindAMI
+    Condition: CreatePVWACondition
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.0"
+      Component: "PVWA"
+      OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  CPMAmi:
+    Type: Custom::FindAMI
+    Condition: CreateCPMCondition
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.0"
+      Component: "CPM"
+      OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  PSMAmi:
+    Type: Custom::FindAMI
+    Condition: CreatePSMCondition
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.0"
+      Component: "PSM"
+      OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  PSMPAmi:
+    Type: Custom::FindAMI
+    Condition: CreatePSMPCondition
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.0"
+      Component: "PSMP"
+      OS: "RHEL-8"
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+  StoreAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Properties:
+      ServiceToken: !GetAtt
+        - StorePasswordLambda
+        - Arn
+      Password: !Ref VaultAdminPassword
+    DependsOn:
+      - LambdaDeployRole
+  CleanAdminPassword:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt
+        - DeletePasswordLambda
+        - Arn
+      key: !GetAtt
+        - StoreAdminPassword
+        - SsmId
+      dummyDependency: !If
+        - CreateCPMCondition
+        - !GetAtt
+          - CPMMachine
+          - PrivateIp
+        - !If
+          - CreatePVWACondition
+          - !GetAtt
+            - PVWAMachine
+            - PrivateIp
+          - !If
+            - CreatePSMCondition
+            - !GetAtt
+              - PSMMachine
+              - PrivateIp
+            - !GetAtt
+              - PSMPMachine
+              - PrivateIp
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -118,6 +201,46 @@ Resources:
                 Resource:
                   - !Sub >-
                     arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*
+        - PolicyName: DescribeImages
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:DescribeImages'
+                Resource: "*"
+  ComponentInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
+      Policies:
+        - PolicyName: LogRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+  ComponentInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref ComponentInstanceRole
+    DeletionPolicy: Retain
   StorePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -156,10 +279,7 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt
-        - LambdaDeployRole
-        - Arn
-    Condition: EULACondition
+      Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -192,214 +312,58 @@ Resources:
       Runtime: python3.7
       Handler: index.lambda_handler
       Timeout: 60
-      Role: !GetAtt
-        - LambdaDeployRole
-        - Arn
-    Condition: EULACondition
-  StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+      Role: !GetAtt LambdaDeployRole.Arn
+  GetLatestAMILambda:
+    Type: AWS::Lambda::Function
     Properties:
-      ServiceToken: !GetAtt
-        - StorePasswordLambda
-        - Arn
-      Password: !Ref VaultAdminPassword
-    Condition: EULACondition
-    DependsOn:
-      - LambdaDeployRole
-  CleanAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
-    Version: '1.0'
-    Properties:
-      ServiceToken: !GetAtt
-        - DeletePasswordLambda
-        - Arn
-      key: !GetAtt
-        - StoreAdminPassword
-        - SsmId
-      dummyDependency: !If
-        - CreateCPMCondition
-        - !GetAtt
-          - CPMMachine
-          - PrivateIp
-        - !If
-          - CreatePVWACondition
-          - !GetAtt
-            - PVWAMachine
-            - PrivateIp
-          - !If
-            - CreatePSMCondition
-            - !GetAtt
-              - PSMMachine
-              - PrivateIp
-            - !GetAtt
-              - PSMPMachine
-              - PrivateIp
-    Condition: EULACondition
-  ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - !Ref ComponentInstanceRole
-    Condition: EULACondition
-  ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Path: /
-      ManagedPolicyArns:
-        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
-    Condition: EULACondition
-  CPMMachine:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref ComponentInstanceName
-      SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
-      SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - CPM
-      InstanceType: !Ref ComponentInstanceType
-      UserData: !Base64
-        'Fn::Sub': >-
-          <script>
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import json
+          import traceback
 
-          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets
-          ascending --region ${AWS::Region}
 
-          </script>
-      KeyName: !Ref KeyName
-      IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          ascending:
-            - configSSMAndHostname
-            - configServices
-            - configSignal
-        configSSMAndHostname:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - >-
-                    C:\Program
-                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-cloudwatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CPMCfnInitLogStream
-                ${CPMCfnInitLogStream} -CPMConfiguration
-                ${CPMConfigurationsLog} -CPMRegistration  ${CPMRegistrationLog}
-                -CPMSetLocalService ${CPMSetLocalServiceLog} -Region
-                ${AWS::Region}
-            2-downloadLatestSSM:
-              command: >
-                powershell.exe -Command
-                [Net.ServicePointManager]::SecurityProtocol =
-                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
-                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
-                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
-                -UseBasicParsing
-              waitAfterCompletion: 0
-              ignoreErrors: true
-            3-updateLatestSSM:
-              command: >
-                powershell.exe -Command Start-Process -FilePath
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
-                -Wait
-              waitAfterCompletion: 0
-              ignoreErrors: true
-            4-removeLatestSSM:
-              command: >
-                powershell.exe -Command rm -Force
-                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
-              waitAfterCompletion: 0
-              ignoreErrors: true
-            5-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-              ignoreErrors: true
-        configServices:
-          commands:
-            1-configuration:
-              command: !Sub
-                - >-
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
-                  1858
-                - VaultIpAddress: !If
-                    - DRValueEmpty
-                    - !Sub '${VaultPrivateIP}'
-                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-              waitAfterCompletion: 0
-            2-registration:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
-                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
-                ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: 0
-            3-configureCPMService:
-              command: >
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Central
-                Policy Manager Scanner"
-              waitAfterCompletion: 0
-            4-configureCPMService:
-              command: >-
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PasswordManagerUser" -Services "CyberArk Password
-                Manager"
-              waitAfterCompletion: 0
-            5-CPMserviceConfig:
-              command: sc config "CyberArk Password Manager" start=auto
-              waitAfterCompletion: 0
-            6-CPMSserviceConfig:
-              command: sc config "CyberArk Central Policy Manager Scanner" start=auto
-              waitAfterCompletion: 0
-            7-ChangeHostName:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName
-                ${ComponentHostName} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource CPMMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
-    Condition: CreateCPMCondition
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT15M
-    DeletionPolicy: Retain
+          def handler(event, context):
+            try:
+              component = event['ResourceProperties']['Component']
+              pas_ver= event['ResourceProperties']['Version']
+              pas_ver_major= int(pas_ver.split(".")[0])
+              pas_ver_minor= int(pas_ver.split(".")[1])
+              response = {
+                  "Images": []
+              }
+
+              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
+              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
+              event['ResourceProperties']['OS']
+              
+              while (response['Images'] == []) and (pas_ver_major >= 0):
+                while (response['Images'] == []) and (pas_ver_minor >= 0):
+                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
+                  response = boto3.client('ec2').describe_images(
+                      Owners= [event['ResourceProperties']['OwnerAccountId']],
+                      Filters=[
+                        {'Name': 'name', 'Values':  [ami_name]},
+                      ],
+                  )
+                  pas_ver_minor -= 1
+                pas_ver_major -= 1
+                pas_ver_minor = 9
+              amis = sorted(response['Images'],
+                            key=lambda x: x['CreationDate'],
+                            reverse=True)
+              id = amis[0]['ImageId']
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
+            except IndexError:
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
+            except:
+              traceback.print_last()
+              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
+      Runtime: python3.7
+      Handler: index.handler
+      Timeout: 60
+      Role: !GetAtt LambdaDeployRole.Arn
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -408,10 +372,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PVWA
+      ImageId: !Ref PVWAAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -476,7 +437,9 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
               ignoreErrors: true
-            6-ChangeHostName:
+            6-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
+            7-ChangeHostName:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${ComponentHostName} -Force -Restart
@@ -528,13 +491,141 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource PVWAMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     Condition: CreatePVWACondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
+    DeletionPolicy: Retain
+  CPMMachine:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref ComponentInstanceName
+      SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
+      SubnetId: !Ref ComponentInstanceSubnetId
+      ImageId: !Ref CPMAmi
+      InstanceType: !Ref ComponentInstanceType
+      UserData: !Base64
+        'Fn::Sub': >-
+          <script>
+
+          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets
+          ascending --region ${AWS::Region}
+
+          </script>
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          ascending:
+            - configSSMAndHostname
+            - configServices
+            - configSignal
+        configSSMAndHostname:
+          services:
+            windows:
+              AmazonSSMAgent:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - >-
+                    C:\Program
+                    Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+          commands:
+            1-cloudwatch:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CPMCfnInitLogStream
+                ${CPMCfnInitLogStream} -CPMConfiguration
+                ${CPMConfigurationsLog} -CPMRegistration  ${CPMRegistrationLog}
+                -CPMSetLocalService ${CPMSetLocalServiceLog} -Region
+                ${AWS::Region}
+            2-downloadLatestSSM:
+              command: >
+                powershell.exe -Command
+                [Net.ServicePointManager]::SecurityProtocol =
+                [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest
+                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe"
+                -OutFile "$env:USERPROFILE\Desktop\SSMAgent_latest.exe"
+                -UseBasicParsing
+              waitAfterCompletion: 0
+              ignoreErrors: true
+            3-updateLatestSSM:
+              command: >
+                powershell.exe -Command Start-Process -FilePath
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe -ArgumentList "/S"
+                -Wait
+              waitAfterCompletion: 0
+              ignoreErrors: true
+            4-removeLatestSSM:
+              command: >
+                powershell.exe -Command rm -Force
+                $env:USERPROFILE\Desktop\SSMAgent_latest.exe
+              waitAfterCompletion: 0
+              ignoreErrors: true
+            5-restartSSM:
+              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+              waitAfterCompletion: 60
+              ignoreErrors: true
+            6-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
+        configServices:
+          commands:
+            1-configuration:
+              command: !Sub
+                - >-
+                  powershell.exe -File
+                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
+                  ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
+                  1858
+                - VaultIpAddress: !If
+                    - DRValueEmpty
+                    - !Sub '${VaultPrivateIP}'
+                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
+              waitAfterCompletion: 0
+            2-registration:
+              command: !Sub >
+                powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
+                -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
+                ${StoreAdminPassword.SsmId}
+              waitAfterCompletion: 0
+            3-configureCPMService:
+              command: >
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Central
+                Policy Manager Scanner"
+              waitAfterCompletion: 0
+            4-configureCPMService:
+              command: >-
+                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
+                -Username "PasswordManagerUser" -Services "CyberArk Password
+                Manager"
+              waitAfterCompletion: 0
+            5-CPMserviceConfig:
+              command: sc config "CyberArk Password Manager" start=auto
+              waitAfterCompletion: 0
+            6-CPMSserviceConfig:
+              command: sc config "CyberArk Central Policy Manager Scanner" start=auto
+              waitAfterCompletion: 0
+            7-ChangeHostName:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName
+                ${ComponentHostName} -Force -Restart
+              waitAfterCompletion: forever
+        configSignal:
+          commands:
+            0-signalCompletion:
+              command: !Sub >
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
+              waitAfterCompletion: 0
+    Condition: CreateCPMCondition
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT20M
     DeletionPolicy: Retain
   PSMMachine:
     Type: 'AWS::EC2::Instance'
@@ -544,10 +635,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PSM
+      ImageId: !Ref PSMAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -611,6 +699,8 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
               ignoreErrors: true
+            6-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-configuration:
@@ -632,7 +722,7 @@ Resources:
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
             3-PSMserviceConfig:
-              command: sc config "Cyber-Ark Privileged Session Manager" start=auto
+              command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
             4-ChangeHostName:
               command: !Sub >
@@ -643,13 +733,12 @@ Resources:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId}
-                --resource PSMMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     Condition: CreatePSMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
@@ -659,10 +748,7 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref 'AWS::Region'
-        - PSMP
+      ImageId: !Ref PSMPAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >
@@ -749,9 +835,9 @@ Resources:
               command:
                 'Fn::Sub':
                   - >-
-                    /opt/CD-Image/register_and_activation.sh
-                    Administrator "${VaultAdminPassword}" "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                    /opt/CD-Image/register-arguments.sh
+                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
+                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
                   - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
@@ -771,6 +857,18 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
+  WinVersion:
+    Type: String
+    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
+    AllowedValues:
+      - Win2016
+      - Win2019
+    Default: Win2016
+  CyberarkAccountId:
+    Type: String
+    Description: Enter the CyberArk Account ID (AMI Owner account ID).
+    AllowedPattern: ^[\d]{12}$
+    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
@@ -807,9 +905,10 @@ Parameters:
   ComponentHostName:
     Type: String
     Description: Enter the host name for the PAS Component instance.
-    AllowedPattern: ^([a-zA-Z0-9][a-zA-Z0-9\-]{2,14})
-    ConstraintDescription:  Hostname can include letters (A-Z and a-z), numbers (0-9), and dashes (-).
-    MinLength: 3
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{1,63}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 63
+    MinLength: 1
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
@@ -830,28 +929,13 @@ Parameters:
   PVWAHostName:
     Type: String
     Description: IP or FQDN of PVWA server
-Conditions:
-  EULACondition: !Equals
-    - Accept
-    - !Ref EULA
-  CreateCPMCondition: !Equals
-    - CPM
-    - !Ref ComponentToInstall
-  CreatePVWACondition: !Equals
-    - PVWA
-    - !Ref ComponentToInstall
-  CreatePSMCondition: !Equals
-    - PSM
-    - !Ref ComponentToInstall
-  CreatePSMPCondition: !Equals
-    - PSMP
-    - !Ref ComponentToInstall
-  DRValueEmpty: !Equals
-    - ''
-    - !Ref DRPrivateIP
-  PVWAHostNameEmpty: !Equals
-    - ''
-    - !Ref PVWAHostName
+Rules:
+  EULAAcception:
+    Assertions:
+      - Assert: !Equals
+          - !Ref EULA
+          - Accept
+        AssertDescription: You must accept EULA to continue.
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -859,6 +943,8 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
+          - WinVersion
+          - CyberarkAccountId
           - KeyName
       - Label:
           default: Primary Vault and DR information
@@ -880,6 +966,10 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
+      WinVersion:
+        default: Windows Server Version
+      CyberarkAccountId:
+        default: CyberArk Account ID
       KeyName:
         default: Key Pair
       VaultPrivateIP:
@@ -904,103 +994,25 @@ Metadata:
         default: Component Instance Subnet ID
       PVWAHostName:
         default: PVWA FQDN (Optional)
-Mappings:
-  RegionMap:
-    us-east-1:
-      CPM: ami-0fa7235fdca4af459
-      PVWA: ami-09a0ba13eec5c1673
-      PSM: ami-08c60f686d5fe1b13
-      PSMP: ami-003a5a6bc08e54a42
-    us-east-2:
-      CPM: ami-02d94af9afc444571
-      PVWA: ami-0d94d81b6abe18189
-      PSM: ami-08af892587cfdd13a
-      PSMP: ami-04aac251f0c47b56e
-    eu-west-2:
-      CPM: ami-0331d6a1ed8a049a8
-      PVWA: ami-042941065ee81a59a
-      PSM: ami-074fbecca986d1b2b
-      PSMP: ami-0d16f5b177ad4fd88
-    eu-west-3:
-      CPM: ami-0b264e7217b403c0d
-      PVWA: ami-04c4b7bb2b12b04b6
-      PSM: ami-05fb930a696363322
-      PSMP: ami-04931ce89c5795205
-    eu-north-1:
-      CPM: ami-0d55ff73f37d312bb
-      PVWA: ami-0aa5d54d0ff86230d
-      PSM: ami-0bd1bf1c86ee5c1a5
-      PSMP: ami-08bda36cb9be2a792
-    us-west-1:
-      CPM: ami-059ecb8c9757f0ecf
-      PVWA: ami-061104d049b5629a7
-      PSM: ami-0e75dfebc0e1be53e
-      PSMP: ami-0c118a57d08238e3c
-    us-west-2:
-      CPM: ami-07ca14fdf238ac8e5
-      PVWA: ami-0f2bf0eb42881283a
-      PSM: ami-0fed7e9dc82cc8162
-      PSMP: ami-0886b07765cb75df9
-    ca-central-1:
-      CPM: ami-009404793983186f3
-      PVWA: ami-09bc016d230377c41
-      PSM: ami-03326e1d251c4cf95
-      PSMP: ami-03a091a1904f26e6a
-    eu-west-1:
-      CPM: ami-0701c8444eab04c4a
-      PVWA: ami-09181fbdc505af43b
-      PSM: ami-040fd517999f6cd27
-      PSMP: ami-06269f3854f9d8059
-    eu-central-1:
-      CPM: ami-0b795537046186073
-      PVWA: ami-0b103939a7cf9bfa3
-      PSM: ami-0f317a8c4a354fa81
-      PSMP: ami-05f379bcf2cf8b4dd
-    ap-southeast-1:
-      CPM: ami-0b608b26490a083be
-      PVWA: ami-0d7b67684a73a6fee
-      PSM: ami-0b4b9bd4c4f503f01
-      PSMP: ami-0ab988d079cd46fb1
-    ap-southeast-2:
-      CPM: ami-0e083a68e91d54a46
-      PVWA: ami-067663fa87473933e
-      PSM: ami-0cca19b9f0f237e3c
-      PSMP: ami-006f26da459d3f251
-    ap-northeast-2:
-      CPM: ami-0b0a26bf47d607bd3
-      PVWA: ami-0d0a01797bfed97e2
-      PSM: ami-0f65e94ea97339dae
-      PSMP: ami-0380eac3ebd55d940
-    ap-northeast-1:
-      CPM: ami-09ff7cc884cb144f5
-      PVWA: ami-0957ffdbb46fb9c73
-      PSM: ami-05df62135cff20a2d
-      PSMP: ami-0dd36f927055d19e9
-    ap-south-1:
-      CPM: ami-0f77618dc0c265430
-      PVWA: ami-0ddf80dd635074687
-      PSM: ami-0de477e2db3dedbbc
-      PSMP: ami-06c4be35291fd4c1d
-    sa-east-1:
-      CPM: ami-0fd41ecec8d29ffd2
-      PVWA: ami-0caa7b0990467a0c5
-      PSM: ami-0da1fe71a548811c4
-      PSMP: ami-03985e4959bc93409
-    me-south-1:
-      CPM: ami-0cf04a8445834b34e
-      PVWA: ami-0f22410e004aec692
-      PSM: ami-09ca4caa674c25d3a
-      PSMP: ami-09aa4b2943b9d83c2
-    us-gov-west-1:
-      CPM: ami-01a1d4653ffdfa908
-      PVWA: ami-00fb3ba40bc5ef3b1
-      PSM: ami-0531d46ff83b09a88
-      PSMP: ami-07061e4b64d89bb63
-    us-gov-east-1:
-      CPM: ami-0b8f222b3e7fa55eb
-      PVWA: ami-092040fe63dd0324f
-      PSM: ami-063aa2d042f07a965
-      PSMP: ami-0bf7ad208070f8290
+Conditions:
+  CreateCPMCondition: !Equals
+    - CPM
+    - !Ref ComponentToInstall
+  CreatePVWACondition: !Equals
+    - PVWA
+    - !Ref ComponentToInstall
+  CreatePSMCondition: !Equals
+    - PSM
+    - !Ref ComponentToInstall
+  CreatePSMPCondition: !Equals
+    - PSMP
+    - !Ref ComponentToInstall
+  DRValueEmpty: !Equals
+    - ''
+    - !Ref DRPrivateIP
+  PVWAHostNameEmpty: !Equals
+    - ''
+    - !Ref PVWAHostName
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "License Agreement": {
@@ -42,7 +42,7 @@
             }
         },
         "DR Vault VM Name": {
-            "defaultValue": "DRVault",
+            "defaultValue": "CyberArk DR Vault",
 	    "type": "String",
             "metadata": {
                 "description": "Enter a name for the DR Vault VM."
@@ -111,86 +111,21 @@
         {
            "type":"Microsoft.Resources/deployments",
            "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-           "apiVersion": "2018-02-01",
+           "apiVersion": "2021-04-01",
            "properties":{
               "mode":"incremental",
               "template":{
-                 "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                 "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                  "contentVersion":"1.0.0.0",
                  "resources": []
               }
            }
         },
         {
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-09-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "vaultdripconfig",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('subnetRefVault')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic"
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('DR Vault VM Name')]",
-            "apiVersion": "2017-03-30",
-            "location": "[resourceGroup().location]",
-            "zones": [
-                "[parameters('Availability Zone')]"
-            ],
-            "identity": {
-                "type": "SystemAssigned"
-            },
-            "properties": {
-                "osProfile": {
-                    "computerName": "[parameters('DR Vault VM Name')]",
-                    "adminUsername": "[parameters('DR Vault VM Admin User')]",
-                    "adminPassword": "[parameters('DR Vault VM Admin Password')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
-                },
-                "hardwareProfile": {
-                    "vmSize": "[parameters('DR Vault VM Size')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "id": "[parameters('Image ID')]"
-                    },
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-                        }
-                    ]
-                }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-            ]
-        },
-        {
             "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
             "type":"Microsoft.KeyVault/vaults",
             "name":"[parameters('Key Vault Name')]",
-            "apiVersion":"2015-06-01",
+            "apiVersion":"2022-07-01",
             "location":"[resourceGroup().location]",
             "properties":{
                "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
@@ -228,7 +163,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('DR Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "publisher": "Microsoft.ManagedIdentity",
@@ -246,7 +181,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('DR Vault VM Name')]",
-            "apiVersion": "2017-03-30",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "zones": [
                 "[if(equals(parameters('Availability Zone'), 'N/A'), array(parameters('empty')), array(parameters('Availability Zone')))]"
@@ -292,7 +227,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('DR Vault VM Name'),'/', 'customscript')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "activate-vault"
@@ -303,17 +238,34 @@
                 "typeHandlerVersion": "1.9",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "fileUris": [
-                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/enable-tls-1.2.ps1"
-                    ]
+                    "fileUris": []
                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
                 }
             },
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]"
             ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('networkInterfaceName')]",
+            "apiVersion": "2022-05-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRefVault')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            }
         }
     ],
     "outputs": {
@@ -322,7 +274,7 @@
             "value": "[parameters('DR Vault VM Admin User')]"
         },
         "networkInterface": {
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
             "type": "object"
         }
     }

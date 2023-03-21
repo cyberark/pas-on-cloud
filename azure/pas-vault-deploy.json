@@ -1,5 +1,5 @@
 {
-   "$schema":"http://schema-management-azure-com.o365.apps.cyberark.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
    "contentVersion":"1.0.0.0",
    "parameters":{
       "License Agreement":{
@@ -71,16 +71,15 @@
       "DR User Password":{
          "type":"SecureString",
          "minLength":8,
-         "defaultValue": "",
          "metadata":{
             "description":"Enter the DR user password."
          }
       },
       "DR User Secret":{
          "type":"SecureString",
-         "defaultValue": "",
+         "minLength":10,
          "metadata":{
-            "description":"Enter a secret string for the DR user (Optional). Secret must include 10 characters:\none or more digits(0-9),\none or more letters(a-Z),\nand one or more special characters exluding ^\\\/-;"
+            "description":"Enter a secret string for the DR user. Secret must include 10 characters:\none or more digits(0-9),\none or more letters(a-Z),\nand one or more special characters exluding ^\\\/-;"
          }
       },
       "Primary Vault VM Name":{
@@ -153,39 +152,77 @@
       {
          "type":"Microsoft.Resources/deployments",
          "name": "pid-920ca5c9-254e-5fa2-87f3-eba1b62dc92d",
-         "apiVersion": "2018-02-01",
+         "apiVersion": "2021-04-01",
          "properties":{
             "mode":"incremental",
             "template":{
-               "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                "contentVersion":"1.0.0.0",
                "resources": []
             }
          }
       },
       {
-         "type":"Microsoft.Network/networkInterfaces",
-         "name":"[variables('networkInterfaceName')]",
-         "apiVersion":"2016-09-01",
+         "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
+         "type":"Microsoft.KeyVault/vaults",
+         "name":"[variables('vaultName')]",
+         "apiVersion":"2022-07-01",
          "location":"[resourceGroup().location]",
          "properties":{
-            "ipConfigurations":[
+            "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
+            "accessPolicies":[
                {
-                  "name":"vaultipconfig",
-                  "properties":{
-                     "subnet":{
-                        "id":"[variables('subnetRefVault')]"
-                     },
-                     "privateIPAllocationMethod":"Dynamic"
+                  "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
+                  "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.principalId]",
+                  "permissions":{
+                     "keys":[
+                        "create",
+                        "wrapKey",
+                        "unwrapKey"
+                     ]
                   }
                }
-            ]
-         }
+            ],
+            "sku":{
+               "family":"A",
+               "name":"Premium"
+            },
+            "networkAcls":{
+               "bypass":"None",
+               "defaultAction":"Deny",
+               "virtualNetworkRules":[
+                  {
+                     "id":"[variables('subnetRefVault')]"
+                  }
+               ]
+            }
+         },
+         "dependsOn":[
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
+         ]
+      },
+      {
+         "type":"Microsoft.Compute/virtualMachines/extensions",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
+         "apiVersion":"2022-08-01",
+         "location":"[resourceGroup().location]",
+         "properties":{
+            "publisher":"Microsoft.ManagedIdentity",
+            "type":"ManagedIdentityExtensionForWindows",
+            "typeHandlerVersion":"1.0",
+            "autoUpgradeMinorVersion":true,
+            "settings":{
+               "port":50342
+            }
+         },
+         "dependsOn":[
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
+         ]
       },
       {
          "type":"Microsoft.Compute/virtualMachines",
          "name":"[parameters('Primary Vault VM Name')]",
-         "apiVersion":"2019-07-01",
+         "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "zones": [
                "[parameters('Availability Zone')]"
@@ -229,67 +266,10 @@
          ]
       },
       {
-         "condition": "[not(equals(parameters('Key Vault Name'),'null'))]",
-         "type":"Microsoft.KeyVault/vaults",
-         "name":"[variables('vaultName')]",
-         "apiVersion":"2015-06-01",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
-            "accessPolicies":[
-               {
-                  "tenantId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.tenantId]",
-                  "objectId":"[reference(concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name')), '2017-03-30', 'Full').identity.principalId]",
-                  "permissions":{
-                     "keys":[
-                        "create",
-                        "wrapKey",
-                        "unwrapKey"
-                     ]
-                  }
-               }
-            ],
-            "sku":{
-               "family":"A",
-               "name":"Premium"
-            },
-            "networkAcls":{
-               "bypass":"None",
-               "defaultAction":"Deny",
-               "virtualNetworkRules":[
-                  {
-                     "id":"[variables('subnetRefVault')]"
-                  }
-               ]
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
-         ]
-      },
-      {
-         "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
-         "apiVersion":"2018-06-01",
-         "location":"[resourceGroup().location]",
-         "properties":{
-            "publisher":"Microsoft.ManagedIdentity",
-            "type":"ManagedIdentityExtensionForWindows",
-            "typeHandlerVersion":"1.0",
-            "autoUpgradeMinorVersion":true,
-            "settings":{
-               "port":50342
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'))]"
-         ]
-      },
-      {
          "condition":"[not(empty(parameters ('DR User Secret')))]",
          "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_with_dr')]",
-         "apiVersion":"2015-06-15",
+         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'registration_script')]",
+         "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "tags":{
             "displayName":"activate-vault"
@@ -299,13 +279,9 @@
             "type":"CustomScriptExtension",
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
-            "settings": {
-               "fileUris":[
-                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/enable-tls-1.2.ps1"
-               ]
-            },
+
             "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
+               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
             }
          },
          "dependsOn":[
@@ -314,32 +290,23 @@
          ]
       },
       {
-         "condition":"[empty(parameters ('DR User Secret'))]",
-         "type":"Microsoft.Compute/virtualMachines/extensions",
-         "name":"[concat(parameters('Primary Vault VM Name'),'/', 'customscript_no_dr')]",
-         "apiVersion":"2015-06-15",
+         "type":"Microsoft.Network/networkInterfaces",
+         "name":"[variables('networkInterfaceName')]",
+         "apiVersion":"2022-05-01",
          "location":"[resourceGroup().location]",
-         "tags":{
-            "displayName":"activate-vault"
-         },
          "properties":{
-            "publisher":"Microsoft.Compute",
-            "type":"CustomScriptExtension",
-            "typeHandlerVersion":"1.9",
-            "autoUpgradeMinorVersion":true,
-            "settings":{
-               "fileUris":[
-                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/master/azure/enable-tls-1.2.ps1"
-               ]
-            },
-            "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters ('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'))]"
-            }
-         },
-         "dependsOn":[
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
-            "[concat('Microsoft.KeyVault/vaults/', variables('vaultName'))]"
-         ]
+            "ipConfigurations":[
+               {
+                  "name":"ipconfig1",
+                  "properties":{
+                     "subnet":{
+                        "id":"[variables('subnetRefVault')]"
+                     },
+                     "privateIPAllocationMethod":"Dynamic"
+                  }
+               }
+            ]
+         }
       }
    ],
    "outputs":{
@@ -348,7 +315,7 @@
          "value":"[parameters('Primary Vault VM Admin User')]"
       },
       "networkInterface":{
-         "value":"[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+         "value":"[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
          "type":"object"
       }
    }

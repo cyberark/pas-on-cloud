@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "License Agreement": {
@@ -153,7 +153,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('PTA VM Host Name')]",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "zones": [
                 "[if(equals(parameters('Availability Zone'), 'N/A'), array(parameters('empty')), array(parameters('Availability Zone')))]"
@@ -194,7 +194,7 @@
             "condition":"[empty(parameters ('Vault DR Private IP'))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_no_dr')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -208,7 +208,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
+                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
                     "fileUris": []
                 }
             },
@@ -220,7 +220,7 @@
             "condition":"[not(empty(parameters ('Vault DR Private IP')))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_with_dr')]",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "config-get-license-to-place"
@@ -234,7 +234,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/deploy.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /etc/opt/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
+                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
                     "fileUris": []
                 }
             },
@@ -245,7 +245,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-09-01",
+            "apiVersion": "2022-05-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "ipConfigurations": [
@@ -268,7 +268,7 @@
             "value": "[parameters('PTA VM Admin User')]"
         },
         "networkInterface": {
-            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2016-09-01')]",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName')),'2022-05-01')]",
             "type": "object"
         }
     }
