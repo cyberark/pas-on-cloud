@@ -480,7 +480,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PSM-SSH-SG"
+            "Value": "PSMP-SG"
           }
         ]
       }
@@ -2133,10 +2133,10 @@
           "default": "PSM Secondary Subnet CIDR"
         },
         "PSMPMainSubnetCIDR": {
-          "default": "PSM-SSH Main Subnet CIDR"
+          "default": "PSMP Main Subnet CIDR"
         },
         "PSMPSecondarySubnetCIDR": {
-          "default": "PSM-SSH Secondary Subnet CIDR"
+          "default": "PSMP Secondary Subnet CIDR"
         },
         "PTAMainSubnetCIDR": {
           "default": "PTA Main Subnet CIDR"
@@ -2236,7 +2236,7 @@
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "PSMPMainSubnetCIDR": {
-      "Description": "IPv4 address range for the PSM-SSH Main subnet",
+      "Description": "IPv4 address range for the PSMP Main subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
@@ -2245,7 +2245,7 @@
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "PSMPSecondarySubnetCIDR": {
-      "Description": "IPv4 address range for the PSM-SSH Secondary subnet",
+      "Description": "IPv4 address range for the PSMP Secondary subnet",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
