@@ -249,11 +249,11 @@
         ]
       }
     },
-    "PSMSSHMainSubnet": {
+    "PSMPMainSubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "CidrBlock": {
-          "Ref": "PSMSSHMainSubnetCIDR"
+          "Ref": "PSMPMainSubnetCIDR"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -271,16 +271,16 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PSMSSH Main"
+            "Value": "PSMP Main"
           }
         ]
       }
     },
-    "PSMSSHSecondarySubnet": {
+    "PSMPSecondarySubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "CidrBlock": {
-          "Ref": "PSMSSHSecondarySubnetCIDR"
+          "Ref": "PSMPSecondarySubnetCIDR"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -298,7 +298,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "PSMSSH Secondary"
+            "Value": "PSMP Secondary"
           }
         ]
       }
@@ -470,7 +470,7 @@
         ]
       }
     },
-    "PSMSSHSG": {
+    "PSMPSG": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Security group for PSMP instances",
@@ -690,7 +690,7 @@
           "Ref": "PASPrivateRT"
         },
         "SubnetId": {
-          "Ref": "PSMSSHMainSubnet"
+          "Ref": "PSMPMainSubnet"
         }
       }
     },
@@ -701,7 +701,7 @@
           "Ref": "PASPrivateRT"
         },
         "SubnetId": {
-          "Ref": "PSMSSHSecondarySubnet"
+          "Ref": "PSMPSecondarySubnet"
         }
       }
     },
@@ -803,9 +803,9 @@
         "FromPort": 1858,
         "ToPort": 1858,
         "SourceSecurityGroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
-        "Description": "Vault to PSMSSH connection"
+        "Description": "Vault to PSMP connection"
       }
     },
     "VaultSGIngress7": {
@@ -1062,11 +1062,11 @@
         }
       }
     },
-    "PSMSSHSGIngress1": {
+    "PSMPSGIngress1": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 22,
@@ -1077,11 +1077,11 @@
         "Description": "Access from Administrative CIDR"
       }
     },
-    "PSMSSHSGIngress2": {
+    "PSMPSGIngress2": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 22,
@@ -1092,11 +1092,11 @@
         "Description": "Access from User Access CIDR"
       }
     },
-    "PSMSSHSGEgress1": {
+    "PSMPSGEgress1": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 22,
@@ -1104,11 +1104,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "PSMSSHSGEgress2": {
+    "PSMPSGEgress2": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 1858,
@@ -1118,11 +1118,11 @@
         }
       }
     },
-    "PSMSSHSGEgress3": {
+    "PSMPSGEgress3": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 443,
@@ -1130,11 +1130,11 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "PSMSSHSGEgress4": {
+    "PSMPSGEgress4": {
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "PSMSSHSG"
+          "Ref": "PSMPSG"
         },
         "IpProtocol": "tcp",
         "FromPort": 1858,
@@ -1240,7 +1240,7 @@
         "FromPort": 443,
         "ToPort": 443,
         "CidrIp": {
-          "Ref": "PSMSSHMainSubnetCIDR"
+          "Ref": "PSMPMainSubnetCIDR"
         }
       }
     },
@@ -1254,7 +1254,7 @@
         "FromPort": 443,
         "ToPort": 443,
         "CidrIp": {
-          "Ref": "PSMSSHSecondarySubnetCIDR"
+          "Ref": "PSMPSecondarySubnetCIDR"
         }
       }
     },
@@ -2088,8 +2088,8 @@
             "PVWASecondarySubnetCIDR",
             "PSMMainSubnetCIDR",
             "PSMSecondarySubnetCIDR",
-            "PSMSSHMainSubnetCIDR",
-            "PSMSSHSecondarySubnetCIDR",
+            "PSMPMainSubnetCIDR",
+            "PSMPSecondarySubnetCIDR",
             "PTAMainSubnetCIDR",
             "PTADRSubnetCIDR"
           ]
@@ -2132,10 +2132,10 @@
         "PSMSecondarySubnetCIDR": {
           "default": "PSM Secondary Subnet CIDR"
         },
-        "PSMSSHMainSubnetCIDR": {
+        "PSMPMainSubnetCIDR": {
           "default": "PSM-SSH Main Subnet CIDR"
         },
-        "PSMSSHSecondarySubnetCIDR": {
+        "PSMPSecondarySubnetCIDR": {
           "default": "PSM-SSH Secondary Subnet CIDR"
         },
         "PTAMainSubnetCIDR": {
@@ -2235,7 +2235,7 @@
       "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "PSMSSHMainSubnetCIDR": {
+    "PSMPMainSubnetCIDR": {
       "Description": "IPv4 address range for the PSM-SSH Main subnet",
       "Type": "String",
       "MinLength": "9",
@@ -2244,7 +2244,7 @@
       "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "PSMSSHSecondarySubnetCIDR": {
+    "PSMPSecondarySubnetCIDR": {
       "Description": "IPv4 address range for the PSM-SSH Secondary subnet",
       "Type": "String",
       "MinLength": "9",
