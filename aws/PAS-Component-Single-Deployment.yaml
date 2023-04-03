@@ -94,7 +94,6 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
   CPMAmi:
     Type: Custom::FindAMI
     Condition: CreateCPMCondition
@@ -106,7 +105,6 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
   PSMAmi:
     Type: Custom::FindAMI
     Condition: CreatePSMCondition
@@ -118,7 +116,6 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
   PSMPAmi:
     Type: Custom::FindAMI
     Condition: CreatePSMPCondition
@@ -130,7 +127,6 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
