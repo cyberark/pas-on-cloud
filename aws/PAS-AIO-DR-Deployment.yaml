@@ -109,7 +109,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
-    Condition: CustomImageEmpty
+    Condition: VaultCustomImageEmpty
   ComponentsAmi:
     Type: Custom::FindAMI
     Properties:
@@ -119,6 +119,7 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
+    Condition: ComponentsCustomImageEmpty
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -786,7 +787,7 @@ Resources:
       SubnetId: !Ref 'VaultInstanceSubnetId'
       ImageId: 
         Fn::If:
-          - CustomImageEmpty
+          - VaultCustomImageEmpty
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -876,7 +877,7 @@ Resources:
       SubnetId: !Ref 'DRInstanceSubnetId'
       ImageId: 
         Fn::If:
-          - CustomImageEmpty
+          - VaultCustomImageEmpty
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
@@ -943,7 +944,11 @@ Resources:
           Value: !Ref 'ComponentsInstanceName'
       SecurityGroupIds: !Ref 'ComponentsInstanceSecurityGroups'
       SubnetId: !Ref 'ComponentsInstanceSubnetId'
-      ImageId: !Ref ComponentsAmi
+      ImageId: 
+        Fn::If:
+          - ComponentsCustomImageEmpty
+          - !Ref ComponentsAmi
+          - !Ref ComponentsCustomAmi
       InstanceType: !Ref 'ComponentsInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -1196,6 +1201,11 @@ Parameters:
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the Vault DR instance will reside.
+  ComponentsCustomAmi:
+    Type: String
+    Description: Enter the Components Image ID, if you wish to use a custom Components image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   ComponentsInstanceName:
     Type: String
     Description: Enter a name for the PAS Components instance.
@@ -1273,6 +1283,7 @@ Metadata:
       - Label:
           default: Components Configuration
         Parameters:
+          - ComponentsCustomAmi
           - ComponentsInstanceName
           - ComponentsInstanceType
           - ComponentsInstanceSecurityGroups
@@ -1282,8 +1293,6 @@ Metadata:
         default: License Agreement
       WinVersion:
         default: Windows Server Version
-      VaultCustomAmi:
-        default: Custom Vault Image ID (Optional)
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
@@ -1310,6 +1319,8 @@ Metadata:
         default: DR User Secret
       SecretRetype:
         default: Retype DR User Secret
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
       VaultInstanceType:
@@ -1320,6 +1331,8 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
+      ComponentsCustomAmi:
+        default: Custom Components Image ID (Optional)
       ComponentsInstanceName:
         default: Components Instance Name
       ComponentsInstanceType:
@@ -1332,9 +1345,12 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-  CustomImageEmpty: !Equals
+  VaultCustomImageEmpty: !Equals
     - ''
     - !Ref VaultCustomAmi
+  ComponentsCustomImageEmpty: !Equals
+    - ''
+    - !Ref ComponentsCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
