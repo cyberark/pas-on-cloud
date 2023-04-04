@@ -1251,14 +1251,10 @@ Resources:
           - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
-        'Fn::Sub': >
+        'Fn::Sub': |
           #!/bin/bash -e
-
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource
-          PSMPMachine --configsets install_all --region ${AWS::Region}
-
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
-          PSMPMachine --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1284,35 +1280,35 @@ Resources:
                           {
                             "file_path": "/var/log/cloud-init.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cloud-init",
+                            "log_stream_name": "PSMPMachine/cloud-init",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/log/cloud-init-output.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cloud-init-output",
+                            "log_stream_name": "PSMPMachine/cloud-init-output",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/log/cfn-init.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cfn-init",
+                            "log_stream_name": "PSMPMachine/cfn-init",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/tmp/temp/EnvManager.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/EnvManager",
+                            "log_stream_name": "PSMPMachine/EnvManager",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/PSMPHardening_log",
+                            "log_stream_name": "PSMPMachine/PSMPHardening_log",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           }
@@ -1343,7 +1339,7 @@ Resources:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
