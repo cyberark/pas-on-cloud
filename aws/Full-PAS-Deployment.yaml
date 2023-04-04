@@ -124,6 +124,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: VaultCustomImageEmpty
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
@@ -134,6 +135,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PVWACustomImageEmpty
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -144,6 +146,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CPMCustomImageEmpty
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
@@ -154,6 +157,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMCustomImageEmpty
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
@@ -164,6 +168,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMPCustomImageEmpty
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -815,7 +820,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -901,7 +910,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -966,7 +979,11 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: !Ref PVWAAmi
+      ImageId: 
+        Fn::If:
+          - PVWACustomImageEmpty
+          - !Ref PVWAAmi
+          - !Ref PVWACustomAmi
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1059,7 +1076,11 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: !Ref CPMAmi
+      ImageId: 
+        Fn::If:
+          - CPMCustomImageEmpty
+          - !Ref CPMAmi
+          - !Ref CPMCustomAmi
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1144,7 +1165,11 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: !Ref PSMAmi
+      ImageId: 
+        Fn::If:
+          - PSMCustomImageEmpty
+          - !Ref PSMAmi
+          - !Ref PSMCustomAmi
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1219,7 +1244,11 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: !Ref PSMPAmi
+      ImageId: 
+        Fn::If:
+          - PSMPCustomImageEmpty
+          - !Ref PSMPAmi
+          - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -1352,6 +1381,11 @@ Parameters:
     Type: String
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Vault instance.
@@ -1428,6 +1462,11 @@ Parameters:
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the DR Vault instance will reside.
+  CPMCustomAmi:
+    Type: String
+    Description: Enter the CPM Image ID, if you wish to use a custom CPM image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CPMInstanceName:
     Type: String
     Description: Enter a name for the CPM instance.
@@ -1447,6 +1486,11 @@ Parameters:
   CPMInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the CPM instance will reside.
+  PVWACustomAmi:
+    Type: String
+    Description: Enter the PVWA Image ID, if you wish to use a custom PVWA image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PVWAInstanceName:
     Type: String
     Description: Enter a name for the PVWA instance.
@@ -1469,6 +1513,11 @@ Parameters:
   PVWAHostName:
     Type: String
     Description: IP or FQDN of PVWA server
+  PSMCustomAmi:
+    Type: String
+    Description: Enter the PSM Image ID, if you wish to use a custom PSM image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMInstanceName:
     Type: String
     Description: Enter a name for the PSM instance.
@@ -1487,6 +1536,11 @@ Parameters:
   PSMInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM instance will reside.
+  PSMPCustomAmi:
+    Type: String
+    Description: Enter the PSMP Image ID, if you wish to use a custom PSMP image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMPInstanceName:
     Type: String
     Description: Enter a name for the PSMP instance.
@@ -1547,6 +1601,7 @@ Metadata:
       - Label:
           default: Primary Vault and DR Vault configuration
         Parameters:
+          - VaultCustomAmi
           - VaultInstanceName
           - VaultAdminPassword
           - RetypeAdminPassword
@@ -1563,6 +1618,7 @@ Metadata:
       - Label:
           default: CPM configuration
         Parameters:
+          - CPMCustomAmi
           - CPMInstanceName
           - CPMInstanceType
           - CPMInstanceSecurityGroups
@@ -1570,6 +1626,7 @@ Metadata:
       - Label:
           default: PVWA configuration
         Parameters:
+          - PVWACustomAmi
           - PVWAInstanceName
           - PVWAInstanceType
           - PVWAInstanceSecurityGroups
@@ -1578,6 +1635,7 @@ Metadata:
       - Label:
           default: PSM configuration
         Parameters:
+          - PSMCustomAmi
           - PSMInstanceName
           - PSMInstanceType
           - PSMInstanceSecurityGroups
@@ -1585,6 +1643,7 @@ Metadata:
       - Label:
           default: PSMP configuration
         Parameters:
+          - PSMPCustomAmi
           - PSMPInstanceName
           - PSMPInstanceType
           - PSMPInstanceSecurityGroups
@@ -1604,6 +1663,8 @@ Metadata:
         default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
       VaultAdminPassword:
@@ -1630,6 +1691,8 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
+      CPMCustomAmi:
+        default: Custom CPM Image ID (Optional)
       CPMInstanceName:
         default: CPM Instance Name
       CPMInstanceType:
@@ -1638,6 +1701,8 @@ Metadata:
         default: CPM Instance Security Groups
       CPMInstanceSubnetId:
         default: CPM Instance Subnet Id
+      PVWACustomAmi:
+        default: Custom PVWA Image ID (Optional)
       PVWAInstanceName:
         default: PVWA Instance Name
       PVWAInstanceType:
@@ -1648,6 +1713,8 @@ Metadata:
         default: PVWA Instance Subnet Id
       PVWAHostName:
         default: PVWA FQDN (Optional)
+      PSMCustomAmi:
+        default: Custom PSM Image ID (Optional)
       PSMInstanceName:
         default: PSM Instance Name
       PSMInstanceType:
@@ -1656,6 +1723,8 @@ Metadata:
         default: PSM Instance Security Groups
       PSMInstanceSubnetId:
         default: PSM Instance Subnet Id
+      PSMPCustomAmi:
+        default: Custom PSMP Image ID (Optional)
       PSMPInstanceName:
         default: PSMP Instance Name
       PSMPInstanceType:
@@ -1671,6 +1740,21 @@ Conditions:
   PVWAHostNameEmpty: !Equals
     - ''
     - !Ref PVWAHostName
+  VaultCustomImageEmpty: !Equals
+    - ''
+    - !Ref VaultCustomAmi
+  PVWACustomImageEmpty: !Equals
+    - ''
+    - !Ref PVWACustomAmi
+  CPMCustomImageEmpty: !Equals
+    - ''
+    - !Ref CPMCustomAmi
+  PSMCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMCustomAmi
+  PSMPCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMPCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

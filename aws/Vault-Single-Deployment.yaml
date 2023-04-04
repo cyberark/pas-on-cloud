@@ -38,6 +38,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CustomImageEmpty
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -509,7 +510,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -603,6 +608,11 @@ Parameters:
       - Win2016
       - Win2019
     Default: Win2016
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -736,6 +746,7 @@ Metadata:
         Parameters:
           - EULA
           - WinVersion
+          - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
@@ -765,6 +776,8 @@ Metadata:
         default: License Agreement
       WinVersion:
         default: Windows Server Version
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
@@ -805,6 +818,9 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
+  CustomImageEmpty: !Equals
+    - ''
+    - !Ref VaultCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

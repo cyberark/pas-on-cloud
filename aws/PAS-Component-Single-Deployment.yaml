@@ -372,7 +372,11 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !Ref PVWAAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref PVWAAmi
+          - !Ref ComponentCustomAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -506,7 +510,11 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !Ref CPMAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref CPMAmi
+          - !Ref ComponentCustomAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -635,7 +643,11 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !Ref PSMAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref PSMAmi
+          - !Ref ComponentCustomAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -748,7 +760,11 @@ Resources:
           Value: !Ref ComponentInstanceName
       SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
       SubnetId: !Ref ComponentInstanceSubnetId
-      ImageId: !Ref PSMPAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref PSMPAmi
+          - !Ref ComponentCustomAmi
       InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -889,11 +905,16 @@ Parameters:
     Type: String
     Description: Choose the Component to install.
     AllowedValues:
-      - CPM
       - PVWA
+      - CPM
       - PSM
       - PSMP
-    Default: CPM
+    Default: PVWA
+  ComponentCustomAmi:
+    Type: String
+    Description: Enter the Component Image ID, if you wish to use a custom Component image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   ComponentInstanceName:
     Type: String
     Description: Enter a name for the PAS Component instance.
@@ -953,6 +974,7 @@ Metadata:
           default: Component configuration
         Parameters:
           - ComponentToInstall
+          - ComponentCustomAmi
           - ComponentInstanceName
           - ComponentHostName
           - ComponentInstanceType
@@ -978,6 +1000,8 @@ Metadata:
         default: Vault Admin Password
       ComponentToInstall:
         default: Component To Install
+      ComponentCustomAmi:
+        default: Custom Component Image ID (Optional)
       ComponentInstanceName:
         default: Component Instance Name
       ComponentHostName:
@@ -1003,6 +1027,9 @@ Conditions:
   CreatePSMPCondition: !Equals
     - PSMP
     - !Ref ComponentToInstall
+  CustomImageEmpty: !Equals
+    - ''
+    - !Ref ComponentCustomAmi
   DRValueEmpty: !Equals
     - ''
     - !Ref DRPrivateIP

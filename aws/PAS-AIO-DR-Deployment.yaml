@@ -109,6 +109,7 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: VaultCustomImageEmpty
   ComponentsAmi:
     Type: Custom::FindAMI
     Properties:
@@ -118,6 +119,7 @@ Resources:
       OS: !Ref WinVersion
     DependsOn:
       - LambdaDeployRole
+    Condition: ComponentsCustomImageEmpty
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -783,7 +785,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -869,7 +875,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -934,7 +944,11 @@ Resources:
           Value: !Ref 'ComponentsInstanceName'
       SecurityGroupIds: !Ref 'ComponentsInstanceSecurityGroups'
       SubnetId: !Ref 'ComponentsInstanceSubnetId'
-      ImageId: !Ref ComponentsAmi
+      ImageId: 
+        Fn::If:
+          - ComponentsCustomImageEmpty
+          - !Ref ComponentsAmi
+          - !Ref ComponentsCustomAmi
       InstanceType: !Ref 'ComponentsInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -1087,6 +1101,11 @@ Parameters:
       - Win2016
       - Win2019
     Default: Win2016
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -1182,6 +1201,11 @@ Parameters:
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the Vault DR instance will reside.
+  ComponentsCustomAmi:
+    Type: String
+    Description: Enter the Components Image ID, if you wish to use a custom Components image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   ComponentsInstanceName:
     Type: String
     Description: Enter a name for the PAS Components instance.
@@ -1234,6 +1258,7 @@ Metadata:
         Parameters:
           - EULA
           - WinVersion
+          - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
@@ -1258,6 +1283,7 @@ Metadata:
       - Label:
           default: Components Configuration
         Parameters:
+          - ComponentsCustomAmi
           - ComponentsInstanceName
           - ComponentsInstanceType
           - ComponentsInstanceSecurityGroups
@@ -1293,6 +1319,8 @@ Metadata:
         default: DR User Secret
       SecretRetype:
         default: Retype DR User Secret
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
       VaultInstanceType:
@@ -1303,6 +1331,8 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
+      ComponentsCustomAmi:
+        default: Custom Components Image ID (Optional)
       ComponentsInstanceName:
         default: Components Instance Name
       ComponentsInstanceType:
@@ -1315,6 +1345,12 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
+  VaultCustomImageEmpty: !Equals
+    - ''
+    - !Ref VaultCustomAmi
+  ComponentsCustomImageEmpty: !Equals
+    - ''
+    - !Ref ComponentsCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
