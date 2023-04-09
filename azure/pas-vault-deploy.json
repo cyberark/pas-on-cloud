@@ -147,7 +147,8 @@
       "subnetRefVault":"[concat(variables('vnetIdVault'), '/subnets/',parameters('Primary Vault Subnet Name'))]",
       "networkInterfaceName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "publicIpAddressName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
-      "vaultName":"[parameters('Key Vault Name')]"
+      "vaultName":"[parameters('Key Vault Name')]",
+      "tempVar": null
    },
    "resources":[
       {
@@ -226,7 +227,7 @@
          "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "zones": [
-            "[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), parameters('Availability Zone'))]"
+            "[if(equals(parameters('Availability Zone'), 'N/A'), variables('tempVar'), parameters('Availability Zone'))]"
          ],
          "identity":{
             "type":"SystemAssigned"
