@@ -78,7 +78,8 @@
             "allowedValues": [
                 "1",
                 "2",
-                "3"
+                "3",
+                "N/A"
             ],
             "defaultValue": "2",
             "metadata":{
@@ -183,7 +184,7 @@
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "zones": [
-                "[parameters('Availability Zone')]"
+                "[if(equals(parameters('Availability Zone'), 'N/A'), array(parameters('empty')), array(parameters('Availability Zone')))]"
             ],
             "identity": {
                 "type": "SystemAssigned"
