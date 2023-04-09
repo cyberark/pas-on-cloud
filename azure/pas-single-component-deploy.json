@@ -95,8 +95,7 @@
             "allowedValues": [
                 "1",
                 "2",
-                "3",
-                "N/A"
+                "3"
             ],
             "type": "String",
             "metadata": {
@@ -171,7 +170,7 @@
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "zones": [
-                "[if(equals(parameters('Availability Zone'), 'N/A'), array(parameters('empty')), array(parameters('Availability Zone')))]"
+                "[parameters('Availability Zone')]"
             ],
             "identity": {
                 "type": "SystemAssigned"
