@@ -226,9 +226,7 @@
          "name":"[parameters('Primary Vault VM Name')]",
          "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
-         "zones": [
-            "[if(equals(parameters('Availability Zone'), 'N/A'), variables('tempVar'), parameters('Availability Zone'))]"
-         ],
+         "zones": [],
          "identity":{
             "type":"SystemAssigned"
          },
