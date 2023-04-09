@@ -119,9 +119,10 @@
          "allowedValues": [
              "1",
              "2",
-             "3"
+             "3",
+             "N/A"
          ],
-         "defaultValue": "1",
+         "defaultValue": "N/A",
          "metadata":{
             "description":"Choose the Availability Zone for the Primary Vault Deployment."
          }
@@ -225,7 +226,7 @@
          "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
          "zones": [
-               "[parameters('Availability Zone')]"
+            "[if(equals(parameters('Availability Zone'), 'N/A'), 'empty', parameters('Availability Zone'))]"
          ],
          "identity":{
             "type":"SystemAssigned"
