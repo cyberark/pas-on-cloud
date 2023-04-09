@@ -499,9 +499,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            3-ChangeHostName:
+            3-ChangeHostname:
               command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -565,6 +565,14 @@ Parameters:
     Type: String
     Description: Enter a name for the DR Vault instance.
     Default: CyberArk DR Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for the DR Vault instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault-dr
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the DR Vault instance.
@@ -578,10 +586,6 @@ Parameters:
       - m5.16xlarge
       - m5.24xlarge
     Default: m5.large
-  VaultHostName:
-    Type: String
-    Description: Enter the host name for the DR Vault instance.
-    MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the DR Vault instance.
@@ -617,7 +621,7 @@ Metadata:
         Parameters:
           - VaultInstanceName
           - VaultInstanceType
-          - VaultHostName
+          - VaultHostname
           - VaultInstanceSecurityGroups
           - DRInstanceSubnetId
     ParameterLabels:
@@ -637,8 +641,8 @@ Metadata:
         default: DR User Password
       VaultInstanceName:
         default: DR Vault Instance Name
-      VaultHostName:
-        default: DR Vault Host Name
+      VaultHostname:
+        default: DR Vault Hostname
       VaultInstanceType:
         default: DR Vault Instance Type
       VaultInstanceSecurityGroups:

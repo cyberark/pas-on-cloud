@@ -443,10 +443,10 @@ Resources:
               ignoreErrors: true
             6-addDNSSuffix:
               command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-            7-ChangeHostName:
+            7-ChangeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
-                ${ComponentHostName} -Force -Restart
+                ${ComponentHostname} -Force -Restart
               waitAfterCompletion: forever
         configServices:
           commands:
@@ -461,15 +461,11 @@ Resources:
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
                   ${VaultIpAddress} -VaultAdminUser ${VaultAdminUser} -VaultPort
-                  1858 -HostName ${InputHostname}
+                  1858 -Hostname ${ComponentHostname}
                 - VaultIpAddress: !If
                     - DRValueEmpty
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
-                  InputHostname: !If
-                    - PVWAHostNameEmpty
-                    - empty
-                    - !Sub '${PVWAHostName}'
               waitAfterCompletion: 0
             3-registration:
               command: !Sub >
@@ -619,10 +615,10 @@ Resources:
             6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: 0
-            7-ChangeHostName:
+            7-ChangeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
-                ${ComponentHostName} -Force -Restart
+                ${ComponentHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -736,10 +732,10 @@ Resources:
             3-PSMserviceConfig:
               command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
-            4-ChangeHostName:
+            4-ChangeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
-                ${ComponentHostName} -Force -Restart
+                ${ComponentHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -853,6 +849,10 @@ Resources:
                   - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
+            03-SetHostname:
+              command: !Sub >- 
+                sudo hostnamectl set-hostname --static ${ComponentHostname} && sudo reboot
+              waitAfterCompletion: forever
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
@@ -919,13 +919,14 @@ Parameters:
     Type: String
     Description: Enter a name for the PAS Component instance.
     Default: CyberArk Component
-  ComponentHostName:
+  ComponentHostname:
     Type: String
-    Description: Enter the host name for the PAS Component instance.
-    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{1,63}(?<!-))$
+    Description: Enter the hostname for the PAS Component instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
     ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
-    MaxLength: 63
-    MinLength: 1
+    MaxLength: 15
+    MinLength: 3
+    Default: pas-component
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
@@ -943,9 +944,6 @@ Parameters:
   ComponentInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet ID where the Component instance will reside.
-  PVWAHostName:
-    Type: String
-    Description: IP or FQDN of PVWA server
 Rules:
   EULAAcception:
     Assertions:
@@ -976,11 +974,10 @@ Metadata:
           - ComponentToInstall
           - ComponentCustomAmi
           - ComponentInstanceName
-          - ComponentHostName
+          - ComponentHostname
           - ComponentInstanceType
           - ComponentInstanceSecurityGroups
           - ComponentInstanceSubnetId
-          - PVWAHostName
     ParameterLabels:
       EULA:
         default: License Agreement
@@ -1004,7 +1001,7 @@ Metadata:
         default: Custom Component Image ID (Optional)
       ComponentInstanceName:
         default: Component Instance Name
-      ComponentHostName:
+      ComponentHostname:
         default: Component Host Name
       ComponentInstanceType:
         default: Component Instance Type
@@ -1012,8 +1009,6 @@ Metadata:
         default: Component Instance Security Groups
       ComponentInstanceSubnetId:
         default: Component Instance Subnet ID
-      PVWAHostName:
-        default: PVWA FQDN (Optional)
 Conditions:
   CreateCPMCondition: !Equals
     - CPM
@@ -1033,9 +1028,6 @@ Conditions:
   DRValueEmpty: !Equals
     - ''
     - !Ref DRPrivateIP
-  PVWAHostNameEmpty: !Equals
-    - ''
-    - !Ref PVWAHostName
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
