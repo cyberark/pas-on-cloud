@@ -549,6 +549,19 @@
             }
           },
           {
+            "name": "AllowRDPUserAccessIn",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "3389",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "[parameters('User Access CIDR')]",
+              "destinationAddressPrefix": "[parameters('PSM Subnet CIDR')]",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          },
+          {
             "name": "Allow1858VaultSubnetOut",
             "properties": {
               "protocol": "TCP",
@@ -641,12 +654,26 @@
               "sourcePortRange": "22",
               "destinationPortRange": "22",
               "sourceAddressPrefixes": [
-                "[parameters('User Access CIDR')]",
-                "[parameters('Administrative Access CIDR')]"
+                "[parameters('User Access CIDR')]"
               ],
               "destinationAddressPrefix": "[parameters('PSMP Subnet CIDR')]",
               "access": "Allow",
               "priority": 120,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "AllowSshAdministrativeAccessIn",
+            "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "22",
+              "destinationPortRange": "22",
+              "sourceAddressPrefixes": [
+                "[parameters('Administrative Access CIDR')]"
+              ],
+              "destinationAddressPrefix": "[parameters('PSMP Subnet CIDR')]",
+              "access": "Allow",
+              "priority": 130,
               "direction": "Inbound"
             }
           },
