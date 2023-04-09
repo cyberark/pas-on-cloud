@@ -171,7 +171,7 @@
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "zones": [
-                "[if(equals(parameters('Availability Zone'), 'N/A'), array(parameters('empty')), array(parameters('Availability Zone')))]"
+                "[if(equals(parameters('Availability Zone'), 'N/A'), 'empty', parameters('Availability Zone'))]"
             ],
             "identity": {
                 "type": "SystemAssigned"
