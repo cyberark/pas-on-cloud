@@ -137,7 +137,7 @@
                 "3",
                 "N/A"
             ],
-            "defaultValue": "N/A",
+            "defaultValue": "1",
             "metadata":{
                "description":"Choose the availability zone for the PTA VM"
             }

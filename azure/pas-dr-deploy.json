@@ -81,7 +81,7 @@
                 "3",
                 "N/A"
             ],
-            "defaultValue": "N/A",
+            "defaultValue": "2",
             "metadata":{
                "description":"Choose the Availability Zone for the Primary Vault Deployment."
             }
