@@ -91,7 +91,7 @@
             }
         },
         "Availability Zone": {
-            "defaultValue": "1",
+            "defaultValue": "N/A",
             "allowedValues": [
                 "1",
                 "2",
