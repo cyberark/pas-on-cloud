@@ -148,7 +148,7 @@
       "networkInterfaceName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "publicIpAddressName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "vaultName":"[parameters('Key Vault Name')]",
-      "tempVar": "[json('null')]"
+      "temppp":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
    },
    "resources":[
       {
@@ -226,7 +226,7 @@
          "name":"[parameters('Primary Vault VM Name')]",
          "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
-         "zones": "[json('null')]",
+         "zones": "[variables('temppp')]",
          "identity":{
             "type":"SystemAssigned"
          },
