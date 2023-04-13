@@ -105,7 +105,8 @@
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('DR Vault Vnet Name'))]",
         "subnetRefVault": "[concat(variables('vnetId'), '/subnets/',parameters('DR Vault Subnet Name'))]",
         "networkInterfaceName": "[toLower(concat(parameters('DR Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
-        "publicIpAddressName": "[toLower(concat(parameters('DR Vault VM Name'), '-', uniqueString(resourceGroup().id)))]"
+        "publicIpAddressName": "[toLower(concat(parameters('DR Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
+        "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
     },
     "resources": [
         {
@@ -183,9 +184,7 @@
             "name": "[parameters('DR Vault VM Name')]",
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
-            "zones": [
-                "[if(equals(parameters('Availability Zone'), 'N/A'), 'empty', parameters('Availability Zone'))]"
-            ],
+            "zones": "[variables('availabilityZone')]",
             "identity": {
                 "type": "SystemAssigned"
             },

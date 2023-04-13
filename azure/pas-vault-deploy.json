@@ -122,7 +122,7 @@
              "3",
              "N/A"
          ],
-         "defaultValue": "N/A",
+         "defaultValue": "1",
          "metadata":{
             "description":"Choose the Availability Zone for the Primary Vault Deployment."
          }
@@ -148,7 +148,7 @@
       "networkInterfaceName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "publicIpAddressName":"[toLower(concat(parameters('Primary Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
       "vaultName":"[parameters('Key Vault Name')]",
-      "temppp":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
+      "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
    },
    "resources":[
       {
@@ -226,7 +226,7 @@
          "name":"[parameters('Primary Vault VM Name')]",
          "apiVersion":"2022-08-01",
          "location":"[resourceGroup().location]",
-         "zones": "[variables('temppp')]",
+         "zones": "[variables('availabilityZone')]",
          "identity":{
             "type":"SystemAssigned"
          },
