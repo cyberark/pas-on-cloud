@@ -1262,6 +1262,9 @@ Resources:
           #!/bin/bash -e
           cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
           cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+          sudo hostnamectl set-hostname ${PSMPHostname}.localdomain
+          sudo sed -i 's/localhost/${PSMPHostname}/g' /etc/hosts
+          sudo reboot
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1344,10 +1347,6 @@ Resources:
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
-            03-SetHostname:
-              command: !Sub >- 
-                sudo hostnamectl set-hostname --static ${PSMPHostname} && sudo reboot
-              waitAfterCompletion: forever
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
