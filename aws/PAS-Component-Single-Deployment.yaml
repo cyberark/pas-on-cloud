@@ -768,7 +768,7 @@ Resources:
           cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
           cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
           sudo hostnamectl set-hostname ${ComponentHostname}.localdomain
-          sudo sed -i 's/localhost/${ComponentHostname}/g' /etc/hosts
+          sudo sed -i '0,/localhost localhost/ s//${ComponentHostname} ${ComponentHostname}/' /etc/hosts
           sudo reboot
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
