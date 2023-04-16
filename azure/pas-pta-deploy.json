@@ -148,7 +148,7 @@
         "subnetRefComponent": "[concat(variables('vnetId'), '/subnets/',parameters('PTA Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "publicIpAddressName": "[toLower(concat(parameters('PTA VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "checkZones":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
+        "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
     },
     "resources": [
         {
@@ -156,7 +156,7 @@
             "name": "[parameters('PTA VM Host Name')]",
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
-            "zones": "[variables('checkZones')]",
+            "zones": "[variables('availabilityZone')]",
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('PTA VM Host Name')]",

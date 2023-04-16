@@ -106,7 +106,7 @@
         "subnetRefVault": "[concat(variables('vnetId'), '/subnets/',parameters('DR Vault Subnet Name'))]",
         "networkInterfaceName": "[toLower(concat(parameters('DR Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
         "publicIpAddressName": "[toLower(concat(parameters('DR Vault VM Name'), '-', uniqueString(resourceGroup().id)))]",
-        "checkZones":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
+        "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
     },
     "resources": [
         {
@@ -184,7 +184,7 @@
             "name": "[parameters('DR Vault VM Name')]",
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
-            "zones": "[variables('checkZones')]",
+            "zones": "[variables('availabilityZone')]",
             "identity": {
                 "type": "SystemAssigned"
             },
