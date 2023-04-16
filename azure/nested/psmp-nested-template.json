@@ -41,7 +41,8 @@
         }
     },
     "variables": {
-        "GuidSubstring": "[uniqueString(parameters('guidValue'))]"
+        "guidSubstring": "[uniqueString(parameters('guidValue'))]",
+        "availabilityZone":"[if(equals(parameters('AvailabilityZone'), 'N/A'), json('null'), array(parameters('AvailabilityZone')))]"
     },
     "resources": [
         {
@@ -49,9 +50,7 @@
             "name": "[parameters('VMname')]",
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
-            "zones": [
-                "[parameters('AvailabilityZone')]"
-            ],
+            "zones": "[variables('availabilityZone')]",
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('computerName')]",
@@ -99,7 +98,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('guidSubstring'), ' ', parameters('adminUsername'))]",
                     "fileUris": []
                 }
             },
@@ -111,7 +110,7 @@
     "outputs": {
         "guidOutput": {
             "type": "string",
-            "value": "[variables('GuidSubstring')]"
+            "value": "[variables('guidSubstring')]"
         }
     }
 }
