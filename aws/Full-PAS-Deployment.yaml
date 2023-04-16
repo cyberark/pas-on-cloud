@@ -880,8 +880,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            4-restart:
-              command: powershell.exe -Command Restart-Computer
+            4-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -958,8 +959,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            3-restart:
-              command: powershell.exe -Command Restart-Computer
+            3-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname}-dr -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -1032,12 +1034,8 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${PVWAHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-                  InputHostname: !If
-                    - PVWAHostNameEmpty
-                    - empty
-                    - !Sub '${PVWAHostName}'
               waitAfterCompletion: 0
             3-registration:
               command: !Sub >
@@ -1055,8 +1053,9 @@ Resources:
             5-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: 0
-            6-restart:
-              command: powershell.exe -Command "Restart-Computer -Force"
+            6-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${PVWAHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -1145,6 +1144,10 @@ Resources:
             6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: 0
+            7-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${CPMHostname} -Force -Restart
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -1224,6 +1227,10 @@ Resources:
             3-PSMserviceConfig:
               command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
+            4-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${PSMHostname} -Force -Restart
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
@@ -1255,6 +1262,9 @@ Resources:
           #!/bin/bash -e
           cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
           cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+          sudo hostnamectl set-hostname ${PSMPHostname}.localdomain
+          sudo sed -i '0,/localhost localhost/ s//${PSMPHostname} ${PSMPHostname}/' /etc/hosts
+          sudo reboot
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1390,6 +1400,14 @@ Parameters:
     Type: String
     Description: Enter a name for the Vault instance.
     Default: CyberArk Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for Vault servers ("-dr" will be added as suffix for Vault DR).
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault
   VaultMasterPassword:
     Type: String
     Description: Enter a password for the Primary Vault Master user.
@@ -1462,30 +1480,6 @@ Parameters:
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the DR Vault instance will reside.
-  CPMCustomAmi:
-    Type: String
-    Description: Enter the CPM Image ID, if you wish to use a custom CPM image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
-    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
-  CPMInstanceName:
-    Type: String
-    Description: Enter a name for the CPM instance.
-    Default: CyberArk CPM
-  CPMInstanceType:
-    Type: String
-    Description: Select the instance type of the CPM instance.
-    AllowedValues:
-      - c5.large
-      - c5.xlarge
-      - c5.2xlarge
-      - c5.4xlarge
-    Default: c5.large
-  CPMInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the CPM instance.
-  CPMInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the CPM instance will reside.
   PVWACustomAmi:
     Type: String
     Description: Enter the PVWA Image ID, if you wish to use a custom PVWA image.
@@ -1495,6 +1489,14 @@ Parameters:
     Type: String
     Description: Enter a name for the PVWA instance.
     Default: CyberArk PVWA
+  PVWAHostname:
+    Type: String
+    Description: Enter the hostname for PVWA server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: pvwa
   PVWAInstanceType:
     Type: String
     Description: Select the instance type of the PVWA instance.
@@ -1510,9 +1512,38 @@ Parameters:
   PVWAInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PVWA instance will reside.
-  PVWAHostName:
+  CPMCustomAmi:
     Type: String
-    Description: IP or FQDN of PVWA server
+    Description: Enter the CPM Image ID, if you wish to use a custom CPM image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
+  CPMInstanceName:
+    Type: String
+    Description: Enter a name for the CPM instance.
+    Default: CyberArk CPM
+  CPMHostname:
+    Type: String
+    Description: Enter the hostname for CPM server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: cpm
+  CPMInstanceType:
+    Type: String
+    Description: Select the instance type of the CPM instance.
+    AllowedValues:
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+    Default: c5.large
+  CPMInstanceSecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Description: Assign Security Groups to the CPM instance.
+  CPMInstanceSubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: Select the Subnet Id where the CPM instance will reside.
   PSMCustomAmi:
     Type: String
     Description: Enter the PSM Image ID, if you wish to use a custom PSM image.
@@ -1522,6 +1553,14 @@ Parameters:
     Type: String
     Description: Enter a name for the PSM instance.
     Default: CyberArk PSM
+  PSMHostname:
+    Type: String
+    Description: Enter the hostname for PSM server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: psm
   PSMInstanceType:
     Type: String
     Description: Select the instance type of the PSM instance.
@@ -1545,6 +1584,14 @@ Parameters:
     Type: String
     Description: Enter a name for the PSMP instance.
     Default: CyberArk PSMP
+  PSMPHostname:
+    Type: String
+    Description: Enter the hostname for PSMP server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: psmp
   PSMPInstanceType:
     Type: String
     Description: Select the instance type of the PSMP instance.
@@ -1603,6 +1650,7 @@ Metadata:
         Parameters:
           - VaultCustomAmi
           - VaultInstanceName
+          - VaultHostname
           - VaultAdminPassword
           - RetypeAdminPassword
           - VaultMasterPassword
@@ -1616,27 +1664,29 @@ Metadata:
           - VaultInstanceSubnetId
           - DRInstanceSubnetId
       - Label:
-          default: CPM configuration
-        Parameters:
-          - CPMCustomAmi
-          - CPMInstanceName
-          - CPMInstanceType
-          - CPMInstanceSecurityGroups
-          - CPMInstanceSubnetId
-      - Label:
           default: PVWA configuration
         Parameters:
           - PVWACustomAmi
           - PVWAInstanceName
+          - PVWAHostname
           - PVWAInstanceType
           - PVWAInstanceSecurityGroups
           - PVWAInstanceSubnetId
-          - PVWAHostName
+      - Label:
+          default: CPM configuration
+        Parameters:
+          - CPMCustomAmi
+          - CPMInstanceName
+          - CPMHostname
+          - CPMInstanceType
+          - CPMInstanceSecurityGroups
+          - CPMInstanceSubnetId
       - Label:
           default: PSM configuration
         Parameters:
           - PSMCustomAmi
           - PSMInstanceName
+          - PSMHostname
           - PSMInstanceType
           - PSMInstanceSecurityGroups
           - PSMInstanceSubnetId
@@ -1645,6 +1695,7 @@ Metadata:
         Parameters:
           - PSMPCustomAmi
           - PSMPInstanceName
+          - PSMPHostname
           - PSMPInstanceType
           - PSMPInstanceSecurityGroups
           - PSMPInstanceSubnetId
@@ -1667,6 +1718,8 @@ Metadata:
         default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
+      VaultHostname:
+        default: Vault Hostname
       VaultAdminPassword:
         default: Primary Vault Admin Password
       RetypeAdminPassword:
@@ -1691,32 +1744,36 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
-      CPMCustomAmi:
-        default: Custom CPM Image ID (Optional)
-      CPMInstanceName:
-        default: CPM Instance Name
-      CPMInstanceType:
-        default: CPM Instance Type
-      CPMInstanceSecurityGroups:
-        default: CPM Instance Security Groups
-      CPMInstanceSubnetId:
-        default: CPM Instance Subnet Id
       PVWACustomAmi:
         default: Custom PVWA Image ID (Optional)
       PVWAInstanceName:
         default: PVWA Instance Name
+      PVWAHostname:
+        default: PVWA Hostname
       PVWAInstanceType:
         default: PVWA Instance Type
       PVWAInstanceSecurityGroups:
         default: PVWA Instance Security Groups
       PVWAInstanceSubnetId:
         default: PVWA Instance Subnet Id
-      PVWAHostName:
-        default: PVWA FQDN (Optional)
+      CPMCustomAmi:
+        default: Custom CPM Image ID (Optional)
+      CPMInstanceName:
+        default: CPM Instance Name
+      CPMHostname:
+        default: CPM Hostname
+      CPMInstanceType:
+        default: CPM Instance Type
+      CPMInstanceSecurityGroups:
+        default: CPM Instance Security Groups
+      CPMInstanceSubnetId:
+        default: CPM Instance Subnet Id
       PSMCustomAmi:
         default: Custom PSM Image ID (Optional)
       PSMInstanceName:
         default: PSM Instance Name
+      PSMHostname:
+        default: PSM Hostname
       PSMInstanceType:
         default: PSM Instance Type
       PSMInstanceSecurityGroups:
@@ -1727,6 +1784,8 @@ Metadata:
         default: Custom PSMP Image ID (Optional)
       PSMPInstanceName:
         default: PSMP Instance Name
+      PSMPHostname:
+        default: PSMP Hostname
       PSMPInstanceType:
         default: PSMP Instance Type
       PSMPInstanceSecurityGroups:
@@ -1737,9 +1796,6 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-  PVWAHostNameEmpty: !Equals
-    - ''
-    - !Ref PVWAHostName
   VaultCustomImageEmpty: !Equals
     - ''
     - !Ref VaultCustomAmi

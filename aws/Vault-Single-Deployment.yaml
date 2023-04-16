@@ -580,10 +580,10 @@ Resources:
               waitAfterCompletion: 0
         configSignal:
           commands:
-            4-changeHostName:
+            4-changeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
-                ${VaultHostName} -Force -Restart
+                ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
             0-signalCompletion:
               command: !Sub >
@@ -687,6 +687,14 @@ Parameters:
     Type: String
     Description: Enter a name for the Primary Vault instance.
     Default: CyberArk Primary Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for the Primary Vault instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the Primary Vault instance.
@@ -700,13 +708,6 @@ Parameters:
       - m5.16xlarge
       - m5.24xlarge
     Default: m5.large
-  VaultHostName:
-    Type: String
-    Description: Enter the host name for the Primary Vault instance.
-    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{4,63}(?<!-))$
-    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
-    MaxLength: 63
-    MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Primary Vault instance.
@@ -768,7 +769,7 @@ Metadata:
         Parameters:
           - VaultInstanceName
           - VaultInstanceType
-          - VaultHostName
+          - VaultHostname
           - VaultInstanceSecurityGroups
           - VaultInstanceSubnetId
     ParameterLabels:
@@ -798,8 +799,8 @@ Metadata:
         default: Retype Primary Vault Admin Password
       VaultInstanceName:
         default: Primary Vault Instance Name
-      VaultHostName:
-        default: Primary Vault Host Name
+      VaultHostname:
+        default: Primary Vault Hostname
       VaultInstanceType:
         default: Primary Vault Instance Type
       VaultInstanceSecurityGroups:

@@ -845,8 +845,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            4-restart:
-              command: powershell.exe -Command Restart-Computer
+            4-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -923,8 +924,9 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            3-restart:
-              command: powershell.exe -Command Restart-Computer
+            3-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname}-dr -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
@@ -1075,8 +1077,9 @@ Resources:
               waitAfterCompletion: 0
         configSignal:
           commands:
-            98-restart:
-              command: powershell.exe -Command "Restart-Computer -Force"
+            98-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${ComponentsHostname} -Force -Restart
               waitAfterCompletion: forever
             99-SignalCompletion:
               command: !Sub >
@@ -1126,10 +1129,6 @@ Parameters:
     Type: String
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
-  VaultInstanceName:
-    Type: String
-    Description: Enter a name for the Vault instance.
-    Default: CyberArk Vault
   VaultMasterPassword:
     Type: String
     Description: Enter a password for the Primary Vault Master user.
@@ -1183,6 +1182,18 @@ Parameters:
     Type: String
     Description: Retype the secret string for the DR User.
     NoEcho: true
+  VaultInstanceName:
+    Type: String
+    Description: Enter a name for the Vault instance.
+    Default: CyberArk Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for Vault servers ("-dr" will be added as suffix for Vault DR).
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the Vault instance.
@@ -1210,6 +1221,14 @@ Parameters:
     Type: String
     Description: Enter a name for the PAS Components instance.
     Default: CyberArk Components
+  ComponentsHostname:
+    Type: String
+    Description: Enter the hostname for the PAS Components instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: pas-components
   ComponentsInstanceType:
     Type: String
     Description: Select the instance type of the PAS Components instance.
@@ -1267,7 +1286,6 @@ Metadata:
       - Label:
           default: Vault and DR Configuration
         Parameters:
-          - VaultInstanceName
           - VaultAdminPassword
           - RetypeAdminPassword
           - VaultMasterPassword
@@ -1276,6 +1294,8 @@ Metadata:
           - RetypeDRPassword
           - Secret
           - SecretRetype
+          - VaultInstanceName
+          - VaultHostname
           - VaultInstanceType
           - VaultInstanceSecurityGroups
           - VaultInstanceSubnetId
@@ -1285,6 +1305,7 @@ Metadata:
         Parameters:
           - ComponentsCustomAmi
           - ComponentsInstanceName
+          - ComponentsHostname
           - ComponentsInstanceType
           - ComponentsInstanceSecurityGroups
           - ComponentsInstanceSubnetId
@@ -1323,6 +1344,8 @@ Metadata:
         default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
+      VaultHostname:
+        default: Vault Hostname
       VaultInstanceType:
         default: Primary Vault and Vault DR Instance Type
       VaultInstanceSecurityGroups:
@@ -1335,6 +1358,8 @@ Metadata:
         default: Custom Components Image ID (Optional)
       ComponentsInstanceName:
         default: Components Instance Name
+      ComponentsHostname:
+        default: Components Hostname
       ComponentsInstanceType:
         default: Components Instance Type
       ComponentsInstanceSecurityGroups:
