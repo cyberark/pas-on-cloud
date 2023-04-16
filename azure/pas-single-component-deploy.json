@@ -109,7 +109,7 @@
         "subnetRefComponent": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet')), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
         "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "checkZones":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
+        "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
     },
     "resources": [
         {
@@ -157,7 +157,7 @@
                         "value": "[parameters('Vault Private IP')]"
                     },
                     "AvailabilityZone": {
-                        "value": "[parameters('Availability Zone')]"
+                        "value": "[variables('availabilityZone')]"
                     }
                 }
             },
@@ -171,7 +171,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
-            "zones": "[variables('checkZones')]",
+            "zones": "[variables('availabilityZone')]",
             "identity": {
                 "type": "SystemAssigned"
             },
