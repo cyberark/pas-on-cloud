@@ -881,15 +881,15 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: !Ref PTAInstanceName
-      SecurityGroupIds: !Ref PTAInstanceSecurityGroups
-      SubnetId: !Ref PTAInstanceSubnetId
+          Value: !Ref ComponentInstanceName
+      SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
+      SubnetId: !Ref ComponentInstanceSubnetId
       ImageId: 
         Fn::If:
           - CustomImageEmpty
           - !Ref PTAAmi
           - !Ref ComponentCustomAmi
-      InstanceType: !Ref PTAInstanceType
+      InstanceType: !Ref ComponentInstanceType
       UserData: !Base64
         'Fn::Sub': |
           #!/bin/bash -e
@@ -1037,7 +1037,7 @@ Parameters:
     Default: Decline
   WinVersion:
     Type: String
-    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
+    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP/PTA).
     AllowedValues:
       - Win2016
       - Win2019
