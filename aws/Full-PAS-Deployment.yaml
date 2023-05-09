@@ -1337,13 +1337,15 @@ Resources:
               command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_psmp:
           commands:
+            00-GetIMDSv2Token:
+              command: TOKEN=$(`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 3600"`)
             01-PSMPdeploy:
               command:
                 'Fn::Sub':
                   - >-
                     /opt/CD-Image/register-arguments.sh
-                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
+                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" 
+                    $(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id) ec2-user
                   - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
