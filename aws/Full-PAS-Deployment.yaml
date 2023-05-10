@@ -1338,7 +1338,8 @@ Resources:
         install_psmp:
           commands:            
             01-PSMPdeploy:
-              command:
+              command: !Sub 
+                - >-
                   TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
                   -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
                   /opt/CD-Image/register-arguments.sh Administrator
