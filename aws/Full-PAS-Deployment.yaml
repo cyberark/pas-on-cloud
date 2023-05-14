@@ -1377,7 +1377,7 @@ Resources:
       SubnetId: !Ref PTAInstanceSubnetId
       ImageId: 
         Fn::If:
-          - CustomImageEmpty
+          - PTACustomImageEmpty
           - !Ref PTAAmi
           - !Ref PTACustomAmi
       InstanceType: !Ref PTAInstanceType
