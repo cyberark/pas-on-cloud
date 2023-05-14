@@ -1460,7 +1460,7 @@ Resources:
           commands:
             01-executeptaconfigurationscript: 
               command: !Sub >-
-                sudo /tmp/register.sh aws "${VaultPrivateIP}" "${PVWADNSRecord}" "${VaultAdminUser}" "${StoreAdminPassword.SsmId}" ${AWS::Region} "${DRPrivateIP}"
+                sudo /tmp/register.sh aws "${VaultMachine.PrivateIp}" "${PVWADNSRecord}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultDRMachine.PrivateIp}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
