@@ -1474,11 +1474,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref VaultHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt VaultMachine.PrivateIp
       TTL: '900'
@@ -1488,11 +1487,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref VaultHostname
-          - '-dr.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '-dr.pas.local'
       ResourceRecords:
       - !GetAtt VaultDRMachine.PrivateIp
       TTL: '900'
@@ -1502,11 +1500,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref PVWAHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref PVWAHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt PVWAMachine.PrivateIp
       TTL: '900'
@@ -1516,11 +1513,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref CPMHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref CPMHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt CPMMachine.PrivateIp
       TTL: '900'
@@ -1530,11 +1526,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref PSMHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref PSMHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt PSMMachine.PrivateIp
       TTL: '900'
@@ -1544,11 +1539,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref PSMPHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref PSMPHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt PSMPMachine.PrivateIp
       TTL: '900'
@@ -1558,11 +1552,10 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref PASHostedZoneId
-      Name: 
-      - !Join
-        - ''
-        - - !Ref PTAHostname
-          - '.pas.local'
+      Name: !Join
+      - ''
+      - - !Ref PTAHostname
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt PTAMachine.PrivateIp
       TTL: '900'
