@@ -1336,7 +1336,7 @@ Resources:
             02_start_awslogs:
               command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_psmp:
-          commands:            
+          commands:
             01-PSMPdeploy:
               command: !Sub 
                 - >-
