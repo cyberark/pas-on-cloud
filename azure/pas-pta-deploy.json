@@ -14,43 +14,6 @@
                 "description": "I have read and agreed to the Terms and Conditions."
             }
         },
-        "PTA Storage Account Name":{
-            "type":"String",
-            "metadata":{
-               "description":"Enter the name of the storage account that contains the license."
-            }
-         },
-         "Storage Container Name":{
-            "type":"String",
-            "metadata":{
-               "description":"Enter the name of the container in the PTA storage account that contains the license."
-            }
-         },
-         "PTA Storage Account Access Key":{
-            "type":"SecureString",
-            "metadata":{
-               "description":"Enter the access key of the PTA storage account that contains the license and public key."
-            }
-         },
-         "License File":{
-            "defaultValue":"license.xml",
-            "type":"String",
-            "metadata":{
-               "description":"Enter the name of the PTA license file in the container. Note: This field is case sensitive"
-            }
-         },
-         "PTA Server Time Zone":{
-            "type":"String",
-            "metadata":{
-            "Description":"Enter the time zone of the PTA Server. https://cyberarkdocu.azurewebsites.net/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Appendix-B-Time-Zones.htm "
-            }
-         },
-         "Vault Time Zone":{
-            "type":"String",
-            "metadata":{
-            "Description":"Enter the time zone of the Vault Server."
-            }
-         },
          "PVWA Server Name":{
             "type":"String",
             "metadata":{
@@ -196,7 +159,7 @@
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
-                "displayName": "config-get-license-to-place"
+                "displayName": "register-to-vault"
             },
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -207,7 +170,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'))]",
+                    "commandToExecute": "[concat('. /tmp/register.sh azure ', parameters('Vault Private IP'), ' ', parameters('PVWA Server Name'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'))]",
                     "fileUris": []
                 }
             },
@@ -222,7 +185,7 @@
             "apiVersion": "2022-08-01",
             "location": "[resourceGroup().location]",
             "tags": {
-                "displayName": "config-get-license-to-place"
+                "displayName": "register-to-vault"
             },
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -233,7 +196,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/tmp/download-license.sh ', parameters('PTA Storage Account Name'), ' ', parameters('PTA Storage Account Access Key'), ' ',  parameters('Storage Container Name'),' ', parameters('License File'), ' ', '/opt/tomcat/diamond-resources/license.xml', ' ', '&&', ' ','. /tmp/register.sh ', parameters('Vault Private IP'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'),' ', parameters('PVWA Server Name'), ' ', parameters('Vault Time Zone'), ' ', parameters('PTA Server Time Zone'), ' ', parameters('Vault DR Private IP'))]",
+                    "commandToExecute": "[concat('. /tmp/register.sh azure ', parameters('Vault Private IP'), ' ', parameters('PVWA Server Name'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'), ' ', parameters('Vault DR Private IP'))]",
                     "fileUris": []
                 }
             },

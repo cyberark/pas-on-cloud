@@ -127,6 +127,17 @@ Resources:
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+  PTAAmi:
+    Type: Custom::FindAMI
+    Condition: CreatePTACondition
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.0"
+      Component: "PTA"
+      OS: "RHEL-8"
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
   StoreAdminPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Properties:
@@ -161,9 +172,14 @@ Resources:
             - !GetAtt
               - PSMMachine
               - PrivateIp
-            - !GetAtt
-              - PSMPMachine
-              - PrivateIp
+            - !If
+              - CreatePSMPCondition
+              - !GetAtt
+                - PSMPMachine
+                - PrivateIp
+              - !GetAtt
+                - PTAMachine
+                - PrivateIp
   LambdaDeployRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -863,6 +879,172 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
+  PTAMachine:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref ComponentInstanceName
+      SecurityGroupIds: !Ref ComponentInstanceSecurityGroups
+      SubnetId: !Ref ComponentInstanceSubnetId
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref PTAAmi
+          - !Ref ComponentCustomAmi
+      InstanceType: !Ref ComponentInstanceType
+      UserData: !Base64
+        'Fn::Sub': |
+          #!/bin/bash -e
+          cfn-init -v --stack ${AWS::StackId} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          install_all:
+            - install_logs
+            - install_pta
+        install_logs:
+          files:
+            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
+              content: !Sub |
+                {
+                  "agent": {
+                    "metrics_collection_interval": 10,
+                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init-output",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cfn-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/opt/tomcat/logs/ptaAutomaticConfiguration.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/ptaAutomaticConfiguration",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                                                    {
+                            "file_path": "/opt/tomcat/logs/diamond.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/diamond",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: '000444'
+              owner: root
+              group: root
+          commands:
+            01_install_cloudwatch_agent:
+              command: sudo rpm -U https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            02_start_cloudwatch_agent:
+              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+        install_pta:
+          commands:
+            01-executeptaconfigurationscript: 
+              command: !Sub >-
+                sudo /tmp/register.sh aws "${VaultPrivateIP}" "${PVWADNSRecord}" "${VaultAdminUser}" "${StoreAdminPassword.SsmId}" ${AWS::Region} "${DRPrivateIP}"
+              command: !Sub >-
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+    Condition: CreatePTACondition
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    DeletionPolicy: Retain
+  PVWADNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PVWAMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    Condition: CreatePVWACondition
+  CPMDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt CPMMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    Condition: CreateCPMCondition
+  PSMDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PSMMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    Condition: CreatePSMCondition
+  PSMPDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PSMPMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    Condition: CreatePSMPCondition
+  PTADNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PTAMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    Condition: CreatePTACondition
 Parameters:
   EULA:
     Type: String
@@ -873,7 +1055,7 @@ Parameters:
     Default: Decline
   WinVersion:
     Type: String
-    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP).
+    Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP/PTA).
     AllowedValues:
       - Win2016
       - Win2019
@@ -887,6 +1069,9 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
+  PASHostedZoneId:
+    Type: 'AWS::Route53::HostedZone::Id'
+    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultPrivateIP:
     Type: String
     Description: Enter the IP of the Primary Vault instance.
@@ -911,6 +1096,7 @@ Parameters:
       - CPM
       - PSM
       - PSMP
+      - PTA
     Default: PVWA
   ComponentCustomAmi:
     Type: String
@@ -929,6 +1115,9 @@ Parameters:
     MaxLength: 15
     MinLength: 3
     Default: pas-component
+  PVWAPrivateDNS:
+    Type: String
+    Description: Enter the private DNS name of the PVWA instance.
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
@@ -963,6 +1152,7 @@ Metadata:
           - WinVersion
           - CyberarkAccountId
           - KeyName
+          - PASHostedZoneId
       - Label:
           default: Primary Vault and DR information
         Parameters:
@@ -977,6 +1167,7 @@ Metadata:
           - ComponentCustomAmi
           - ComponentInstanceName
           - ComponentHostname
+          - PVWAPrivateDNS
           - ComponentInstanceType
           - ComponentInstanceSecurityGroups
           - ComponentInstanceSubnetId
@@ -989,6 +1180,8 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
+      PASHostedZoneId:
+        default: PAS Hosted Zone Id
       VaultPrivateIP:
         default: Primary Vault Private IP
       DRPrivateIP:
@@ -1005,6 +1198,8 @@ Metadata:
         default: Component Instance Name
       ComponentHostname:
         default: Component Host Name
+      PVWAPrivateDNS:
+        default: PVWA instance private DNS name (required only for PTA)
       ComponentInstanceType:
         default: Component Instance Type
       ComponentInstanceSecurityGroups:
@@ -1023,6 +1218,9 @@ Conditions:
     - !Ref ComponentToInstall
   CreatePSMPCondition: !Equals
     - PSMP
+    - !Ref ComponentToInstall
+  CreatePTACondition: !Equals
+    - PTA
     - !Ref ComponentToInstall
   CustomImageEmpty: !Equals
     - ''
