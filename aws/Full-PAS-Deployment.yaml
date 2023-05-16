@@ -1338,13 +1338,16 @@ Resources:
         install_psmp:
           commands:
             01-PSMPdeploy:
-              command:
-                'Fn::Sub':
-                  - >-
-                    /opt/CD-Image/register-arguments.sh
-                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
-                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+              command: !Sub 
+                - >-
+                  TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
+                  -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
+                  /opt/CD-Image/register-arguments.sh Administrator
+                  "${StoreAdminPassword.SsmId}" ${AWS::Region}
+                  "${VaultIpAddress}"  $(curl -H
+                  "X-aws-ec2-metadata-token:$TOKEN" -v
+                  http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
