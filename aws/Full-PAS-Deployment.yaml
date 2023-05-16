@@ -831,7 +831,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: 
+      ImageId:
         Fn::If:
           - VaultCustomImageEmpty
           - !Ref VaultAmi
@@ -922,7 +922,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: 
+      ImageId:
         Fn::If:
           - VaultCustomImageEmpty
           - !Ref VaultAmi
@@ -984,6 +984,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultMachine
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -992,7 +994,7 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: 
+      ImageId:
         Fn::If:
           - PVWACustomImageEmpty
           - !Ref PVWAAmi
@@ -1078,6 +1080,8 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultDRMachine
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1086,7 +1090,7 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: 
+      ImageId:
         Fn::If:
           - CPMCustomImageEmpty
           - !Ref CPMAmi
@@ -1179,7 +1183,7 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: 
+      ImageId:
         Fn::If:
           - PSMCustomImageEmpty
           - !Ref PSMAmi
@@ -1253,7 +1257,7 @@ Resources:
         Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
-      - CPMMachine
+      - PVWAMachine
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1262,7 +1266,7 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: 
+      ImageId:
         Fn::If:
           - PSMPCustomImageEmpty
           - !Ref PSMPAmi
@@ -1375,7 +1379,7 @@ Resources:
           Value: !Ref PTAInstanceName
       SecurityGroupIds: !Ref PTAInstanceSecurityGroups
       SubnetId: !Ref PTAInstanceSubnetId
-      ImageId: 
+      ImageId:
         Fn::If:
           - PTACustomImageEmpty
           - !Ref PTAAmi
