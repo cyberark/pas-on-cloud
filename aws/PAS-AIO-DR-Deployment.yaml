@@ -1087,7 +1087,7 @@ Resources:
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT30M
     DeletionPolicy: Retain
 Parameters:
   EULA:

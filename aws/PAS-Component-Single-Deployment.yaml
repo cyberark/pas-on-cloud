@@ -512,7 +512,7 @@ Resources:
     Condition: CreatePVWACondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
     DeletionPolicy: Retain
   CPMMachine:
     Type: 'AWS::EC2::Instance'
@@ -645,7 +645,7 @@ Resources:
     Condition: CreateCPMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
     DeletionPolicy: Retain
   PSMMachine:
     Type: 'AWS::EC2::Instance'
@@ -762,7 +762,7 @@ Resources:
     Condition: CreatePSMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
     DeletionPolicy: Retain
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
