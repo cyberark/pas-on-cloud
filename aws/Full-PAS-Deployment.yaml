@@ -228,6 +228,8 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
+      - CPMMachine
+      - PSMPMachine
       - PTAMachine
   CleanDRPassword:
     Type: 'AWS::CloudFormation::CustomResource'
