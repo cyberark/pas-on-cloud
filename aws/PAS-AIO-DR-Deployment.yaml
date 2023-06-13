@@ -117,6 +117,7 @@ Resources:
       Version: "13.2"
       Component: "Components"
       OS: !Ref WinVersion
+      OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
     Condition: ComponentsCustomImageEmpty
