@@ -8,17 +8,11 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 | PAS-network-environment-PrivateLink | Creation of a PrivateLink network environment to support the Full-PAS-Deployment template deployment |
 | Vault-Single-Deployment | Deploying a new primary Vault instance in an existing network environment |
 | DRVault-Single-Deployment | Deploying a new DR Vault in an existing network environment |
-| PAS-Component-Single-Deployment | Deploying a single PAS component CPM, PVWA, PSM or PSMP instance in an existing network environment |
-| PTA-Single-Deployment | Deploying a new PTA server in an existing network environment |
-| Full-PAS-Deployment | Deploying a full PAS environment, where each component is deployed in a separated instance (Vault, DR Vault, PVWA, CPM, PSM and PSMP) |
+| PAS-Component-Single-Deployment | Deploying a single PAS component CPM, PVWA, PSM, PSMP or PTA instance in an existing network environment |
+| Full-PAS-Deployment | Deploying a full PAS environment, where each component is deployed in a separated instance (Vault, DR Vault, PVWA, CPM, PSM, PSMP and PTA) |
 | PAS-AIO-DR-Deployment | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM, Vault instance and DR Vault instance |
 
 ## In order to enable PTA after successful installation please do the below:
 
-1. Manually add the PTA Server entry to the hosts file in the PVWA server:
-
-        Edit C:\Windows\System32\drivers\etc\hosts and add to the file:
-            <PTA-IP>      PTAServer
-
-2. If you are using self sign certificate, upload PTA self-sign certificate to PVWA server following this:
+If you are using self sign certificate, upload PTA self-sign certificate to PVWA server following this:
 https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Validating-Self-signed-Certificate-Browser.htm?tocpath=Installation%7CInstall%20PAS%7CInstall%20PTA%7CPTA%20Server%7CPTA%20Certificate%20Procedures%7C_____2

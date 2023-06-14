@@ -31,7 +31,7 @@ Parameters:
 | Parameter Name          | Required | Default              | Comments |
 |-------------------------|----------|----------------------|----------|
 | location                | Yes      | None                 |          |
-| release                 | No       | **v13.0**            |          |
+| release                 | No       | **v13.2**            |          |
 | winVersion              | No       | **win2016**          |          |
 | storageName             | No       | **cyberarkimages**   |          |
 | containerName           | No       | **cyberarkimages**   |          |

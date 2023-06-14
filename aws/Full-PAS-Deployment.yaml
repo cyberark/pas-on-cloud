@@ -118,52 +118,68 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
+      Version: "13.2"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: VaultCustomImageEmpty
   PVWAAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
+      Version: "13.2"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PVWACustomImageEmpty
   CPMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
+      Version: "13.2"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CPMCustomImageEmpty
   PSMAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
+      Version: "13.2"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMCustomImageEmpty
   PSMPAmi:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
-      Component: "PSM SSH Proxy"
+      Version: "13.2"
+      Component: "PSMP"
       OS: "RHEL-8"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: PSMPCustomImageEmpty
+  PTAAmi:
+    Type: Custom::FindAMI
+    Properties:
+      ServiceToken: !GetAtt GetLatestAMILambda.Arn
+      Version: "13.2"
+      Component: "PTA"
+      OS: "RHEL-8"
+      OwnerAccountId: !Ref CyberarkAccountId
+    DependsOn:
+      - LambdaDeployRole
+    Condition: PTACustomImageEmpty
   StoreMasterPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -212,7 +228,9 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - StorePasswordLambda
+      - CPMMachine
       - PSMPMachine
+      - PTAMachine
   CleanDRPassword:
     Type: 'AWS::CloudFormation::CustomResource'
     Version: '1.0'
@@ -815,7 +833,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId:
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -847,6 +869,8 @@ Resources:
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-download:
@@ -869,14 +893,15 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            4-restart:
-              command: powershell.exe -Command Restart-Computer
+            4-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -899,7 +924,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId:
+        Fn::If:
+          - VaultCustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -931,6 +960,8 @@ Resources:
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 0
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-postInstall:
@@ -941,19 +972,22 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            3-restart:
-              command: powershell.exe -Command Restart-Computer
+            3-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname}-dr -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultMachine
   PVWAMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -962,7 +996,11 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId: !Ref PVWAAmi
+      ImageId:
+        Fn::If:
+          - PVWACustomImageEmpty
+          - !Ref PVWAAmi
+          - !Ref PVWACustomAmi
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -999,6 +1037,8 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
               ignoreErrors: true
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-configurePVWAService:
@@ -1009,12 +1049,8 @@ Resources:
                 - >-
                   powershell.exe -File
                   C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${InputHostname}
+                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${PVWAHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-                  InputHostname: !If
-                    - PVWAHostNameEmpty
-                    - empty
-                    - !Sub '${PVWAHostName}'
               waitAfterCompletion: 0
             3-registration:
               command: !Sub >
@@ -1032,19 +1068,22 @@ Resources:
             5-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: 0
-            6-restart:
-              command: powershell.exe -Command "Restart-Computer -Force"
+            6-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${PVWAHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT25M
     DeletionPolicy: Retain
+    DependsOn:
+      - VaultDRMachine
   CPMMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1053,7 +1092,11 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId: !Ref CPMAmi
+      ImageId:
+        Fn::If:
+          - CPMCustomImageEmpty
+          - !Ref CPMAmi
+          - !Ref CPMCustomAmi
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1089,6 +1132,8 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
               ignoreErrors: true
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-configuration:
@@ -1116,15 +1161,19 @@ Resources:
             6-CPMSserviceConfig:
               command: sc config "CyberArk Central Policy Manager Scanner" start=auto
               waitAfterCompletion: 0
+            7-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${CPMHostname} -Force -Restart
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT25M
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
@@ -1136,7 +1185,11 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId: !Ref PSMAmi
+      ImageId:
+        Fn::If:
+          - PSMCustomImageEmpty
+          - !Ref PSMAmi
+          - !Ref PSMCustomAmi
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1171,6 +1224,8 @@ Resources:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
               ignoreErrors: true
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-configuration:
@@ -1189,18 +1244,22 @@ Resources:
             3-PSMserviceConfig:
               command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
+            4-ChangeHostname:
+              command: !Sub >
+                powershell.exe -Command Rename-Computer -NewName ${PSMHostname} -Force -Restart
+              waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT25M
     DeletionPolicy: Retain
     DependsOn:
-      - CPMMachine
+      - PVWAMachine
   PSMPMachine:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -1209,17 +1268,20 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId: !Ref PSMPAmi
+      ImageId:
+        Fn::If:
+          - PSMPCustomImageEmpty
+          - !Ref PSMPAmi
+          - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
-        'Fn::Sub': >
+        'Fn::Sub': |
           #!/bin/bash -e
-
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource
-          PSMPMachine --configsets install_all --region ${AWS::Region}
-
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource
-          PSMPMachine --region ${AWS::Region}
+          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+          sudo hostnamectl set-hostname ${PSMPHostname}.localdomain
+          sudo sed -i '0,/localhost localhost/ s//${PSMPHostname} ${PSMPHostname}/' /etc/hosts
+          sudo reboot
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
     Metadata:
@@ -1245,35 +1307,35 @@ Resources:
                           {
                             "file_path": "/var/log/cloud-init.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cloud-init",
+                            "log_stream_name": "PSMPMachine/cloud-init",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/log/cloud-init-output.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cloud-init-output",
+                            "log_stream_name": "PSMPMachine/cloud-init-output",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/log/cfn-init.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/cfn-init",
+                            "log_stream_name": "PSMPMachine/cfn-init",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/tmp/temp/EnvManager.log",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/EnvManager",
+                            "log_stream_name": "PSMPMachine/EnvManager",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           },
                           {
                             "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
                             "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMSSHMachine/PSMPHardening_log",
+                            "log_stream_name": "PSMPMachine/PSMPHardening_log",
                             "timezone": "Local",
                             "timestamp_format": "%Y-%m-%dT%H:%M:%S"
                           }
@@ -1293,24 +1355,221 @@ Resources:
         install_psmp:
           commands:
             01-PSMPdeploy:
-              command:
-                'Fn::Sub':
-                  - >-
-                    /opt/CD-Image/register-arguments.sh
-                    Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
-                    http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
-                  - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+              command: !Sub 
+                - >-
+                  TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
+                  -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
+                  /opt/CD-Image/register-arguments.sh Administrator
+                  "${StoreAdminPassword.SsmId}" ${AWS::Region}
+                  "${VaultIpAddress}"  $(curl -H
+                  "X-aws-ec2-metadata-token:$TOKEN" -v
+                  http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
               command: !Sub >-
-                /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
     DependsOn:
       - PSMMachine
+  PTAMachine:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref PTAInstanceName
+      SecurityGroupIds: !Ref PTAInstanceSecurityGroups
+      SubnetId: !Ref PTAInstanceSubnetId
+      ImageId:
+        Fn::If:
+          - PTACustomImageEmpty
+          - !Ref PTAAmi
+          - !Ref PTACustomAmi
+      InstanceType: !Ref PTAInstanceType
+      UserData: !Base64
+        'Fn::Sub': |
+          #!/bin/bash -e
+          cfn-init -v --stack ${AWS::StackId} --resource PTAMachine --configsets install_all --region ${AWS::Region}
+          cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Ref ComponentInstanceProfile
+    Metadata:
+      'AWS::CloudFormation::Init':
+        configSets:
+          install_all:
+            - install_logs
+            - install_pta
+        install_logs:
+          files:
+            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
+              content: !Sub |
+                {
+                  "agent": {
+                    "metrics_collection_interval": 10,
+                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
+                    "run_as_user": "root"
+                  },
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cloud-init-output",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/var/log/cfn-init.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/cfn-init",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                          {
+                            "file_path": "/opt/tomcat/logs/ptaAutomaticConfiguration.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/ptaAutomaticConfiguration",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          },
+                                                    {
+                            "file_path": "/opt/tomcat/logs/diamond.log",
+                            "log_group_name": "${LogGroup}",
+                            "log_stream_name": "PTAMachine/diamond",
+                            "timezone": "Local",
+                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: '000444'
+              owner: root
+              group: root
+          commands:
+            01_install_cloudwatch_agent:
+              command: sudo rpm -U https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+            02_start_cloudwatch_agent:
+              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+        install_pta:
+          commands:
+            01-executeptaconfigurationscript: 
+              command: !Sub >-
+                sudo /tmp/register.sh aws "${VaultMachine.PrivateIp}" "${PVWADNSRecord}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultDRMachine.PrivateIp}"
+            99-SignalCompletion:
+              command: !Sub >-
+                cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    DeletionPolicy: Retain
+    DependsOn:
+      - PVWAMachine
+  VaultDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt VaultMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: VaultMachine
+  VaultDRDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '-dr.pas.local'
+      ResourceRecords:
+      - !GetAtt VaultDRMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: VaultDRMachine
+  PVWADNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref PVWAHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PVWAMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: PVWAMachine
+  CPMDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref CPMHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt CPMMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: CPMMachine
+  PSMDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref PSMHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PSMMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: PSMMachine
+  PSMPDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref PSMPHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PSMPMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: PSMPMachine
+  PTADNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref PTAHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt PTAMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: PTAMachine
 Parameters:
   EULA:
     Type: String
@@ -1335,6 +1594,9 @@ Parameters:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
+  PASHostedZoneId:
+    Type: 'AWS::Route53::HostedZone::Id'
+    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
     Description: Enter the name of the S3 bucket containing the license and recovery public key.
@@ -1346,10 +1608,23 @@ Parameters:
     Type: String
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   VaultInstanceName:
     Type: String
     Description: Enter a name for the Vault instance.
     Default: CyberArk Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for Vault servers ("-dr" will be added as suffix for Vault DR).
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault
   VaultMasterPassword:
     Type: String
     Description: Enter a password for the Primary Vault Master user.
@@ -1422,29 +1697,23 @@ Parameters:
   DRInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the DR Vault instance will reside.
-  CPMInstanceName:
+  PVWACustomAmi:
     Type: String
-    Description: Enter a name for the CPM instance.
-    Default: CyberArk CPM
-  CPMInstanceType:
-    Type: String
-    Description: Select the instance type of the CPM instance.
-    AllowedValues:
-      - c5.large
-      - c5.xlarge
-      - c5.2xlarge
-      - c5.4xlarge
-    Default: c5.large
-  CPMInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the CPM instance.
-  CPMInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the CPM instance will reside.
+    Description: Enter the PVWA Image ID, if you wish to use a custom PVWA image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PVWAInstanceName:
     Type: String
     Description: Enter a name for the PVWA instance.
     Default: CyberArk PVWA
+  PVWAHostname:
+    Type: String
+    Description: Enter the hostname for PVWA server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: pvwa
   PVWAInstanceType:
     Type: String
     Description: Select the instance type of the PVWA instance.
@@ -1460,13 +1729,55 @@ Parameters:
   PVWAInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PVWA instance will reside.
-  PVWAHostName:
+  CPMCustomAmi:
     Type: String
-    Description: IP or FQDN of PVWA server
+    Description: Enter the CPM Image ID, if you wish to use a custom CPM image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
+  CPMInstanceName:
+    Type: String
+    Description: Enter a name for the CPM instance.
+    Default: CyberArk CPM
+  CPMHostname:
+    Type: String
+    Description: Enter the hostname for CPM server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: cpm
+  CPMInstanceType:
+    Type: String
+    Description: Select the instance type of the CPM instance.
+    AllowedValues:
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+    Default: c5.large
+  CPMInstanceSecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Description: Assign Security Groups to the CPM instance.
+  CPMInstanceSubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: Select the Subnet Id where the CPM instance will reside.
+  PSMCustomAmi:
+    Type: String
+    Description: Enter the PSM Image ID, if you wish to use a custom PSM image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMInstanceName:
     Type: String
     Description: Enter a name for the PSM instance.
     Default: CyberArk PSM
+  PSMHostname:
+    Type: String
+    Description: Enter the hostname for PSM server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: psm
   PSMInstanceType:
     Type: String
     Description: Select the instance type of the PSM instance.
@@ -1481,13 +1792,26 @@ Parameters:
   PSMInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
     Description: Select the Subnet Id where the PSM instance will reside.
+  PSMPCustomAmi:
+    Type: String
+    Description: Enter the PSMP Image ID, if you wish to use a custom PSMP image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMPInstanceName:
     Type: String
-    Description: Enter a name for the PSM SSH Proxy instance.
-    Default: CyberArk PSM SSH Proxy
+    Description: Enter a name for the PSMP instance.
+    Default: CyberArk PSMP
+  PSMPHostname:
+    Type: String
+    Description: Enter the hostname for PSMP server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: psmp
   PSMPInstanceType:
     Type: String
-    Description: Select the instance type of the PSM SSH Proxy instance.
+    Description: Select the instance type of the PSMP instance.
     AllowedValues:
       - m5.large
       - m5.xlarge
@@ -1496,10 +1820,40 @@ Parameters:
     Default: m5.large
   PSMPInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
-    Description: Assign Security Groups to the PSM SSH Proxy instance.
+    Description: Assign Security Groups to the PSMP instance.
   PSMPInstanceSubnetId:
     Type: 'AWS::EC2::Subnet::Id'
-    Description: Select the Subnet Id where the PSM SSH Proxy instance will reside.
+    Description: Select the Subnet Id where the PSMP instance will reside.
+  PTACustomAmi:
+    Type: String
+    Description: Enter the PTA Image ID, if you wish to use a custom PTA image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
+  PTAInstanceName:
+    Type: String
+    Description: Enter a name for the PTA instance.
+    Default: CyberArk PTA
+  PTAHostname:
+    Type: String
+    Description: Enter the hostname for PTA server.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: ptaserver
+  PTAInstanceType:
+    Type: String
+    Description: Select the instance type of the PTA instance.
+    AllowedValues:
+      - m5.2xlarge
+      - m5.4xlarge
+    Default: m5.2xlarge
+  PTAInstanceSecurityGroups:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Description: Assign Security Groups to the PTA instance.
+  PTAInstanceSubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: Select the Subnet Id where the PTA instance will reside.
 Rules:
   PasswordConfirmation:
     Assertions:
@@ -1535,13 +1889,16 @@ Metadata:
           - WinVersion
           - CyberarkAccountId
           - KeyName
+          - PASHostedZoneId
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
       - Label:
           default: Primary Vault and DR Vault configuration
         Parameters:
+          - VaultCustomAmi
           - VaultInstanceName
+          - VaultHostname
           - VaultAdminPassword
           - RetypeAdminPassword
           - VaultMasterPassword
@@ -1555,34 +1912,50 @@ Metadata:
           - VaultInstanceSubnetId
           - DRInstanceSubnetId
       - Label:
+          default: PVWA configuration
+        Parameters:
+          - PVWACustomAmi
+          - PVWAInstanceName
+          - PVWAHostname
+          - PVWAInstanceType
+          - PVWAInstanceSecurityGroups
+          - PVWAInstanceSubnetId
+      - Label:
           default: CPM configuration
         Parameters:
+          - CPMCustomAmi
           - CPMInstanceName
+          - CPMHostname
           - CPMInstanceType
           - CPMInstanceSecurityGroups
           - CPMInstanceSubnetId
       - Label:
-          default: PVWA configuration
-        Parameters:
-          - PVWAInstanceName
-          - PVWAInstanceType
-          - PVWAInstanceSecurityGroups
-          - PVWAInstanceSubnetId
-          - PVWAHostName
-      - Label:
           default: PSM configuration
         Parameters:
+          - PSMCustomAmi
           - PSMInstanceName
+          - PSMHostname
           - PSMInstanceType
           - PSMInstanceSecurityGroups
           - PSMInstanceSubnetId
       - Label:
-          default: PSM SSH Proxy configuration
+          default: PSMP configuration
         Parameters:
+          - PSMPCustomAmi
           - PSMPInstanceName
+          - PSMPHostname
           - PSMPInstanceType
           - PSMPInstanceSecurityGroups
           - PSMPInstanceSubnetId
+      - Label:
+          default: PTA configuration
+        Parameters:
+          - PTACustomAmi
+          - PTAInstanceName
+          - PTAHostname
+          - PTAInstanceType
+          - PTAInstanceSecurityGroups
+          - PTAInstanceSubnetId
     ParameterLabels:
       EULA:
         default: License Agreement
@@ -1592,14 +1965,20 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
+      PASHostedZoneId:
+        default: PAS Hosted Zone Id
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:
         default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       VaultInstanceName:
         default: Vault Instance Name
+      VaultHostname:
+        default: Vault Hostname
       VaultAdminPassword:
         default: Primary Vault Admin Password
       RetypeAdminPassword:
@@ -1624,47 +2003,88 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
-      CPMInstanceName:
-        default: CPM Instance Name
-      CPMInstanceType:
-        default: CPM Instance Type
-      CPMInstanceSecurityGroups:
-        default: CPM Instance Security Groups
-      CPMInstanceSubnetId:
-        default: CPM Instance Subnet Id
+      PVWACustomAmi:
+        default: Custom PVWA Image ID (Optional)
       PVWAInstanceName:
         default: PVWA Instance Name
+      PVWAHostname:
+        default: PVWA Hostname
       PVWAInstanceType:
         default: PVWA Instance Type
       PVWAInstanceSecurityGroups:
         default: PVWA Instance Security Groups
       PVWAInstanceSubnetId:
         default: PVWA Instance Subnet Id
-      PVWAHostName:
-        default: PVWA FQDN (Optional)
+      CPMCustomAmi:
+        default: Custom CPM Image ID (Optional)
+      CPMInstanceName:
+        default: CPM Instance Name
+      CPMHostname:
+        default: CPM Hostname
+      CPMInstanceType:
+        default: CPM Instance Type
+      CPMInstanceSecurityGroups:
+        default: CPM Instance Security Groups
+      CPMInstanceSubnetId:
+        default: CPM Instance Subnet Id
+      PSMCustomAmi:
+        default: Custom PSM Image ID (Optional)
       PSMInstanceName:
         default: PSM Instance Name
+      PSMHostname:
+        default: PSM Hostname
       PSMInstanceType:
         default: PSM Instance Type
       PSMInstanceSecurityGroups:
         default: PSM Instance Security Groups
       PSMInstanceSubnetId:
         default: PSM Instance Subnet Id
+      PSMPCustomAmi:
+        default: Custom PSMP Image ID (Optional)
       PSMPInstanceName:
-        default: PSM SSH Proxy Instance Name
+        default: PSMP Instance Name
+      PSMPHostname:
+        default: PSMP Hostname
       PSMPInstanceType:
-        default: PSM SSH Proxy Instance Type
+        default: PSMP Instance Type
       PSMPInstanceSecurityGroups:
-        default: PSM SSH Proxy Instance Security Groups
+        default: PSMP Instance Security Groups
       PSMPInstanceSubnetId:
-        default: PSM SSH Proxy Instance Subnet Id
+        default: PSMP Instance Subnet Id
+      PTACustomAmi:
+        default: Custom PTA Image ID (Optional)
+      PTAInstanceName:
+        default: PTA Instance Name
+      PTAHostname:
+        default: PTA Hostname
+      PTAInstanceType:
+        default: PTA Instance Type
+      PTAInstanceSecurityGroups:
+        default: PTA Instance Security Groups
+      PTAInstanceSubnetId:
+        default: PTA Instance Subnet Id
 Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-  PVWAHostNameEmpty: !Equals
+  VaultCustomImageEmpty: !Equals
     - ''
-    - !Ref PVWAHostName
+    - !Ref VaultCustomAmi
+  PVWACustomImageEmpty: !Equals
+    - ''
+    - !Ref PVWACustomAmi
+  CPMCustomImageEmpty: !Equals
+    - ''
+    - !Ref CPMCustomAmi
+  PSMCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMCustomAmi
+  PSMPCustomImageEmpty: !Equals
+    - ''
+    - !Ref PSMPCustomAmi
+  PTACustomImageEmpty: !Equals
+    - ''
+    - !Ref PTACustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

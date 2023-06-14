@@ -32,12 +32,13 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "13.0"
+      Version: "13.2"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
+    Condition: CustomImageEmpty
   StoreDRPassword:
     Type: AWS::CloudFormation::CustomResource
     Properties:
@@ -450,7 +451,11 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: !Ref VaultAmi
+      ImageId: 
+        Fn::If:
+          - CustomImageEmpty
+          - !Ref VaultAmi
+          - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -482,6 +487,8 @@ Resources:
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 0
+            3-addDNSSuffix:
+              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
             1-postInstall:
@@ -492,15 +499,15 @@ Resources:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-            3-ChangeHostName:
+            3-ChangeHostname:
               command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostName} -Force -Restart
+                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
         configSignal:
           commands:
             0-signalCompletion:
               command: !Sub >
-                cfn-signal.exe -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
+                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
               waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
@@ -521,6 +528,11 @@ Parameters:
       - Win2016
       - Win2019
     Default: Win2016
+  VaultCustomAmi:
+    Type: String
+    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -553,6 +565,14 @@ Parameters:
     Type: String
     Description: Enter a name for the DR Vault instance.
     Default: CyberArk DR Vault
+  VaultHostname:
+    Type: String
+    Description: Enter the hostname for the DR Vault instance.
+    AllowedPattern: ^((?!-)(?=.*[a-zA-Z])[A-Za-z0-9-]{3,15}(?<!-))$
+    ConstraintDescription: Parameter must only contain uppercase and lowercase letters (at least one letter), hyphens and numbers. Hostname can't start or end with hyphen.
+    MaxLength: 15
+    MinLength: 3
+    Default: vault-dr
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the DR Vault instance.
@@ -566,10 +586,6 @@ Parameters:
       - m5.16xlarge
       - m5.24xlarge
     Default: m5.large
-  VaultHostName:
-    Type: String
-    Description: Enter the host name for the DR Vault instance.
-    MinLength: 4
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the DR Vault instance.
@@ -591,6 +607,7 @@ Metadata:
         Parameters:
           - EULA
           - WinVersion
+          - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
       - Label:
@@ -604,7 +621,7 @@ Metadata:
         Parameters:
           - VaultInstanceName
           - VaultInstanceType
-          - VaultHostName
+          - VaultHostname
           - VaultInstanceSecurityGroups
           - DRInstanceSubnetId
     ParameterLabels:
@@ -612,6 +629,8 @@ Metadata:
         default: License Agreement
       WinVersion:
         defualt: Windows Server Version
+      VaultCustomAmi:
+        default: Custom Vault Image ID (Optional)
       CyberarkAccountId:
         default: CyberArk Account ID
       KeyName:
@@ -622,8 +641,8 @@ Metadata:
         default: DR User Password
       VaultInstanceName:
         default: DR Vault Instance Name
-      VaultHostName:
-        default: DR Vault Host Name
+      VaultHostname:
+        default: DR Vault Hostname
       VaultInstanceType:
         default: DR Vault Instance Type
       VaultInstanceSecurityGroups:
@@ -632,6 +651,10 @@ Metadata:
         default: DR Vault Instance Subnet Id
       Secret:
         default: DR User Secret
+Conditions:
+  CustomImageEmpty: !Equals
+    - ''
+    - !Ref VaultCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group

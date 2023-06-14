@@ -37,7 +37,7 @@
         }
     },
     "variables": {
-        "GuidSubstring": "[uniqueString( resourceGroup().id, deployment().name )]"
+        "guidSubstring": "[uniqueString( resourceGroup().id, deployment().name )]"
     },
     "resources": [
         {
@@ -95,7 +95,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('GuidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('guidSubstring'), ' ', parameters('adminUsername'))]",
                     "fileUris": []
                 }
             },

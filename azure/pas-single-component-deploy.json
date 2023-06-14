@@ -95,7 +95,8 @@
             "allowedValues": [
                 "1",
                 "2",
-                "3"
+                "3",
+                "N/A"
             ],
             "type": "String",
             "metadata": {
@@ -107,7 +108,8 @@
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet'))]",
         "subnetRefComponent": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('Component VNet')), '/subnets/',parameters('Component Subnet'))]",
         "networkInterfaceName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
-        "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]"
+        "publicIpAddressName": "[toLower(concat(parameters('Component VM Host Name'), '-', uniqueString(resourceGroup().id)))]",
+        "availabilityZone":"[if(equals(parameters('Availability Zone'), 'N/A'), json('null'), array(parameters('Availability Zone')))]"
     },
     "resources": [
         {
@@ -120,7 +122,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v13.0/azure/nested/psmp-nested-template.json",
+                    "uri": "https://raw.githubusercontent.com/cyberark/pas-on-cloud/release-v13.2/azure/nested/psmp-nested-template.json",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -169,9 +171,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
-            "zones": [
-                "[parameters('Availability Zone')]"
-            ],
+            "zones": "[variables('availabilityZone')]",
             "identity": {
                 "type": "SystemAssigned"
             },
