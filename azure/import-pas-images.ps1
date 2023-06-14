@@ -17,7 +17,7 @@ Param(
     # release number
     [Parameter(Mandatory = $false)]
     [String]
-    $release="v13.0",
+    $release="v13.2",
     # windows version
     [Parameter(Mandatory = $false)]
     [String]
