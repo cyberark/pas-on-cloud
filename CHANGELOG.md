@@ -3,6 +3,21 @@
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
 
+## [PAS on Cloud v13.2] (14.6.2023)
+
+### Added
+- #### AWS :
+    - Custom AMI as Parameter - A new optional parameter has been added to the CloudFormation templates, allowing customers to enforce the usage of a       specific AMI ID for each PAS component.
+    - Set Hostname for Each Instance - All CloudFormation templates now include the capability to set the hostname of every deployed component.
+- #### Azure :
+    - Support Non-Zone Regions - Customers now have the ability to deploy all components (excluding the Primary Vault) in non-zone regions.
+### Changed
+- #### AWS :
+    - PTA Deployment as Part of the Full PAS and Single Component Deployments - Unified templates have been developed to deploy PTA in the same             manner as all other PAS components.
+
+- PTA Does Not Require Its Own License - Uploading a PTA license to an S3 bucket/storage blob and providing it to the CF/ARM template is no longer     necessary.
+- PTA and Vault Timezones are automatically configured for PTA deployments, the parameters where removed from the CF/ARM template.
+
 ## [PAS on Cloud v13.0] (19.12.2022)
 
 ### Changed
@@ -10,6 +25,7 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
     - Improved parameter validation
     - Lambda functions are running using Python 3.7
     - Vault disks are now encrypted
+
 - PTA is deployed on RHEL 8, instead of Centos 7
 - Vault safe data is being stored in a separated drive (E:)
 
