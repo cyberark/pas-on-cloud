@@ -12,6 +12,15 @@ pipeline {
     AWS_REGION = 'eu-west-2'
   }
   stages {
+    stage('init') {
+      steps {
+        script {
+          sh(script: 'echo "hello"')
+        }
+
+      }
+    }
+    
     stage('Install virtual environment') {
       steps {
         script {
