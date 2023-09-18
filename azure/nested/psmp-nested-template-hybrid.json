@@ -95,7 +95,7 @@
                     "skipDos2Unix": false
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('/etc/opt/register.sh ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'), ' ',  parameters('VaultPrivateIP'),' ', variables('guidSubstring'), ' ', parameters('adminUsername'))]",
+                    "commandToExecute": "[concat('/opt/CD-Image/register.sh azure ', parameters('VaultPrivateIP'), ' ', variables('guidSubstring'), ' ',  parameters('adminUsername'),' ', parameters('VaultAdminUser'), ' ', parameters('VaultAdminPassword'))]",
                     "fileUris": []
                 }
             },

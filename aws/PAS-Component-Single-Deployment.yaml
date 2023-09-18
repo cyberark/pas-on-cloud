@@ -863,11 +863,9 @@ Resources:
                 - >-
                   TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
                   -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
-                  /opt/CD-Image/register-arguments.sh Administrator
-                  "${StoreAdminPassword.SsmId}" ${AWS::Region}
-                  "${VaultIpAddress}"  $(curl -H
-                  "X-aws-ec2-metadata-token:$TOKEN" -v
-                  http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                  /opt/CD-Image/register.sh aws "${VaultIpAddress}"
+                  $(curl -H "X-aws-ec2-metadata-token:$TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
+                  ec2-user Administrator ${AWS::Region} "${StoreAdminPassword.SsmId}"
                 - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
