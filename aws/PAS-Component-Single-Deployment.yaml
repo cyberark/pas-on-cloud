@@ -85,7 +85,7 @@ Resources:
     DeletionPolicy: Retain
   PVWAAmi:
     Type: Custom::FindAMI
-    Condition: CreatePVWACondition
+    Condition: PVWACustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.2"
@@ -96,7 +96,7 @@ Resources:
       - LambdaDeployRole
   CPMAmi:
     Type: Custom::FindAMI
-    Condition: CreateCPMCondition
+    Condition: CPMCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.2"
@@ -107,7 +107,7 @@ Resources:
       - LambdaDeployRole
   PSMAmi:
     Type: Custom::FindAMI
-    Condition: CreatePSMCondition
+    Condition: PSMCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.2"
@@ -118,7 +118,7 @@ Resources:
       - LambdaDeployRole
   PSMPAmi:
     Type: Custom::FindAMI
-    Condition: CreatePSMPCondition
+    Condition: PSMPCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.2"
@@ -129,7 +129,7 @@ Resources:
       - LambdaDeployRole
   PTAAmi:
     Type: Custom::FindAMI
-    Condition: CreatePTACondition
+    Condition: PTACustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "13.2"
@@ -1223,6 +1223,21 @@ Conditions:
   CustomImageEmpty: !Equals
     - ''
     - !Ref ComponentCustomAmi
+  PVWACustomImageEmpty: !And
+    - !Condition CreatePVWACondition
+    - !Condition CustomImageEmpty
+  CPMCustomImageEmpty: !And
+    - !Condition CreateCPMCondition
+    - !Condition CustomImageEmpty
+  PSMCustomImageEmpty: !And
+    - !Condition CreatePSMCondition
+    - !Condition CustomImageEmpty
+  PSMPCustomImageEmpty: !And
+    - !Condition CreatePSMPCondition
+    - !Condition CustomImageEmpty
+  PTACustomImageEmpty: !And
+    - !Condition CreatePTACondition
+    - !Condition CustomImageEmpty
   DRValueEmpty: !Equals
     - ''
     - !Ref DRPrivateIP
