@@ -90,7 +90,7 @@
          }
       },
       "Primary Vault VM Size":{
-         "defaultValue":"Standard_D2s_v3",
+         "defaultValue":"Standard_D4s_v3",
          "type":"String",
          "metadata":{
             "description":"Enter the size of the Primary Vault VM."
