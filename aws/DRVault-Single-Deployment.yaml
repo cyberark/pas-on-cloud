@@ -550,14 +550,14 @@ Parameters:
     Description: Enter a password for the DR Vault user that was set on the Primary Vault.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault DR password must contain at least 1 lowercase letter,
       1 uppercase letter, 1 digit and 1 special character
   Secret:
     Type: String
     Description: Enter the secret string for the DR user that was set on the Primary Vault.(Optional).
     NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
     MinLength: 10

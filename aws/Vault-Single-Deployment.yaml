@@ -638,7 +638,7 @@ Parameters:
     Description: Enter a password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeAdminPassword:
@@ -651,7 +651,7 @@ Parameters:
     Description: Enter a password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault Master password must contain at least 1 lowercase
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeMasterPassword:
@@ -664,7 +664,7 @@ Parameters:
     Description: Enter a password for the DR Vault Administrator user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: Vault Administrator password must contain at least 1 lowercase
       letter, 1 uppercase letter, 1 digit and 1 special character
   RetypeDRVaultPassword:
@@ -676,7 +676,7 @@ Parameters:
     Type: String
     Description: Enter a secret string for the DR user.(Optional).
     NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: if the value isnt empty it must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
   SecretRetype:
