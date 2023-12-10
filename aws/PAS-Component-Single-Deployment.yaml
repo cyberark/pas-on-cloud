@@ -973,6 +973,7 @@ Resources:
             01-executeptaconfigurationscript: 
               command: !Sub >-
                 sudo /tmp/register.sh aws "${VaultPrivateIP}" "${PVWAPrivateDNS}" "${VaultAdminUser}" "${StoreAdminPassword.SsmId}" ${AWS::Region} "${DRPrivateIP}"
+            99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     Condition: CreatePTACondition
