@@ -577,15 +577,18 @@ Parameters:
     Type: String
     Description: Select the instance type of the DR Vault instance.
     AllowedValues:
-      - m5.large
-      - m5.xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
+      - c5.9xlarge
       - m5.8xlarge
+      - c5.12xlarge
       - m5.12xlarge
+      - c5.18xlarge
       - m5.16xlarge
+      - c5.24xlarge
       - m5.24xlarge
-    Default: m5.large
+    Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the DR Vault instance.

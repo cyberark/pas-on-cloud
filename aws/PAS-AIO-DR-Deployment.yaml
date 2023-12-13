@@ -1199,11 +1199,18 @@ Parameters:
     Type: String
     Description: Select the instance type of the Vault instance.
     AllowedValues:
-      - m5.large
-      - m5.xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+      - c5.9xlarge
+      - m5.8xlarge
+      - c5.12xlarge
+      - m5.12xlarge
+      - c5.18xlarge
+      - m5.16xlarge
+      - c5.24xlarge
+      - m5.24xlarge
+    Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Vault instance.
@@ -1234,11 +1241,21 @@ Parameters:
     Type: String
     Description: Select the instance type of the PAS Components instance.
     AllowedValues:
-      - m5.large
+      - c5.xlarge
       - m5.xlarge
+      - c5.2xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+      - c5.9xlarge
+      - m5.8xlarge
+      - c5.12xlarge
+      - m5.12xlarge
+      - c5.18xlarge
+      - m5.16xlarge
+      - c5.24xlarge
+      - m5.24xlarge
+    Default: m5.xlarge
   ComponentsInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PAS Components instance.
