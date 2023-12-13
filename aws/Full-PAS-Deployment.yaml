@@ -1838,7 +1838,7 @@ Parameters:
       - m5.2xlarge
       - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+    Default: c5.xlarge
   PSMPInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PSMP instance.
