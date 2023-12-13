@@ -835,7 +835,10 @@ Resources:
                     /opt/CD-Image/register-arguments.sh
                     Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultIpAddress}" $(curl
                     http://169.254.169.254/latest/meta-data/instance-id) ec2-user 
-                  - VaultIpAddress: !Sub '${VaultPrivateIP},${DRPrivateIP}'
+                  - VaultIpAddress: !If
+                    - DRValueEmpty
+                    - !Sub '${VaultPrivateIP}'
+                    - !Sub '${VaultPrivateIP},${DRPrivateIP}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
             99-SignalCompletion:
