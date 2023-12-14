@@ -1681,11 +1681,18 @@ Parameters:
     Type: String
     Description: Select the instance type of the Vault instances.
     AllowedValues:
-      - m5.large
-      - m5.xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+      - c5.9xlarge
+      - m5.8xlarge
+      - c5.12xlarge
+      - m5.12xlarge
+      - c5.18xlarge
+      - m5.16xlarge
+      - c5.24xlarge
+      - m5.24xlarge
+    Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the Vault instances.
@@ -1716,11 +1723,15 @@ Parameters:
     Type: String
     Description: Select the instance type of the PVWA instance.
     AllowedValues:
-      - t3.medium
-      - t3.large
-      - t3.xlarge
-      - t3.2xlarge
-    Default: t3.medium
+      - c5.xlarge
+      - m5.xlarge
+      - c5.2xlarge
+      - m5.2xlarge
+      - c5.4xlarge
+      - m5.4xlarge
+      - c5.9xlarge
+      - m5.8xlarge
+    Default: c5.xlarge
   PVWAInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PVWA instance.
@@ -1748,11 +1759,15 @@ Parameters:
     Type: String
     Description: Select the instance type of the CPM instance.
     AllowedValues:
-      - c5.large
       - c5.xlarge
+      - m5.xlarge
       - c5.2xlarge
+      - m5.2xlarge
       - c5.4xlarge
-    Default: c5.large
+      - m5.4xlarge
+      - c5.9xlarge
+      - m5.8xlarge
+    Default: c5.xlarge
   CPMInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the CPM instance.
@@ -1780,10 +1795,13 @@ Parameters:
     Type: String
     Description: Select the instance type of the PSM instance.
     AllowedValues:
+      - c5.2xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
+      - c5.9xlarge
       - m5.8xlarge
-    Default: m5.2xlarge
+    Default: c5.2xlarge
   PSMInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PSM instance.
@@ -1811,11 +1829,13 @@ Parameters:
     Type: String
     Description: Select the instance type of the PSMP instance.
     AllowedValues:
-      - m5.large
+      - c5.xlarge
       - m5.xlarge
+      - c5.2xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+    Default: c5.xlarge
   PSMPInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PSMP instance.
@@ -1843,9 +1863,11 @@ Parameters:
     Type: String
     Description: Select the instance type of the PTA instance.
     AllowedValues:
+      - m5.xlarge
+      - c5.2xlarge
       - m5.2xlarge
-      - m5.4xlarge
-    Default: m5.2xlarge
+      - c5.4xlarge
+    Default: m5.xlarge
   PTAInstanceSecurityGroups:
     Type: 'List<AWS::EC2::SecurityGroup::Id>'
     Description: Assign Security Groups to the PTA instance.
