@@ -520,7 +520,7 @@ Resources:
       Name: !Join
       - ''
       - - !Ref VaultHostname
-        - '-dr.pas.local'
+        - '.pas.local'
       ResourceRecords:
       - !GetAtt VaultDRMachine.PrivateIp
       TTL: '900'
