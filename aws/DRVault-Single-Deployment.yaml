@@ -5,7 +5,6 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
