@@ -6,25 +6,26 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/CfnInitLog'
+      LogStreamName: VaultDRMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultInitLog'
+      LogStreamName: VaultDRMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultDRMachine/VaultPostInstallLog'
+      LogStreamName: VaultDRMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultAmi:
@@ -555,7 +556,7 @@ Parameters:
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
   PASHostedZoneId:
-    Type: 'AWS::Route53::HostedZone::Id'
+    Type: AWS::Route53::HostedZone::Id
     Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultPrivateIP:
     Type: String

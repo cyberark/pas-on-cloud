@@ -6,25 +6,26 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/CfnInitLog'
+      LogStreamName: VaultMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultInitLog'
+      LogStreamName: VaultMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultPostInstallLog'
+      LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultAmi:
@@ -108,7 +109,7 @@ Resources:
       - LambdaDeployRole
       - VaultMachine
   RemovePermissionVault:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt RemovePermissionLambda.Arn
@@ -176,7 +177,7 @@ Resources:
                 Action: 'ec2:DescribeImages'
                 Resource: "*"
   LambdaRemovePermissionsRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -369,7 +370,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
   RemovePermissionLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Change Policies of VaultInstancesRole IAM Role
       Code:
@@ -635,7 +636,7 @@ Parameters:
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
   PASHostedZoneId:
-    Type: 'AWS::Route53::HostedZone::Id'
+    Type: AWS::Route53::HostedZone::Id
     Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
