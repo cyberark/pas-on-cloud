@@ -578,13 +578,13 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1
                 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-        configSignal:
-          commands:
-            4-changeHostname:
+            3-changeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
+        configSignal:
+          commands:
             0-signalCompletion:
               command: !Sub >
                 "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}

@@ -6,6 +6,6 @@ The different templates provide you with the flexibility of deploying CyberArk P
 
 
 # Licensing
-Copyright CyberArk Software Ltd.
+Copyright © 2024 CyberArk Software Ltd. All rights reserved.
 
 CyberArk’s Privileged Access Security is licensed under the following license terms - "CyberArk Software EULA 20210831.1.pdf". CyberArk’s PAS AWS CloudFormation and Azure Resource Manager (ARM) deployment templates are licensed under Apache License, Version 2.0 - "LICENSE.md".
