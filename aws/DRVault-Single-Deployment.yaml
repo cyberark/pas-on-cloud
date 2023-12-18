@@ -482,11 +482,14 @@ Resources:
           commands:
             1-configCloudWatch:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+                -VaultPostInstallLogStream ${VaultPostInstallLogStream}
+                -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 0
+              waitAfterCompletion: 60
+              ignoreErrors: true
             3-addDNSSuffix:
               command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
