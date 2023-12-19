@@ -2,82 +2,83 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: This template handles the deployment of a selected CyberArk single component to an existing network infrastructure
 Resources:
   LogGroup:
-    Type: 'AWS::Logs::LogGroup'
+    Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CPMCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMCfnInitLogStream
     DeletionPolicy: Retain
   CPMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMConfigurations
     DeletionPolicy: Retain
   CPMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMCfnInitLogStreamLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMCfnInitLogStreamLog
     DeletionPolicy: Retain
   PSMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMConfigurationsLog
     DeletionPolicy: Retain
   PSMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
     DeletionPolicy: Retain
   PVWACfnInitLogStreamLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWACfnInitLogStreamLog
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWAConfigurationsLog
     DeletionPolicy: Retain
   PVWARegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
     DeletionPolicy: Retain
   PVWASetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -139,7 +140,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt
         - StorePasswordLambda
@@ -148,7 +149,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
   CleanAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt
@@ -181,7 +182,7 @@ Resources:
                 - PTAMachine
                 - PrivateIp
   LambdaDeployRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -225,7 +226,7 @@ Resources:
                 Action: 'ec2:DescribeImages'
                 Resource: "*"
   ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -238,27 +239,14 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
   ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
     DeletionPolicy: Retain
   StorePasswordLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Saves given password to parameter store as SecureString
       Code:
@@ -297,7 +285,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Delete password from parameter store
       Code:
@@ -381,7 +369,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
   PVWAMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -515,7 +503,7 @@ Resources:
         Timeout: PT25M
     DeletionPolicy: Retain
   CPMMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -648,7 +636,7 @@ Resources:
         Timeout: PT25M
     DeletionPolicy: Retain
   PSMMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -765,7 +753,7 @@ Resources:
         Timeout: PT25M
     DeletionPolicy: Retain
   PSMPMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -883,7 +871,7 @@ Resources:
         Timeout: PT10M
     DeletionPolicy: Retain
   PTAMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1070,11 +1058,11 @@ Parameters:
     AllowedPattern: ^[\d]{12}$
     ConstraintDescription: Account ID must contain 12 digits
   KeyName:
-    Type: 'AWS::EC2::KeyPair::KeyName'
+    Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
   PASHostedZoneId:
-    Type: 'AWS::Route53::HostedZone::Id'
+    Type: AWS::Route53::HostedZone::Id
     Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultPrivateIP:
     Type: String
@@ -1134,10 +1122,10 @@ Parameters:
       - c5.large
     Default: m5.large
   ComponentInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Component instance.
   ComponentInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet ID where the Component instance will reside.
 Rules:
   EULAAcception:
