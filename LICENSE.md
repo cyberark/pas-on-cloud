@@ -1,5 +1,5 @@
-Copyright CyberArk Software Ltd.
-<http://CyberArk.com>
+Copyright © 2024 CyberArk Software Ltd. All rights reserved.
+<https://cyberark.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
