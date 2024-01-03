@@ -2,113 +2,114 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: This template handles the deployment of CyberArk PAS solution to an existing network infrastructure
 Resources:
   LogGroup:
-    Type: 'AWS::Logs::LogGroup'
+    Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CPMCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMCfnInitLogStream
     DeletionPolicy: Retain
   CPMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMCfnInitLogStream
     DeletionPolicy: Retain
   PSMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMConfigurationsLog
     DeletionPolicy: Retain
   PSMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
     DeletionPolicy: Retain
   PVWACfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWACfnInitLogStream
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWAConfigurationsLog
     DeletionPolicy: Retain
   PVWARegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
     DeletionPolicy: Retain
   PVWASetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
   VaultCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRPostInstallLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultPostInstallLog
@@ -181,7 +182,7 @@ Resources:
       - LambdaDeployRole
     Condition: PTACustomImageEmpty
   StoreMasterPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt StorePasswordLambda.Arn
@@ -189,14 +190,14 @@ Resources:
     DependsOn:
       - LambdaDeployRole
   StoreAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt StorePasswordLambda.Arn
       Password: !Ref VaultAdminPassword
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt StorePasswordLambda.Arn
       Password: !Ref VaultDRPassword
@@ -210,7 +211,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
   CleanMasterPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt DeletePasswordLambda.Arn
@@ -220,7 +221,7 @@ Resources:
       - StorePasswordLambda
       - VaultDRMachine
   CleanAdminPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt DeletePasswordLambda.Arn
@@ -232,7 +233,7 @@ Resources:
       - PSMPMachine
       - PTAMachine
   CleanDRPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt DeletePasswordLambda.Arn
@@ -270,7 +271,7 @@ Resources:
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
   RemovePermissionsKMSPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: KMSPolicy
       PolicyDocument:
@@ -285,7 +286,7 @@ Resources:
     DependsOn:
       - RemovePermissionVaultDR
   RemovePermissionsVaultBootstrapIAMPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: VaultBootstrapIAMPolicy
       PolicyDocument:
@@ -317,7 +318,7 @@ Resources:
       Roles:
         - !Ref 'LambdaRemovePermissionsRole'
   InstancesSSMPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: InstancesSsmAccess
       PolicyDocument:
@@ -331,7 +332,7 @@ Resources:
         - !Ref ComponentInstanceRole
     DeletionPolicy: Retain
   LambdaDeployRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -374,7 +375,7 @@ Resources:
                 Action: 'ec2:DescribeImages'
                 Resource: "*"
   LambdaLogDenyRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -441,24 +442,9 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -521,24 +507,9 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -573,7 +544,7 @@ Resources:
                 Resource: '*'
     DeletionPolicy: Retain
   ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -586,42 +557,29 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     DeletionPolicy: Retain
   VaultInstancesProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref VaultInstancesRole
     DeletionPolicy: Retain
   VaultDRInstancesProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - !Ref VaultDRInstancesRole
     DeletionPolicy: Retain
   ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
     DeletionPolicy: Retain
   StorePasswordLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Saves given password to parameter store as SecureString
       Code:
@@ -660,7 +618,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
   DeletePasswordLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Delete password from parameter store
       Code:
@@ -989,7 +947,7 @@ Resources:
     DependsOn:
       - VaultMachine
   PVWAMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1085,7 +1043,7 @@ Resources:
     DependsOn:
       - VaultDRMachine
   CPMMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1178,7 +1136,7 @@ Resources:
     DependsOn:
       - PVWAMachine
   PSMMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1261,7 +1219,7 @@ Resources:
     DependsOn:
       - PVWAMachine
   PSMPMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1377,7 +1335,7 @@ Resources:
     DependsOn:
       - PSMMachine
   PTAMachine:
-    Type: 'AWS::EC2::Instance'
+    Type: AWS::EC2::Instance
     Properties:
       Tags:
         - Key: Name
@@ -1591,11 +1549,11 @@ Parameters:
     AllowedPattern: ^[\d]{12}$
     ConstraintDescription: Account ID must contain 12 digits
   KeyName:
-    Type: 'AWS::EC2::KeyPair::KeyName'
+    Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
   PASHostedZoneId:
-    Type: 'AWS::Route53::HostedZone::Id'
+    Type: AWS::Route53::HostedZone::Id
     Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
@@ -1689,13 +1647,13 @@ Parameters:
       - m5.4xlarge
     Default: m5.large
   VaultInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Vault instances.
   VaultInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Primary Vault instance will reside.
   DRInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the DR Vault instance will reside.
   PVWACustomAmi:
     Type: String
@@ -1724,10 +1682,10 @@ Parameters:
       - t3.2xlarge
     Default: t3.medium
   PVWAInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PVWA instance.
   PVWAInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PVWA instance will reside.
   CPMCustomAmi:
     Type: String
@@ -1756,10 +1714,10 @@ Parameters:
       - c5.4xlarge
     Default: c5.large
   CPMInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the CPM instance.
   CPMInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the CPM instance will reside.
   PSMCustomAmi:
     Type: String
@@ -1787,10 +1745,10 @@ Parameters:
       - m5.8xlarge
     Default: m5.2xlarge
   PSMInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PSM instance.
   PSMInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSM instance will reside.
   PSMPCustomAmi:
     Type: String
@@ -1819,10 +1777,10 @@ Parameters:
       - m5.4xlarge
     Default: m5.large
   PSMPInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PSMP instance.
   PSMPInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSMP instance will reside.
   PTACustomAmi:
     Type: String
@@ -1849,10 +1807,10 @@ Parameters:
       - m5.4xlarge
     Default: m5.2xlarge
   PTAInstanceSecurityGroups:
-    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PTA instance.
   PTAInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PTA instance will reside.
 Rules:
   PasswordConfirmation:

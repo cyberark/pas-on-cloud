@@ -5,27 +5,27 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   CfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/CfnInitLog'
+      LogStreamName: VaultMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultInitLog'
+      LogStreamName: VaultMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: 'VaultMachine/VaultPostInstallLog'
+      LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultAmi:
@@ -109,7 +109,7 @@ Resources:
       - LambdaDeployRole
       - VaultMachine
   RemovePermissionVault:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
     Properties:
       ServiceToken: !GetAtt RemovePermissionLambda.Arn
@@ -177,7 +177,7 @@ Resources:
                 Action: 'ec2:DescribeImages'
                 Resource: "*"
   LambdaRemovePermissionsRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -223,24 +223,9 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${CfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -370,7 +355,7 @@ Resources:
       Timeout: 60
       Role: !GetAtt 'LambdaDeployRole.Arn'
   RemovePermissionLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Lambda::Function
     Properties:
       Description: Change Policies of VaultInstancesRole IAM Role
       Code:
@@ -535,18 +520,21 @@ Resources:
           services:
             windows:
               AmazonSSMAgent:
-                enabled: 'true'
-                ensureRunning: 'true'
+                enabled: true
+                ensureRunning: true
                 files:
                   - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
           commands:
             1-configCloudWatch:
               command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
+                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+                -VaultPostInstallLogStream ${VaultPostInstallLogStream}
+                -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 0
+              waitAfterCompletion: 60
+              ignoreErrors: true
             3-addDNSSuffix:
               command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
@@ -578,13 +566,13 @@ Resources:
                 powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1
                 -Role ${VaultInstancesRole} -Region ${AWS::Region}
               waitAfterCompletion: 0
-        configSignal:
-          commands:
-            4-changeHostname:
+            3-changeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${VaultHostname} -Force -Restart
               waitAfterCompletion: forever
+        configSignal:
+          commands:
             0-signalCompletion:
               command: !Sub >
                 "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
@@ -593,6 +581,19 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
+  VaultDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt VaultMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: VaultMachine
 Parameters:
   EULA:
     Type: String
@@ -622,6 +623,9 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
+  PASHostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
     Description: Enter the name of the S3 bucket containing the license and recovery public key.
@@ -750,6 +754,7 @@ Metadata:
           - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
+          - PASHostedZoneId
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
@@ -783,6 +788,8 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
+      PASHostedZoneId:
+        default: PAS Hosted Zone Id
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:

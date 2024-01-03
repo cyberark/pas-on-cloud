@@ -6,6 +6,7 @@ Resources:
     Properties:
       RetentionInDays: 30
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   VaultCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
@@ -25,21 +26,21 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     DeletionPolicy: Retain
   VaultDRCfnInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRInitLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRPostInstallLogStream:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultPostInstallLog
@@ -52,49 +53,49 @@ Resources:
       LogStreamName: ComponentsMachine/CfnInitLog
     DeletionPolicy: Retain
   CPMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream'
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PSMConfigurationsLog
     DeletionPolicy: Retain
   PSMRegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PSMRegistrationLog
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PVWAConfigurationsLog
     DeletionPolicy: Retain
   PVWARegistrationLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PVWARegistrationLog
     DeletionPolicy: Retain
   PVWASetLocalServiceLog:
-    Type: 'AWS::Logs::LogStream'
+    Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: ComponentsMachine/PVWASetLocalServiceLog
@@ -137,7 +138,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
   StoreDRPassword:
-    Type: 'AWS::CloudFormation::CustomResource'
+    Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt StorePasswordLambda.Arn
       Password: !Ref VaultDRPassword
@@ -209,7 +210,7 @@ Resources:
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
   RemovePermissionsKMSPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: KMSPolicy
       PolicyDocument:
@@ -224,7 +225,7 @@ Resources:
     DependsOn:
       - RemovePermissionVaultDR
   RemovePermissionsVaultBootstrapIAMPolicy:
-    Type: 'AWS::IAM::Policy'
+    Type: AWS::IAM::Policy
     Properties:
       PolicyName: VaultBootstrapIAMPolicy
       PolicyDocument:
@@ -394,24 +395,9 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultPostInstallLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultInitLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -474,24 +460,9 @@ Resources:
             Action:
               - sts:AssumeRole
       Path: /
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
       Policies:
-        - PolicyName: VaultLogPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:DescribeLogGroups
-                  - logs:DescribeLogStreams
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}'
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRCfnInitLogStream}'
-                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroup}:log-stream:${VaultDRPostInstallLogStream}'
         - PolicyName: VaultSSMPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -526,7 +497,7 @@ Resources:
                 Resource: '*'
     DeletionPolicy: Retain
   ComponentInstanceRole:
-    Type: 'AWS::IAM::Role'
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -539,19 +510,6 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM'
-      Policies:
-        - PolicyName: LogRolePolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
-                Resource:
-                  - !Sub 'arn:${AWS::Partition}:logs:*:*:*'
     DeletionPolicy: Retain
   VaultInstancesProfile:
     Type: AWS::IAM::InstanceProfile
@@ -568,7 +526,7 @@ Resources:
         - !Ref 'VaultDRInstancesRole'
     DeletionPolicy: Retain
   ComponentInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref ComponentInstanceRole
@@ -1090,6 +1048,45 @@ Resources:
       ResourceSignal:
         Timeout: PT30M
     DeletionPolicy: Retain
+  VaultDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt VaultMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: VaultMachine
+  VaultDRDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref VaultHostname
+        - '-dr.pas.local'
+      ResourceRecords:
+      - !GetAtt VaultDRMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: VaultDRMachine
+  ComponentsDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref PASHostedZoneId
+      Name: !Join
+      - ''
+      - - !Ref ComponentsHostname
+        - '.pas.local'
+      ResourceRecords:
+      - !GetAtt ComponentsMachine.PrivateIp
+      TTL: '900'
+      Type: A
+    DependsOn: ComponentsMachine
 Parameters:
   EULA:
     Type: String
@@ -1119,6 +1116,9 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
+  PASHostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
     Description: Enter the name of the S3 bucket containing the license and recovery public key.
@@ -1211,7 +1211,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Vault instance will reside.
   DRInstanceSubnetId:
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the Vault DR instance will reside.
   ComponentsCustomAmi:
     Type: String
@@ -1281,6 +1281,7 @@ Metadata:
           - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
+          - PASHostedZoneId
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
@@ -1319,6 +1320,8 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
+      PASHostedZoneId:
+        default: PAS Hosted Zone Id
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:
