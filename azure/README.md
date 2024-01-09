@@ -29,7 +29,7 @@ Parameters:
 | Parameter Name          | Required | Default              | Comments |
 |-------------------------|----------|----------------------|----------|
 | location                | Yes      | None                 |          |
-| release                 | No       | **v13.2**            |          |
+| release                 | No       | **v14.0**            |          |
 | winVersion              | No       | **win2016**          |          |
 | storageName             | No       | **cyberarkimages**   |          |
 | containerName           | No       | **cyberarkimages**   |          |
