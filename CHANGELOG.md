@@ -3,13 +3,16 @@
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
 
-## [PAS on Cloud v14.0] (TBD)
+## [PAS on Cloud v14.0] (11.1.2024)
 
 ### Added
 - Support PAS version 14.0
 ### Changed
 - #### AWS :
+    - Updated EC2 instance size options to match CyberArk PAS products system requirements.
     - Minor bug fixes
+- #### Azure : 
+    - Updated Azure default VM sizes to match CyberArk PAS products system requirements.
 
 ## [PAS on Cloud v13.2] (14.6.2023)
 
