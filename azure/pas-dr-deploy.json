@@ -238,7 +238,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/release-v11.5/azure/configure-vault.ps1"
+                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v11.5/azure/configure-vault.ps1"
                     ]
                 },
                 "protectedSettings": {
