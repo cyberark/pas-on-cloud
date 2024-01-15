@@ -281,13 +281,13 @@
             "typeHandlerVersion":"1.9",
             "autoUpgradeMinorVersion":true,
             "settings": {
-               "fileUris":[
-                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v11.5/azure/enable-tls-1.2.ps1"
-               ]
+               "fileUris": [
+                  "https://raw.githubusercontent.com/cyberark/pas-on-cloud/release-v11.5/azure/configure-vault.ps1"
+              ]
             },
-            "protectedSettings":{
-               "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file enable-tls-1.2.ps1 && powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
-            }
+           "protectedSettings":{
+              "commandToExecute":"[concat('powershell -ExecutionPolicy Unrestricted -file configure-vault.ps1  ' -AdminPass ', parameters('Primary Vault Admin Password'), ' -MasterPass ', parameters('Primary Vault Master Password'), ' -PrimaryOrDR Primary -PrimaryVaultIP 1.1.1.1 -DRPassword ', parameters('DR User Password'), ' -LicenseFileName ', parameters('Vault License File'), ' -RecPubFileName ', parameters('Recovery Public Key'), ' -StorageName ', parameters('Storage Account Name'), ' -ContainerName ', parameters('Container name'), ' -StorageAccountKey ', parameters('Storage account access key'), ' -VKMName ', parameters ('Key Vault Name'), ' -Secret ', parameters ('DR User Secret'))]"
+           }
          },
          "dependsOn":[
             "[concat('Microsoft.Compute/virtualMachines/', parameters('Primary Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]",
