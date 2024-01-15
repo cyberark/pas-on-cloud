@@ -237,10 +237,12 @@
                 "typeHandlerVersion": "1.9",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "fileUris": []
+                    "fileUris": [
+                        "https://raw.githubusercontent.com/cyberark/pas-on-cloud/v13.0/azure/configure-vault.ps1"
+                    ]
                 },
                 "protectedSettings": {
-					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', 'C:\\CyberArk\\HardeningActivation.ps1', ' -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
+					"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file configure-vault.ps1 -PrimaryOrDR DR ', ' -PrimaryVaultIP ', parameters('Primary Vault Private IP'), ' -DRPassword ', parameters('DR User Password'), ' -VKMName ', parameters('Key Vault Name'), ' -Secret ', parameters('DR User Secret'))]"
                 }
             },
             "dependsOn": [
