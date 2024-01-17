@@ -1307,7 +1307,8 @@ Resources:
               group: root
           commands:
             01_install_cwlogs:
-              command: yum install -y https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+              command: !Sub >-
+                sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
             02_start_awslogs:
               command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_psmp:
@@ -1317,11 +1318,9 @@ Resources:
                 - >-
                   TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
                   -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
-                  /opt/CD-Image/register-arguments.sh Administrator
-                  "${StoreAdminPassword.SsmId}" ${AWS::Region}
-                  "${VaultIpAddress}"  $(curl -H
-                  "X-aws-ec2-metadata-token:$TOKEN" -v
-                  http://169.254.169.254/latest/meta-data/instance-id) ec2-user
+                  /opt/CD-Image/register.sh aws "${VaultIpAddress}"
+                  $(curl -H "X-aws-ec2-metadata-token:$TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
+                  ec2-user Administrator ${AWS::Region} "${StoreAdminPassword.SsmId}"
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
             02-PostInstall:
               command: sudo rm -rf /opt/CD-Image/
@@ -1420,7 +1419,8 @@ Resources:
               group: root
           commands:
             01_install_cloudwatch_agent:
-              command: sudo rpm -U https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+              command: !Sub >-
+                sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
             02_start_cloudwatch_agent:
               command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
         install_pta:
@@ -1588,7 +1588,7 @@ Parameters:
     Description: Enter a password for the Primary Vault Master user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: >-
       Vault Master password must contain at least 1 lowercase letter, 1
       uppercase letter, 1 digit and 1 special character
@@ -1602,7 +1602,7 @@ Parameters:
     Description: Enter a password for the Primary Vault Administrator user.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: >-
       Vault Administrator password must contain at least 1 lowercase letter, 1
       uppercase letter, 1 digit and 1 special character
@@ -1616,7 +1616,7 @@ Parameters:
     Description: Enter the DR User Password.
     NoEcho: true
     MinLength: 8
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$
     ConstraintDescription: >-
       Vault DR password must contain at least 1 lowercase letter, 1 uppercase
       letter, 1 digit and 1 special character
@@ -1629,7 +1629,7 @@ Parameters:
     Type: String
     Description: Enter a secret string for the DR user.
     NoEcho: true
-    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
+    AllowedPattern: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[~!?@#$%^&\*\(\)_\-+=:])(?=\S+$).{8,}$|.{0,0}
     ConstraintDescription: Secret must contain at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 special characters,
       Minimum 10 characters, Allowed A-Z,a-z,0-9,all special characters, Cannot except / \ - ; and controlled characters.
     MinLength: 10
@@ -1641,11 +1641,18 @@ Parameters:
     Type: String
     Description: Select the instance type of the Vault instances.
     AllowedValues:
-      - m5.large
-      - m5.xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+      - c5.9xlarge
+      - m5.8xlarge
+      - c5.12xlarge
+      - m5.12xlarge
+      - c5.18xlarge
+      - m5.16xlarge
+      - c5.24xlarge
+      - m5.24xlarge
+    Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the Vault instances.
@@ -1676,11 +1683,15 @@ Parameters:
     Type: String
     Description: Select the instance type of the PVWA instance.
     AllowedValues:
-      - t3.medium
-      - t3.large
-      - t3.xlarge
-      - t3.2xlarge
-    Default: t3.medium
+      - c5.xlarge
+      - m5.xlarge
+      - c5.2xlarge
+      - m5.2xlarge
+      - c5.4xlarge
+      - m5.4xlarge
+      - c5.9xlarge
+      - m5.8xlarge
+    Default: c5.xlarge
   PVWAInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PVWA instance.
@@ -1708,11 +1719,15 @@ Parameters:
     Type: String
     Description: Select the instance type of the CPM instance.
     AllowedValues:
-      - c5.large
       - c5.xlarge
+      - m5.xlarge
       - c5.2xlarge
+      - m5.2xlarge
       - c5.4xlarge
-    Default: c5.large
+      - m5.4xlarge
+      - c5.9xlarge
+      - m5.8xlarge
+    Default: c5.xlarge
   CPMInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the CPM instance.
@@ -1740,10 +1755,13 @@ Parameters:
     Type: String
     Description: Select the instance type of the PSM instance.
     AllowedValues:
+      - c5.2xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
+      - c5.9xlarge
       - m5.8xlarge
-    Default: m5.2xlarge
+    Default: c5.2xlarge
   PSMInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PSM instance.
@@ -1771,11 +1789,13 @@ Parameters:
     Type: String
     Description: Select the instance type of the PSMP instance.
     AllowedValues:
-      - m5.large
+      - c5.xlarge
       - m5.xlarge
+      - c5.2xlarge
       - m5.2xlarge
+      - c5.4xlarge
       - m5.4xlarge
-    Default: m5.large
+    Default: c5.xlarge
   PSMPInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PSMP instance.
@@ -1803,9 +1823,11 @@ Parameters:
     Type: String
     Description: Select the instance type of the PTA instance.
     AllowedValues:
+      - m5.xlarge
+      - c5.2xlarge
       - m5.2xlarge
-      - m5.4xlarge
-    Default: m5.2xlarge
+      - c5.4xlarge
+    Default: m5.xlarge
   PTAInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
     Description: Assign Security Groups to the PTA instance.

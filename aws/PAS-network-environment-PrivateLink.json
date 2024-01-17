@@ -1872,7 +1872,9 @@
         "IpProtocol": "tcp",
         "FromPort": 443,
         "ToPort": 443,
-        "CidrIp": "0.0.0.0/0"
+        "CidrIp": {
+          "Ref": "PASVPCCIDR"
+        }
       }
     },
     "PrivateLinkPASSGEgress": {
