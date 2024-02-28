@@ -124,7 +124,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "14.0"
       Component: "PSMP"
-      OS: "RHEL-8"
+      OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole
@@ -135,7 +135,7 @@ Resources:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
       Version: "14.0"
       Component: "PTA"
-      OS: "RHEL-8"
+      OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
     DependsOn:
       - LambdaDeployRole

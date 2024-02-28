@@ -74,8 +74,8 @@ $vaultDataDiskDestBlob = "cyberark-pas-vault-$release-$winVersion-datadisk.vhd"
 $pvwaDestBlob = "cyberark-pas-pvwa-$release-$winVersion.vhd"
 $cpmDestBlob = "cyberark-pas-cpm-$release-$winVersion.vhd"
 $psmDestBlob = "cyberark-pas-psm-$release-$winVersion.vhd"
-$psmpDestBlob = "cyberark-pas-psmp-$release-rhel8.vhd"
-$ptaDestBlob = "cyberark-pas-pta-$release-rhel8.vhd"
+$psmpDestBlob = "cyberark-pas-psmp-$release-rhel9.vhd"
+$ptaDestBlob = "cyberark-pas-pta-$release-rhel9.vhd"
 
 Try
 {
@@ -166,7 +166,7 @@ Try
         #Create PSMP Image from blob
         $psmpBlobUri = ($destContext.BlobEndPoint + $containerName + "/" + $psmpDestBlob)
         $vmOSType = "Linux"
-        $imageName = "CyberArk-PAS-PSMP-$release-RHEL8"
+        $imageName = "CyberArk-PAS-PSMP-$release-RHEL9"
         $imageConfig = New-AzureRmImageConfig -Location $location
         $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $psmpBlobUri
         New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
@@ -181,7 +181,7 @@ Try
         #Create PTA Image from blob
         $ptaBlobUri = ($destContext.BlobEndPoint + $containerName + "/" + $ptaDestBlob)
         $vmOSType = "Linux"
-        $imageName = "CyberArk-PAS-PTA-$release-RHEL8"
+        $imageName = "CyberArk-PAS-PTA-$release-RHEL9"
         $imageConfig = New-AzureRmImageConfig -Location $location
         $imageConfig = Set-AzureRmImageOsDisk -Image $imageConfig -OsType $vmOSType -OsState Generalized -BlobUri $ptaBlobUri
         New-AzureRmImage -ImageName $imageName -ResourceGroupName $resourceGroupName -Image $imageConfig
