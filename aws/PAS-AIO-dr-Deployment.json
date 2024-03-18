@@ -152,7 +152,7 @@
                   ]
                }
             },
-            "Runtime":"python2.7",
+            "Runtime":"python3.11",
             "Handler":"index.lambda_handler",
             "Role":{
                "Fn::GetAtt":[
@@ -206,7 +206,7 @@
                   ]
                }
             },
-            "Runtime":"python2.7",
+            "Runtime":"python3.11",
             "Handler":"index.lambda_handler",
             "Role":{
                "Fn::GetAtt":[
@@ -262,7 +262,7 @@
                   ]
                }
             },
-            "Runtime": "python2.7",
+            "Runtime": "python3.11",
             "Handler": "index.lambda_handler",
             "Role": {
                "Fn::GetAtt": [
