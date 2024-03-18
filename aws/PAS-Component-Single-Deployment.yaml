@@ -280,7 +280,7 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
@@ -313,7 +313,7 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
@@ -364,7 +364,7 @@ Resources:
             except:
               traceback.print_last()
               cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: index.handler
       Timeout: 60
       Role: !GetAtt LambdaDeployRole.Arn
