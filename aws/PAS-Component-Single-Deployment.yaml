@@ -153,7 +153,7 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt
@@ -189,7 +189,7 @@ Resources:
               except Exception as E:
                   print (E)
                   return cfnresponse.send(event, context, cfnresponse.FAILED, {}, physicalResourceId)
-      Runtime: python3.7
+      Runtime: python3.11
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt
