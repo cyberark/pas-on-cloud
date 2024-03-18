@@ -954,7 +954,12 @@ Resources:
               owner: root
               group: root
           commands:
-            01_install_cloudwatch_agent:
+            01_install_cloudwat
+            
+            
+            
+            
+            ch_agent:
               command: !Sub >-
                 sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
             02_start_cloudwatch_agent:
