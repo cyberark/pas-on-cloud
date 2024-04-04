@@ -1,0 +1,31 @@
+name: Update URL Version
+
+on: create
+
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  build:
+    name: Update URL Version for Release Branches
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/release/')
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ssh-key: ${{secrets.ID_GITHUB_ACTIONS}}
+ 
+    - name: Update pas-single-component-deploy.json
+      uses: restackio/update-json-file-action@2.1
+      with:
+        file: azure/pas-single-component-deploy.json
+        fields: "{\"resources[0].properties.templateLink.uri\": \"https://raw.githubusercontent.com/cyberark/pas-on-cloud/${{github.ref_name}}/azure/nested/psmp-nested-template.json\"}"
+
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add azure/pas-single-component-deploy.json
+        git commit -m "GitHub Action: Update psmp nested template url"
+        git push
