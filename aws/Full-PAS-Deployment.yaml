@@ -1427,7 +1427,7 @@ Resources:
           commands:
             01-executeptaconfigurationscript: 
               command: !Sub >-
-                sudo /tmp/register.sh aws "${VaultMachine.PrivateIp}" "${PVWADNSRecord}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultDRMachine.PrivateIp}"
+                sudo /tmp/register.sh aws "${VaultMachine.PrivateIp}" "${PVWAMachine.PrivateDnsName}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultDRMachine.PrivateIp}"
             99-SignalCompletion:
               command: !Sub >-
                 cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
@@ -1437,97 +1437,6 @@ Resources:
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
-  VaultDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref VaultHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt VaultMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: VaultMachine
-  VaultDRDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref VaultHostname
-        - '-dr.pas.local'
-      ResourceRecords:
-      - !GetAtt VaultDRMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: VaultDRMachine
-  PVWADNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref PVWAHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PVWAMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: PVWAMachine
-  CPMDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref CPMHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt CPMMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: CPMMachine
-  PSMDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref PSMHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PSMMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: PSMMachine
-  PSMPDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref PSMPHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PSMPMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: PSMPMachine
-  PTADNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref PTAHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PTAMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: PTAMachine
 Parameters:
   EULA:
     Type: String
@@ -1552,9 +1461,6 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
-  PASHostedZoneId:
-    Type: AWS::Route53::HostedZone::Id
-    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
     Description: Enter the name of the S3 bucket containing the license and recovery public key.
@@ -1869,7 +1775,6 @@ Metadata:
           - WinVersion
           - CyberarkAccountId
           - KeyName
-          - PASHostedZoneId
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
@@ -1945,8 +1850,6 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
-      PASHostedZoneId:
-        default: PAS Hosted Zone Id
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:
