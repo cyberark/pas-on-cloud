@@ -581,19 +581,6 @@ Resources:
       ResourceSignal:
         Timeout: PT20M
     DeletionPolicy: Retain
-  VaultDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref VaultHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt VaultMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    DependsOn: VaultMachine
 Parameters:
   EULA:
     Type: String
@@ -623,9 +610,6 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
-  PASHostedZoneId:
-    Type: AWS::Route53::HostedZone::Id
-    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultFilesBucket:
     Type: String
     Description: Enter the name of the S3 bucket containing the license and recovery public key.
@@ -754,7 +738,6 @@ Metadata:
           - VaultCustomAmi
           - CyberarkAccountId
           - KeyName
-          - PASHostedZoneId
           - VaultFilesBucket
           - LicenseFile
           - RecoveryPublicKey
@@ -788,8 +771,6 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
-      PASHostedZoneId:
-        default: PAS Hosted Zone Id
       VaultFilesBucket:
         default: S3 Bucket
       LicenseFile:
