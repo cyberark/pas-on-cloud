@@ -972,71 +972,6 @@ Resources:
       ResourceSignal:
         Timeout: PT10M
     DeletionPolicy: Retain
-  PVWADNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref ComponentHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PVWAMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    Condition: CreatePVWACondition
-  CPMDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref ComponentHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt CPMMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    Condition: CreateCPMCondition
-  PSMDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref ComponentHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PSMMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    Condition: CreatePSMCondition
-  PSMPDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref ComponentHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PSMPMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    Condition: CreatePSMPCondition
-  PTADNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref PASHostedZoneId
-      Name: !Join
-      - ''
-      - - !Ref ComponentHostname
-        - '.pas.local'
-      ResourceRecords:
-      - !GetAtt PTAMachine.PrivateIp
-      TTL: '900'
-      Type: A
-    Condition: CreatePTACondition
 Parameters:
   EULA:
     Type: String
@@ -1061,9 +996,6 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
     ConstraintDescription: Can contain only ASCII characters.
-  PASHostedZoneId:
-    Type: AWS::Route53::HostedZone::Id
-    Description: Provide the ID for the Hosted Zone created during the network deployment template.
   VaultPrivateIP:
     Type: String
     Description: Enter the IP of the Primary Vault instance.
@@ -1146,7 +1078,6 @@ Metadata:
           - WinVersion
           - CyberarkAccountId
           - KeyName
-          - PASHostedZoneId
       - Label:
           default: Primary Vault and DR information
         Parameters:
@@ -1174,8 +1105,6 @@ Metadata:
         default: CyberArk Account ID
       KeyName:
         default: Key Pair
-      PASHostedZoneId:
-        default: PAS Hosted Zone Id
       VaultPrivateIP:
         default: Primary Vault Private IP
       DRPrivateIP:
