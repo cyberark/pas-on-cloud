@@ -18,21 +18,6 @@
         ]
       }
     },
-    "PASHostedZone": {
-      "Type" : "AWS::Route53::HostedZone",
-      "Properties" : {
-        "Name" : "pas.local",
-        "VPCs" : [
-        {
-          "VPCId": {
-            "Ref": "PASVPC"
-          },
-          "VPCRegion": {
-            "Ref": "AWS::Region"
-          }
-        }]
-      }
-    },
     "VaultMainSubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
