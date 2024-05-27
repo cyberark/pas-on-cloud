@@ -13,6 +13,8 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
     - Minor bug fixes
 - #### Azure : 
     - Updated Azure default VM sizes to match CyberArk PAS products system requirements.
+### Removed
+- PAS-AIO-DR-Deployment CloudFormation template was removed 
 
 ## [PAS on Cloud v13.2] (14.6.2023)
 

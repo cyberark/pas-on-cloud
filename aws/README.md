@@ -10,7 +10,6 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 | DRVault-Single-Deployment | Deploying a new DR Vault in an existing network environment |
 | PAS-Component-Single-Deployment | Deploying a single PAS component CPM, PVWA, PSM, PSMP or PTA instance in an existing network environment |
 | Full-PAS-Deployment | Deploying a full PAS environment, where each component is deployed in a separated instance (Vault, DR Vault, PVWA, CPM, PSM, PSMP and PTA) |
-| PAS-AIO-DR-Deployment | Deploying PAS as an all in one configuration, where a single instance contain PVWA, PSM and CPM, Vault instance and DR Vault instance |
 
 ## In order to enable PTA after successful installation please do the below:
 
