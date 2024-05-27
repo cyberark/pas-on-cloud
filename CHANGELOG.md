@@ -8,7 +8,6 @@ The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS 
 ### Added
 - #### AWS :
     - Custom AMI as Parameter - A new optional parameter has been added to the CloudFormation templates, allowing customers to enforce the usage of a       specific AMI ID for each PAS component.
-    - Set Hostname for Each Instance - All CloudFormation templates now include the capability to set the hostname of every deployed component.
 - #### Azure :
     - Support Non-Zone Regions - Customers now have the ability to deploy all components (excluding the Primary Vault) in non-zone regions.
 ### Changed
