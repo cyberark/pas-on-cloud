@@ -89,7 +89,7 @@ Resources:
     Condition: PVWACustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.0"
+      Version: "14.2"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -100,7 +100,7 @@ Resources:
     Condition: CPMCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.0"
+      Version: "14.2"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -111,7 +111,7 @@ Resources:
     Condition: PSMCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.0"
+      Version: "14.2"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -122,7 +122,7 @@ Resources:
     Condition: PSMPCustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.0"
+      Version: "14.2"
       Component: "PSMP"
       OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -133,7 +133,7 @@ Resources:
     Condition: PTACustomImageEmpty
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.0"
+      Version: "14.2"
       Component: "PTA"
       OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
