@@ -17,37 +17,18 @@ These images later can be used together with deployment scripts above in order t
 To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.
 
 ## Usage
-As a first step customer must receive components AccessSAS.
+As a prerequisite to deploy PAM components using the supplied ARM templates, customer must have the latest images ready in a designated Resource Group in the destination subscription.
+
+This can be achieved by downloading the import-pas-images.ps1 from CyberArk's Marketplace at:
+https://cyberark.my.site.com/mplace/s/#software
+You should navigate "Privileged Access Manager Self-Hosted" matching your desired release version.
+Under "PAM Self-Hosted on Cloud" > "Share Image on Cloud" > "Share PAM Self-Hosted on Azure", you'll be able to download the required Powershell script.
 Copy import-pas-images.ps1 script to your environment. You can copy it directly to Azure Cloud Shell or to the machine with defined access to your Azure account.
+The detailed documentation and helpful notes can be found inside the script, it is already loaded with all the required AccessSAS URLs needed for PAM images import.
 
-import-pas-images.ps1 -location "<Desired Azure location>" [-release] "<PAS release>" [-winVersion] "<Win2016 / Win2019>" [-storageName] "<Custom Storage account>" [-containerName] "<Custom Container>" [-resourceGroupName] "<Custom Resource Group>" [-vaultAccessSAS] "<pas-vault-vXX.X AccessSAS>"
-[-vaultDataDiskAccessSAS] "<pas-vaultDataDisk-vXX.X AccessSAS>" [-pvwaAccessSAS] "<pas-pvwa-vXX.X AccessSAS>" [-cpmAccessSAS] "<pas-cpm-vXX.X AccessSAS>"
-[-psmAccessSAS] "<pas-psm-vXX.X AccessSAS>" [-psmpAccessSAS] "<pas-psmp-vXX.X AccessSAS>" [-ptaAccessSAS] "<pas-pta-vXX.X AccessSAS>"
-
-Parameters:
-
-| Parameter Name          | Required | Default              | Comments |
-|-------------------------|----------|----------------------|----------|
-| location                | Yes      | None                 |          |
-| release                 | No       | **v14.0**            |          |
-| winVersion              | No       | **win2016**          |          |
-| storageName             | No       | **cyberarkimages**   |          |
-| containerName           | No       | **cyberarkimages**   |          |
-| resourceGroupName       | No       | **Cyberark-Images**  |          |
-| vaultAccessSAS          | No       | None                 |          |
-| vaultDataDiskAccessSAS  | No       | None                 |          |
-| pvwaAccessSAS           | No       | None                 |          |
-| cpmAccessSAS            | No       | None                 |          |
-| psmAccessSAS            | No       | None                 |          |
-| psmpAccessSAS           | No       | None                 |          |
-| ptaAccessSAS            | No       | None                 |          |
-
-## Notes:
-- "release" and "winVersion" parameters are being used in the naming of the vhd files and images created, 
-  it is recommended to specify those to get accurately described images ("winVersion" is irrelevant if only pta/psmp are being imported).
-- "storageName", "containerName" and "resourceGroupName" are defaulted to "cyberarkimages", "cyberarkimages" and "Cyberark-Images" respectivly,
-  and the required objects will be created automatically if needed. Use these only in case you desire to place them in a custom location.
-- "vaultAccessSAS" and "vaultDataDiskAccessSAS" are binded together, you must specify both of them or none of them.
+As an alternative, you are also offered the option to download a toolkit that will allow you to create PAM component images on your own,
+under "PAM Self-Hosted on Cloud" > "Bring Your Own Image" > "PAM_Self-Hosted_on_Azure.zip".
+If chosen to use this toolkit, your results would be in the form of an chosen PAM component image, which is ready to use as part of the ARM templates.
 
 
 ## In order to enable PTA with self sign certificate after successful installation please do the below:
