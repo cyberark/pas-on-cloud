@@ -17,7 +17,7 @@ These images later can be used together with deployment scripts above in order t
 To copy CyberArk Privileged Access Security solution snapshot and create the images in your Azure subscription, use the import-pas-images.ps1 PowerShell script. Make sure you have all the CyberArk components AccessSAS URLs before executing the script.
 
 ## Usage
-As a prerequisite to deploy PAM components using the supplied ARM templates, customer must have the latest images ready in a designated Resource Group in the destination subscription.
+As a prerequisite to deploy PAM components using the supplied ARM templates, customer must have the compatible images ready in a designated Resource Group in the destination subscription.
 
 This can be achieved by downloading the import-pas-images.ps1 from CyberArk's Marketplace at:
 https://cyberark.my.site.com/mplace/s/#software
