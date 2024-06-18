@@ -3,6 +3,15 @@
 The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
 
+## [PAS on Cloud v14.2] (18.6.2024)
+
+### Changed
+- #### AWS : 
+    - Lambda functions are running using Python 3.11
+    - Patches for PAM products will be distributed and supported as images for new deployments.
+
+- PTA & PSMP are deployed on RHEL 9, instead of RHEL 8
+
 ## [PAS on Cloud v14.0] (11.1.2024)
 
 ### Added
