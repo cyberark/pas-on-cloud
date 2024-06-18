@@ -21,8 +21,8 @@ As a prerequisite to deploy PAM components using the supplied ARM templates, cus
 
 This can be achieved by downloading the import-pas-images.ps1 from CyberArk's Marketplace at:
 https://cyberark.my.site.com/mplace/s/#software
-You should navigate "Privileged Access Manager Self-Hosted" matching your desired release version.
-Under "PAM Self-Hosted on Cloud" > "Share Image on Cloud" > "Share PAM Self-Hosted on Azure", you'll be able to download the required Powershell script.
+You should navigate to "Privileged Access Manager Self-Hosted" matching your desired release version.
+Under "PAM Self-Hosted on Cloud" > "Share Image on Cloud" > "Share PAM Self-Hosted on Azure", you'll be able to download the required PowerShell script.
 Copy import-pas-images.ps1 script to your environment. You can copy it directly to Azure Cloud Shell or to the machine with defined access to your Azure account.
 The detailed documentation and helpful notes can be found inside the script, it is already loaded with all the required AccessSAS URLs needed for PAM images import.
 
