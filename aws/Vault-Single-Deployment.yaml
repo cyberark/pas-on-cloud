@@ -504,79 +504,99 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <script>
+          # Initialize CloudFormation
           cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
+
+          # Ensure AmazonSSMAgent is enabled and running
+          powershell.exe -Command "Set-Service AmazonSSMAgent -StartupType Automatic"
+          powershell.exe -Command "Start-Service AmazonSSMAgent"
+          # Execute configSSMAndHostname commands
+          powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
+          powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
+
+          # Execute configServices commands
+          powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+          powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
+
+          # Execute postInstall commands
+          powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} ${Secret}
+          powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
+          powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
+
+          # Signal completion to CloudFormation
+          "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
           </script>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          ascending:
-            - configSSMAndHostname
-            - configServices
-            - postInstall
-            - configSignal
-        configSSMAndHostname:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-configCloudWatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
-                -VaultPostInstallLogStream ${VaultPostInstallLogStream}
-                -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-              ignoreErrors: true
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-downloadLicenseRecpub:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            2-fixENE:
-              command: >
-                powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
-              waitAfterCompletion: 0
-        postInstall:
-          commands:
-            1-postInstallWithDR:
-              command: !Sub
-              - >-
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
-                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
-                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
-                -Region ${AWS::Region} ${Secret}
-              - Secret: !If
-                  - SecretEmpty
-                  - ''
-                  - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
-              waitAfterCompletion: 0
-            2-changeKMSTag:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1
-                -Role ${VaultInstancesRole} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            3-changeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName
-                ${VaultHostname} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
+    # Metadata:
+    #   AWS::CloudFormation::Init:
+    #     configSets:
+    #       ascending:
+    #         - configSSMAndHostname
+    #         - configServices
+    #         - postInstall
+    #         - configSignal
+        # configSSMAndHostname:
+        #   services:
+        #     windows:
+        #       AmazonSSMAgent:
+        #         enabled: true
+        #         ensureRunning: true
+        #         files:
+        #           - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
+        #   commands:
+        #     1-configCloudWatch:
+        #       command: !Sub >
+        #         powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
+        #         -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream}
+        #         -VaultPostInstallLogStream ${VaultPostInstallLogStream}
+        #         -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
+        #     2-restartSSM:
+        #       command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
+        #       waitAfterCompletion: 60
+        #       ignoreErrors: true
+        #     3-addDNSSuffix:
+        #       command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
+        # configServices:
+        #   commands:
+        #     1-downloadLicenseRecpub:
+        #       command: !Sub >
+        #         powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+        #       waitAfterCompletion: 0
+        #     2-fixENE:
+        #       command: >
+        #         powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
+        #       waitAfterCompletion: 0
+        # postInstall:
+        #   commands:
+        #     1-postInstallWithDR:
+        #       command: !Sub
+        #       - >-
+        #         powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
+        #         ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
+        #         -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
+        #         -Region ${AWS::Region} ${Secret}
+        #       - Secret: !If
+        #           - SecretEmpty
+        #           - ''
+        #           - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
+        #       waitAfterCompletion: 0
+        #     2-changeKMSTag:
+        #       command: !Sub >
+        #         powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1
+        #         -Role ${VaultInstancesRole} -Region ${AWS::Region}
+        #       waitAfterCompletion: 0
+        #     3-changeHostname:
+        #       command: !Sub >
+        #         powershell.exe -Command Rename-Computer -NewName
+        #         ${VaultHostname} -Force -Restart
+        #       waitAfterCompletion: forever
+        # configSignal:
+        #   commands:
+        #     0-signalCompletion:
+        #       command: !Sub >
+        #         "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
+        #       waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
