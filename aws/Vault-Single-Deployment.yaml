@@ -504,11 +504,14 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <powershell>
+          Set-PSDebug -Trace 1
+          $FirstBootFile = $env:SystemRoot + "\Temp\FirstBoot_" + (Get-Date).ToString("yyyy-MM-dd-hh-mm")
+          New-Item $FirstBootFile -ItemType file
           $LogFile = "C:\CyberArk\Deployment\Logs\userdata.log"
           # Ensure AmazonSSMAgent is enabled and running
           Set-Service AmazonSSMAgent -StartupType Automatic
           Start-Service AmazonSSMAgent
-          WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Configured AmazonSSMAgent successfully"
+          WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "AmazonSSMAgent state verified successfully"
           # # Execute configSSMAndHostname commands
           # powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
           # powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
