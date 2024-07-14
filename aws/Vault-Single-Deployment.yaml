@@ -503,29 +503,28 @@ Resources:
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
-          <script>
-          # Initialize CloudFormation
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
-
+          <powershell>
+          $LogFile = "C:\CyberArk\Deployment\Logs\userdata.log"
           # Ensure AmazonSSMAgent is enabled and running
-          powershell.exe -Command "Set-Service AmazonSSMAgent -StartupType Automatic"
-          powershell.exe -Command "Start-Service AmazonSSMAgent"
-          # Execute configSSMAndHostname commands
-          powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
-          powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
+          Set-Service AmazonSSMAgent -StartupType Automatic
+          Start-Service AmazonSSMAgent
+          WriteLog -LogFile $LogFile -LogLevel "INFO" -Log "Configured AmazonSSMAgent successfully"
+          # # Execute configSSMAndHostname commands
+          # powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${CfnInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -VaultInitLogStream ${VaultInitLogStream} -Region ${AWS::Region}
+          # powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
 
-          # Execute configServices commands
-          powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
-          powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
+          # # Execute configServices commands
+          # powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
+          # powershell.exe -File C:\CyberArk\Deployment\FixENE.ps1
 
-          # Execute postInstall commands
-          powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} ${Secret}
-          powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
-          powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
+          # # Execute postInstall commands
+          # powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key" -Region ${AWS::Region} ${Secret}
+          # powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
+          # powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
 
           # Signal completion to CloudFormation
-          "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
-          </script>
+          cfn-signal.exe --stack ${AWS::StackName} --success true --resource VaultMachine --region ${AWS::Region}
+          </powershell>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     # Metadata:
