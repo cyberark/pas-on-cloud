@@ -522,8 +522,9 @@ Resources:
             "-StackName ${AWS::StackName}"
           )
 
-          if (${SSMSecretParameterID}) {
-              $params += "-SSMSecretParameterID ${SSMSecretParameterID}"
+          $Secret = "${!If [SecretEmpty, '', !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}']}"
+          if ($Secret -ne '') {
+            $params += $Secret
           }
 
           C:\CyberArk\Deployment\UserDataScript.ps1 @params
