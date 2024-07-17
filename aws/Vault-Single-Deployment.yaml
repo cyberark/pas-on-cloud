@@ -505,7 +505,7 @@ Resources:
         Fn::Sub: |-
           <powershell>
           $params = @(
-            "-IsPrimary $true",
+            "-IsPrimaryOrDR Primary",
             "-VaultFilesBucket ${VaultFilesBucket}",
             "-LicenseFileKey ${LicenseFile}",
             "-RecoveryPublicKey ${RecoveryPublicKey}",
