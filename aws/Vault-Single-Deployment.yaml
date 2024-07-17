@@ -504,22 +504,29 @@ Resources:
       UserData: !Base64
         Fn::Sub: |-
           <powershell>
-          C:\CyberArk\Deployment\UserDataScript.ps1 `
-            -VaultFilesBucket ${VaultFilesBucket} `
-            -LicenseFileKey ${LicenseFile} `
-            -RecoveryPublicKey ${RecoveryPublicKey} `
-            -Region ${AWS::Region} `
-            -LogGroup ${LogGroup} `
-            -UserDataLogStream ${UserDataLogStream} `
-            -VaultInitLogStream ${VaultInitLogStream} `
-            -VaultPostInstallLogStream ${VaultPostInstallLogStream} `
-            -SSMMasterPassParameterID ${StoreMasterPassword.SsmId} `
-            -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} `
-            -SSMDRPassParameterID ${StoreDRPassword.SsmId} `
-            -Secret ${Secret} `
-            -VaultInstancesRole ${VaultInstancesRole} `
-            -VaultHostname ${VaultHostname} `
-            -StackName ${AWS::StackName}
+          $params = @(
+            "-IsPrimary $true",
+            "-VaultFilesBucket ${VaultFilesBucket}",
+            "-LicenseFileKey ${LicenseFile}",
+            "-RecoveryPublicKey ${RecoveryPublicKey}",
+            "-Region ${AWS::Region}",
+            "-LogGroup ${LogGroup}",
+            "-UserDataLogStream ${UserDataLogStream}",
+            "-VaultInitLogStream ${VaultInitLogStream}",
+            "-VaultPostInstallLogStream ${VaultPostInstallLogStream}",
+            "-SSMMasterPassParameterID ${StoreMasterPassword.SsmId}",
+            "-SSMAdminPassParameterID ${StoreAdminPassword.SsmId}",
+            "-SSMDRPassParameterID ${StoreDRPassword.SsmId}",
+            "-VaultInstancesRole ${VaultInstancesRole}",
+            "-VaultHostname ${VaultHostname}",
+            "-StackName ${AWS::StackName}"
+          )
+
+          if (${SSMSecretParameterID}) {
+              $params += "-SSMSecretParameterID ${SSMSecretParameterID}"
+          }
+
+          C:\CyberArk\Deployment\UserDataScript.ps1 @params
           </powershell>
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
