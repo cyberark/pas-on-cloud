@@ -65,13 +65,10 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password:
-        Fn::If:
-          - SecretEmpty
-          - "EmptyValue"
-          - !Ref 'Secret'
+      Password: !Ref 'Secret'
     DependsOn:
       - LambdaDeployRole
+    Condition: SecretProvided
   CleanMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -108,6 +105,7 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - VaultMachine
+    Condition: SecretProvided
   RemovePermissionVault:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -517,15 +515,11 @@ Resources:
             "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
             "SSMAdminPassParameterID"   = "${StoreAdminPassword.SsmId}"
             "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
+            "SSMSecretParameterID"      = "${StoreSecret.SsmId}"
             "VaultInstancesRole"        = "${VaultInstancesRole}"
             "VaultHostname"             = "${VaultHostname}"
             "StackName"                 = "${AWS::StackName}"
           }
-
-          # $SecretSsmId = ${!If SecretEmpty, '', StoreSecret.SsmId}
-          # if ($SecretSsmId) {
-          #   $UserDataParams.Add("SSMSecretParameterID","$SecretSsmId")
-          # }
 
           C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
           </powershell>
@@ -761,9 +755,10 @@ Metadata:
       SecretRetype:
         default: Retype DR User Secret
 Conditions:
-  SecretEmpty: !Equals
-    - ''
-    - !Ref Secret
+  SecretProvided: !Not
+    - !Equals
+      - ''
+      - !Ref Secret
   CustomImageEmpty: !Equals
     - ''
     - !Ref VaultCustomAmi
