@@ -500,29 +500,34 @@ Resources:
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData:
-        Fn::Base64: !Sub |
-          <powershell>
-          $UserDataParams = @{
-            "IsPrimaryOrDR"             = "Primary"
-            "VaultFilesBucket"          = "${VaultFilesBucket}"
-            "LicenseFileKey"            = "${LicenseFile}"
-            "RecoveryPublicKey"         = "${RecoveryPublicKey}"
-            "Region"                    = "${AWS::Region}"
-            "LogGroup"                  = "${LogGroup}"
-            "UserDataLogStream"         = "${UserDataLogStream}"
-            "VaultInitLogStream"        = "${VaultInitLogStream}"
-            "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
-            "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
-            "SSMAdminPassParameterID"   = "${StoreAdminPassword.SsmId}"
-            "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
-            "SSMSecretParameterID"      = "${StoreSecret.SsmId}"
-            "VaultInstancesRole"        = "${VaultInstancesRole}"
-            "VaultHostname"             = "${VaultHostname}"
-            "StackName"                 = "${AWS::StackName}"
-          }
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "IsPrimaryOrDR"             = "Primary"
+              "VaultFilesBucket"          = "${VaultFilesBucket}"
+              "LicenseFileKey"            = "${LicenseFile}"
+              "RecoveryPublicKey"         = "${RecoveryPublicKey}"
+              "Region"                    = "${AWS::Region}"
+              "LogGroup"                  = "${LogGroup}"
+              "UserDataLogStream"         = "${UserDataLogStream}"
+              "VaultInitLogStream"        = "${VaultInitLogStream}"
+              "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
+              "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
+              "SSMAdminPassParameterID"   = "${StoreAdminPassword.SsmId}"
+              "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
+              "SSMSecretParameterID"      = "${SecretSsmId}"
+              "VaultInstancesRole"        = "${VaultInstancesRole}"
+              "VaultHostname"             = "${VaultHostname}"
+              "StackName"                 = "${AWS::StackName}"
+            }
 
-          C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
-          </powershell>
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - SecretSsmId: !If
+              - SecretProvided
+              - !GetAtt StoreSecret.SsmId
+              - ''
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
