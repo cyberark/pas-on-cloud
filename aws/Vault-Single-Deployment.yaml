@@ -65,10 +65,13 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt 'StorePasswordLambda.Arn'
-      Password: !Ref 'Secret'
+      Password:
+        Fn::If:
+          - SecretProvided
+          - !Ref 'Secret'
+          - "null"
     DependsOn:
       - LambdaDeployRole
-    Condition: SecretProvided
   CleanMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -105,7 +108,6 @@ Resources:
     DependsOn:
       - LambdaDeployRole
       - VaultMachine
-    Condition: SecretProvided
   RemovePermissionVault:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -532,7 +534,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT10M
     DeletionPolicy: Retain
 Parameters:
   EULA:
