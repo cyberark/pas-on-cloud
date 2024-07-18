@@ -505,7 +505,7 @@ Resources:
         Fn::Sub: |-
           <powershell>
           $params = @(
-            "-IsPrimaryOrDR Primary",
+            "-IsPrimaryOrDR 'Primary'",
             "-VaultFilesBucket ${VaultFilesBucket}",
             "-LicenseFileKey ${LicenseFile}",
             "-RecoveryPublicKey ${RecoveryPublicKey}",
@@ -522,9 +522,9 @@ Resources:
             "-StackName ${AWS::StackName}"
           )
 
-          $Secret = "${!If [SecretEmpty, '', !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}']}"
-          if ($Secret -ne '') {
-            $params += $Secret
+          $SecretEmpty = ${SecretEmpty}
+          if ($SecretEmpty -eq $false) {
+            $params += "-SSMSecretParameterID ${StoreSecret.SsmId}"
           }
 
           C:\CyberArk\Deployment\UserDataScript.ps1 @params
