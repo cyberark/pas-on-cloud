@@ -73,11 +73,11 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
-  VaultCfnInitLogStream:
+  VaultUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultMachine/CfnInitLog
+      LogStreamName: VaultMachine/UserDataLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
@@ -94,11 +94,11 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultDRCfnInitLogStream:
+  VaultUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/CfnInitLog
+      LogStreamName: VaultDRMachine/UserDataLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRInitLogStream:
@@ -808,7 +808,7 @@ Resources:
               "RecoveryPublicKey"         = "${RecoveryPublicKey}"
               "Region"                    = "${AWS::Region}"
               "LogGroup"                  = "${LogGroup}"
-              "UserDataLogStream"         = "${UserDataLogStream}"
+              "UserDataLogStream"         = "${VaultUserDataLogStream}"
               "VaultInitLogStream"        = "${VaultInitLogStream}"
               "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
               "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
@@ -863,12 +863,12 @@ Resources:
               "IsPrimaryOrDR"             = "DR"
               "Region"                    = "${AWS::Region}"
               "LogGroup"                  = "${LogGroup}"
-              "UserDataLogStream"         = "${UserDataLogStream}"
-              "VaultInitLogStream"        = "${VaultInitLogStream}"
-              "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
+              "UserDataLogStream"         = "${VaultDRUserDataLogStream}"
+              "VaultInitLogStream"        = "${VaultDRInitLogStream}"
+              "VaultPostInstallLogStream" = "${VaultDRPostInstallLogStream}"
               "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
               "SSMSecretParameterID"      = "${SecretSsmId}"
-              "VaultPrivateIP"            = "${VaultPrivateIP}"
+              "VaultPrivateIP"            = "${VaultMachine.PrivateIp}"
               "VaultInstancesRole"        = "${VaultDRInstancesProfile}"
               "VaultHostname"             = "${VaultHostname}"
               "StackName"                 = "${AWS::StackName}"
