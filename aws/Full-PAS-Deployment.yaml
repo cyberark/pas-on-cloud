@@ -94,7 +94,7 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultUserDataLogStream:
+  VaultDRUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
