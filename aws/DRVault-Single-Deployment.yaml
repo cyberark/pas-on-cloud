@@ -7,26 +7,23 @@ Resources:
       RetentionInDays: 30
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-  UserDataLogStream:
+  VaultDRUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/UserDataLog
-    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultInitLogStream:
+  VaultDRInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultInitLog
-    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultPostInstallLogStream:
+  VaultDRPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDRMachine/VaultPostInstallLog
-    UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultAmi:
     Type: Custom::FindAMI
@@ -454,9 +451,9 @@ Resources:
               "IsPrimaryOrDR"             = "DR"
               "Region"                    = "${AWS::Region}"
               "LogGroup"                  = "${LogGroup}"
-              "UserDataLogStream"         = "${UserDataLogStream}"
-              "VaultInitLogStream"        = "${VaultInitLogStream}"
-              "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
+              "UserDataLogStream"         = "${VaultDRUserDataLogStream}"
+              "VaultInitLogStream"        = "${VaultDRInitLogStream}"
+              "VaultPostInstallLogStream" = "${VaultDRPostInstallLogStream}"
               "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
               "SSMSecretParameterID"      = "${SecretSsmId}"
               "VaultPrivateIP"            = "${VaultPrivateIP}"
