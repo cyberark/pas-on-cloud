@@ -7,7 +7,7 @@ Resources:
       RetentionInDays: 30
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-  UserDataLogStream:
+  VaultUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
@@ -512,7 +512,7 @@ Resources:
               "RecoveryPublicKey"         = "${RecoveryPublicKey}"
               "Region"                    = "${AWS::Region}"
               "LogGroup"                  = "${LogGroup}"
-              "UserDataLogStream"         = "${UserDataLogStream}"
+              "UserDataLogStream"         = "${VaultUserDataLogStream}"
               "VaultInitLogStream"        = "${VaultInitLogStream}"
               "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
               "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
