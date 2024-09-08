@@ -7,25 +7,25 @@ Resources:
       RetentionInDays: 30
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-  CPMCfnInitLogStream:
+  CPMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMCfnInitLogStream
+      LogStreamName: CPMMachine/UserDataLog
     DeletionPolicy: Retain
-  CPMConfigurationsLog:
+  CPMConfigurationsLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMConfigurationsLog
     DeletionPolicy: Retain
-  CPMRegistrationLog:
+  CPMRegistrationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
-  CPMSetLocalServiceLog:
+  CPMSetLocalServiceLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
