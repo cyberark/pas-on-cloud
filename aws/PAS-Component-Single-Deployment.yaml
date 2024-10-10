@@ -410,7 +410,7 @@ Resources:
     Condition: CreatePVWACondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
   CPMMachine:
     Type: AWS::EC2::Instance
@@ -454,7 +454,7 @@ Resources:
     Condition: CreateCPMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
   PSMMachine:
     Type: AWS::EC2::Instance
@@ -497,7 +497,7 @@ Resources:
     Condition: CreatePSMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
   PSMPMachine:
     Type: AWS::EC2::Instance
@@ -614,7 +614,7 @@ Resources:
     Condition: CreatePSMPCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
   PTAMachine:
     Type: AWS::EC2::Instance
@@ -717,7 +717,7 @@ Resources:
     Condition: CreatePTACondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
 Parameters:
   EULA:
