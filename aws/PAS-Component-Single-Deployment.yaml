@@ -478,7 +478,7 @@ Resources:
               "Region"                        = "${AWS::Region}"
               "LogGroup"                      = "${LogGroup}"
               "UserDataLogStream"             = "${PSMUserDataLogStream}"
-              "PSMConfigurationLogStream"    = "${PSMConfigurationLogStream}"
+              "PSMConfigurationLogStream"     = "${PSMConfigurationLogStream}"
               "PSMRegistrationLogStream"      = "${PSMRegistrationLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
