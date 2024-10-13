@@ -42,12 +42,12 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/UserDataLog
     DeletionPolicy: Retain
-  PSMConfigurationsLogStream:
+  PSMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMConfigurationsLog
+      LogStreamName: PSMMachine/PSMConfigurationLog
     DeletionPolicy: Retain
   PSMRegistrationLogStream:
     Type: AWS::Logs::LogStream
@@ -478,7 +478,7 @@ Resources:
               "Region"                        = "${AWS::Region}"
               "LogGroup"                      = "${LogGroup}"
               "UserDataLogStream"             = "${PSMUserDataLogStream}"
-              "PSMConfigurationsLogStream"    = "${PSMConfigurationsLogStream}"
+              "PSMConfigurationLogStream"    = "${PSMConfigurationLogStream}"
               "PSMRegistrationLogStream"      = "${PSMRegistrationLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
