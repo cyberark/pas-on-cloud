@@ -471,7 +471,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
 Parameters:
   EULA:
