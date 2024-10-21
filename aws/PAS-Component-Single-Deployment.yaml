@@ -28,13 +28,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
-  CPMSetLocalServiceLogStream:
-    Type: AWS::Logs::LogStream
-    Condition: CreateCPMCondition
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMSetLocalServiceLog
-    DeletionPolicy: Retain
   PSMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
@@ -76,13 +69,6 @@ Resources:
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
-    DeletionPolicy: Retain
-  PVWASetLocalServiceLogStream:
-    Type: AWS::Logs::LogStream
-    Condition: CreatePVWACondition
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
   PVWAAmi:
     Type: Custom::FindAMI
@@ -392,7 +378,6 @@ Resources:
               "UserDataLogStream"             = "${PVWAUserDataLogStream}"
               "PVWAConfigurationsLogStream"   = "${PVWAConfigurationsLogStream}"
               "PVWARegistrationLogStream"     = "${PVWARegistrationLogStream}"
-              "PVWASetLocalServiceLogStream"  = "${PVWASetLocalServiceLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
@@ -436,7 +421,6 @@ Resources:
               "UserDataLogStream"             = "${CPMUserDataLogStream}"
               "CPMConfigurationsLogStream"    = "${CPMConfigurationsLogStream}"
               "CPMRegistrationLogStream"      = "${CPMRegistrationLogStream}"
-              "CPMSetLocalServiceLogStream"   = "${CPMSetLocalServiceLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"

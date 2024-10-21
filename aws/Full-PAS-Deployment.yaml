@@ -25,12 +25,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
-  CPMSetLocalServiceLogStream:
-    Type: AWS::Logs::LogStream
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMSetLocalServiceLog
-    DeletionPolicy: Retain
   PSMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
@@ -66,12 +60,6 @@ Resources:
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
-    DeletionPolicy: Retain
-  PVWASetLocalServiceLogStream:
-    Type: AWS::Logs::LogStream
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
     DeletionPolicy: Retain
   VaultUserDataLogStream:
     Type: AWS::Logs::LogStream
@@ -911,7 +899,6 @@ Resources:
               "UserDataLogStream"             = "${PVWAUserDataLogStream}"
               "PVWAConfigurationsLogStream"   = "${PVWAConfigurationsLogStream}"
               "PVWARegistrationLogStream"     = "${PVWARegistrationLogStream}"
-              "PVWASetLocalServiceLogStream"  = "${PVWASetLocalServiceLogStream}"
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
@@ -953,7 +940,6 @@ Resources:
               "UserDataLogStream"             = "${CPMUserDataLogStream}"
               "CPMConfigurationsLogStream"    = "${CPMConfigurationsLogStream}"
               "CPMRegistrationLogStream"      = "${CPMRegistrationLogStream}"
-              "CPMSetLocalServiceLogStream"   = "${CPMSetLocalServiceLogStream}"
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
