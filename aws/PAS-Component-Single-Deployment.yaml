@@ -14,12 +14,12 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/UserDataLog
     DeletionPolicy: Retain
-  CPMConfigurationsLogStream:
+  CPMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurations
+      LogStreamName: CPMMachine/CPMConfiguration
     DeletionPolicy: Retain
   CPMRegistrationLogStream:
     Type: AWS::Logs::LogStream
@@ -56,12 +56,12 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/UserDataLog
     DeletionPolicy: Retain
-  PVWAConfigurationsLogStream:
+  PVWAConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+      LogStreamName: PVWAMachine/PVWAConfigurationLog
     DeletionPolicy: Retain
   PVWARegistrationLogStream:
     Type: AWS::Logs::LogStream
@@ -376,7 +376,7 @@ Resources:
               "Region"                        = "${AWS::Region}"
               "LogGroup"                      = "${LogGroup}"
               "UserDataLogStream"             = "${PVWAUserDataLogStream}"
-              "PVWAConfigurationsLogStream"   = "${PVWAConfigurationsLogStream}"
+              "PVWAConfigurationLogStream"   = "${PVWAConfigurationLogStream}"
               "PVWARegistrationLogStream"     = "${PVWARegistrationLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
@@ -419,7 +419,7 @@ Resources:
               "Region"                        = "${AWS::Region}"
               "LogGroup"                      = "${LogGroup}"
               "UserDataLogStream"             = "${CPMUserDataLogStream}"
-              "CPMConfigurationsLogStream"    = "${CPMConfigurationsLogStream}"
+              "CPMConfigurationLogStream"    = "${CPMConfigurationLogStream}"
               "CPMRegistrationLogStream"      = "${CPMRegistrationLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
