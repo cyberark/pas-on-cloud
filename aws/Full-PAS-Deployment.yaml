@@ -1026,101 +1026,31 @@ Resources:
           - !Ref PSMPAmi
           - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
-      UserData: !Base64
-        'Fn::Sub': |
-          #!/bin/bash -e
-          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
-          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
-          sudo hostnamectl set-hostname ${PSMPHostname}.localdomain
-          sudo sed -i '0,/localhost localhost/ s//${PSMPHostname} ${PSMPHostname}/' /etc/hosts
-          sudo reboot
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            sudo /opt/CD-Image/register.sh \
+              "aws" \
+              "${VaultIpAddress}" \
+              "${UniqueId}" \
+              "ec2-user" \
+              "Administrator" \
+              "${StoreAdminPassword.SsmId}" \
+              "${PSMPHostname}" \
+              "${AWS::Region}" \
+              "${LogGroup}" \
+              ${AWS::StackName}
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            UniqueId: !Select
+                - 4
+                - !Split
+                    - '-'
+                    - !Select
+                        - 2
+                        - !Split ["/", !Ref "AWS::StackId"]
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          install_all:
-            - install_logs
-            - install_psmp
-        install_logs:
-          files:
-            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
-              content: !Sub |
-                {
-                  "agent": {
-                    "metrics_collection_interval": 10,
-                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
-                    "run_as_user": "root"
-                  },
-                  "logs": {
-                    "logs_collected": {
-                      "files": {
-                        "collect_list": [
-                          {
-                            "file_path": "/var/log/cloud-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cloud-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cloud-init-output.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cloud-init-output",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cfn-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cfn-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/tmp/temp/EnvManager.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/EnvManager",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/PSMPHardening_log",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              mode: '000444'
-              owner: root
-              group: root
-          commands:
-            01_install_cwlogs:
-              command: !Sub >-
-                sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
-            02_start_awslogs:
-              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
-        install_psmp:
-          commands:
-            01-PSMPdeploy:
-              command: !Sub 
-                - >-
-                  TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
-                  -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
-                  /opt/CD-Image/register.sh aws "${VaultIpAddress}"
-                  $(curl -H "X-aws-ec2-metadata-token:$TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
-                  ec2-user Administrator ${AWS::Region} "${StoreAdminPassword.SsmId}"
-                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-            02-PostInstall:
-              command: sudo rm -rf /opt/CD-Image/
-            99-SignalCompletion:
-              command: !Sub >-
-                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
