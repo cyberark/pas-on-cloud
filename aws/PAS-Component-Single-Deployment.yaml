@@ -28,6 +28,13 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
+  CPMSetLocalServiceLogStream:
+    Type: AWS::Logs::LogStream
+    Condition: CreateCPMCondition
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+    DeletionPolicy: Retain
   PSMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
@@ -421,6 +428,7 @@ Resources:
               "UserDataLogStream"             = "${CPMUserDataLogStream}"
               "CPMConfigurationLogStream"    = "${CPMConfigurationLogStream}"
               "CPMRegistrationLogStream"      = "${CPMRegistrationLogStream}"
+              "CPMSetLocalServiceLogStream"   = "${CPMSetLocalServiceLogStream}"
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
