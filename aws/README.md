@@ -14,4 +14,4 @@ CyberArk PAS CloudFormation templates were created to automate the deployment pr
 ## In order to enable PTA after successful installation please do the below:
 
 If you are using self sign certificate, upload PTA self-sign certificate to PVWA server following this:
-https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/PTA/Validating-Self-signed-Certificate-Browser.htm?tocpath=Installation%7CInstall%20PAS%7CInstall%20PTA%7CPTA%20Server%7CPTA%20Certificate%20Procedures%7C_____2
+https://docs.cyberark.com/pam-self-hosted/14.2/en/content/pta/validating-self-signed-certificate-browser.htm

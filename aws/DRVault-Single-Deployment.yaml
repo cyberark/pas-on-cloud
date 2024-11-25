@@ -396,7 +396,7 @@ Resources:
               
               while (response['Images'] == []) and (pas_ver_major >= 0):
                 while (response['Images'] == []) and (pas_ver_minor >= 0):
-                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
+                  ami_name = 'CyberArk PAM ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
                   response = boto3.client('ec2').describe_images(
                       Owners= [event['ResourceProperties']['OwnerAccountId']],
                       Filters=[
@@ -485,9 +485,9 @@ Parameters:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
     AllowedValues:
-      - Win2016
       - Win2019
-    Default: Win2016
+      - Win2022
+    Default: Win2019
   VaultCustomAmi:
     Type: String
     Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
