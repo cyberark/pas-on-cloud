@@ -6,8 +6,7 @@ The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs an
 
 ### Added
 - Windows Server 2022 images are now available for all Windows based components.
-- New Terraform deployment offering: The PAMonCloud solution is now available in Terraform for both Azure and AWS, offering more flexibility, self-tailored configurations, cross-region deployments, and the benefits of using the IaC platform. PAMonCloud-terraform modules and examples are publicly available at:
-      [PAMonCloud-Terraform](https://github.com/cyberark/pamoncloud-terraform)
+- New Terraform deployment offering: The PAMonCloud solution is now available in Terraform for both Azure and AWS, offering more flexibility, self-tailored configurations, cross-region deployments, and the benefits of using the IaC platform. PAMonCloud-terraform modules and examples are publicly available at: [PAMonCloud-Terraform](https://github.com/cyberark/pamoncloud-terraform)
 
 ### Changed
 - #### AWS : 
