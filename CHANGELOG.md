@@ -1,6 +1,5 @@
-# CyberArk AWS Cloud Package Release Notes
-
-The AWS Cloud package includes CyberArk PAM products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
+# CyberArk PAMonCloud Offering Release Notes
+The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
 ## [PAMonCloud v14.4] (TBD)
