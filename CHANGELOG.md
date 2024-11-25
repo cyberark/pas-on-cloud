@@ -1,27 +1,31 @@
 # CyberArk AWS Cloud Package Release Notes
 
-The AWS Cloud package includes CyberArk PAS products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
+The AWS Cloud package includes CyberArk PAM products, delivered as AMIs and AWS CloudFormation templates to automate deployment.
 
 
-## [PAS on Cloud v14.4] (TBD)
+## [PAMonCloud v14.4] (TBD)
 
 ### Added
 - #### Azure : 
     - ARM templates now support Azure GovCloud accounts.
 - #### AWS : 
-    - Failures are tracked and raised in real-time, rather than only at stack timeout.
+    - Product configuration failures are tracked and raised in real-time, rather than only at stack timeout.
 - Windows Server 2022 images are now available for all Windows based components.
 - New Terraform deployment offering: The PAMonCloud solution is now available in Terraform for both Azure and AWS, offering more flexibility, self-tailored configurations, cross-region deployments, and the benefits of using the IaC platform. PAMonCloud-terraform modules and examples are publicly available at:
       [PAMonCloud-Terraform](https://github.com/cyberark/pamoncloud-terraform)
+
 ### Changed
 - #### AWS : 
-    - Product configuration and registration are now executed as part of the instance's userdata, rather then CloudFormation::Init.
+    - Product configuration and registration are now executed as part of the instance's userdata, rather than CloudFormation::Init.
     - Enhanced CloudWatch logging for better observability during deployment.
     - Deployment and configuration time for Windows-based components has been significantly reduced.
-### Removed
-- Windows components are no longer published based on Windows Server 2016. You can create a Win2016-based AMI using the BYOI solution to suit your needs (subject to product system requirements).
 
-## [PAS on Cloud v14.2] (18.6.2024)
+### Removed
+- #### Azure : 
+    - Removed usage of ManagedIdentityExtensionForWindows.
+- Windows components are no longer published based on Windows Server 2016. You can create Win2016-based images using the BYOI solution to suit your needs (subject to product system requirements).
+
+## [PAMonCloud v14.2] (18.6.2024)
 
 ### Changed
 - #### AWS : 
