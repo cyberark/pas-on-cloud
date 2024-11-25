@@ -589,9 +589,9 @@ Parameters:
     Type: String
     Description: Select a Windows Server version for all Windows-based components (field ignored for PSMP/PTA).
     AllowedValues:
-      - Win2016
       - Win2019
-    Default: Win2016
+      - Win2022
+    Default: Win2019
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).

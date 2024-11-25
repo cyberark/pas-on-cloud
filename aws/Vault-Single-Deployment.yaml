@@ -548,9 +548,9 @@ Parameters:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
     AllowedValues:
-      - Win2016
       - Win2019
-    Default: Win2016
+      - Win2022
+    Default: Win2019
   VaultCustomAmi:
     Type: String
     Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
