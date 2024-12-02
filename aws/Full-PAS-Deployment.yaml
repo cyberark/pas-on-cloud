@@ -824,7 +824,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
@@ -877,7 +877,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - VaultMachine
@@ -918,7 +918,7 @@ Resources:
       IamInstanceProfile: !Ref ComponentInstanceProfile
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - VaultDRMachine
@@ -960,7 +960,7 @@ Resources:
       IamInstanceProfile: !Ref ComponentInstanceProfile
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
@@ -1001,7 +1001,7 @@ Resources:
       IamInstanceProfile: !Ref ComponentInstanceProfile
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
