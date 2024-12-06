@@ -224,6 +224,7 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - CPMMachine
+      - PSMMachine
       - PSMPMachine
       - PTAMachine
   CleanDRPassword:
