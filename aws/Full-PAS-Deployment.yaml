@@ -1004,7 +1004,7 @@ Resources:
         Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
-      - PVWAMachine
+      - CPMMachine
   PSMPMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -1049,7 +1049,7 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PSMMachine
+      - CPMMachine
   PTAMachine:
     Type: AWS::EC2::Instance
     Properties:
