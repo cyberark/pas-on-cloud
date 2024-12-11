@@ -2,7 +2,7 @@
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
-## [PAMonCloud v14.4] (TBD)
+## [PAMonCloud v14.4] (11.12.2024)
 
 ### Added
 - Windows Server 2022 images are now available for all Windows based components.
