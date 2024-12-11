@@ -1,11 +1,9 @@
 # Overview
+We offer comprehensive tools and scripts to facilitate the deployment of CyberArk's Privileged Access Manager (PAM) solution on both Amazon Web Services (AWS) and Microsoft Azure.
 
-We provide you with the necessary tools and scripts to deploy CyberArk's Privileged Access Security (PAS) solution on Amazon Web Services (AWS) and Microsoft Azure with one click.
+Our templates offer the flexibility to deploy CyberArk PAM in various architectures, including hybrid, multi-cloud, and fully cloud-based environments.
 
-The different templates provide you with the flexibility of deploying CyberArk PAS to support your architecture (hybrid, multi-cloud, all in the cloud and etc.).
-
-
-# Licensing
-Copyright © 2024 CyberArk Software Ltd. All rights reserved.
-
-CyberArk’s Privileged Access Security is licensed under the following license terms - "CyberArk Software EULA 20210831.1.pdf". CyberArk’s PAS AWS CloudFormation and Azure Resource Manager (ARM) deployment templates are licensed under Apache License, Version 2.0 - "LICENSE.md".
+# Licensing  
+This repository is subject to the following licenses:  
+- **CyberArk Privileged Access Manager**: Licensed under the [CyberArk Software EULA](https://www.cyberark.com/EULA.pdf).  
+- **CyberArk’s PAM AWS CloudFormation and Azure Resource Manager (ARM) deployment templates**: Licensed under the Apache License, Version 2.0 ([LICENSE](https://github.com/cyberark/pas-on-cloud/blob/master/LICENSE)).  

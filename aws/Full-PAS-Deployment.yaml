@@ -7,77 +7,71 @@ Resources:
       RetentionInDays: 30
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-  CPMCfnInitLogStream:
+  CPMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMCfnInitLogStream
+      LogStreamName: CPMMachine/UserDataLog
     DeletionPolicy: Retain
-  CPMConfigurationsLog:
+  CPMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurationsLog
+      LogStreamName: CPMMachine/CPMConfigurationLog
     DeletionPolicy: Retain
-  CPMRegistrationLog:
+  CPMRegistrationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMRegistrationLog
     DeletionPolicy: Retain
-  CPMSetLocalServiceLog:
+  CPMSetLocalServiceLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: CPMMachine/CPMSetLocalServiceLog
     DeletionPolicy: Retain
-  PSMCfnInitLogStream:
+  PSMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMCfnInitLogStream
+      LogStreamName: PSMMachine/UserDataLog
     DeletionPolicy: Retain
-  PSMConfigurationsLog:
+  PSMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMConfigurationsLog
+      LogStreamName: PSMMachine/PSMConfigurationLog
     DeletionPolicy: Retain
-  PSMRegistrationLog:
+  PSMRegistrationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
     DeletionPolicy: Retain
-  PVWACfnInitLogStream:
+  PVWAUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWACfnInitLogStream
+      LogStreamName: PVWAMachine/UserDataLog
     DeletionPolicy: Retain
-  PVWAConfigurationsLog:
+  PVWAConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+      LogStreamName: PVWAMachine/PVWAConfigurationLog
     DeletionPolicy: Retain
-  PVWARegistrationLog:
+  PVWARegistrationLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
     DeletionPolicy: Retain
-  PVWASetLocalServiceLog:
+  VaultUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
-    DeletionPolicy: Retain
-  VaultCfnInitLogStream:
-    Type: AWS::Logs::LogStream
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultMachine/CfnInitLog
+      LogStreamName: VaultMachine/UserDataLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
@@ -94,11 +88,11 @@ Resources:
       LogStreamName: VaultMachine/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultDRCfnInitLogStream:
+  VaultDRUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/CfnInitLog
+      LogStreamName: VaultDRMachine/UserDataLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRInitLogStream:
@@ -230,6 +224,7 @@ Resources:
       - LambdaDeployRole
       - StorePasswordLambda
       - CPMMachine
+      - PSMMachine
       - PSMPMachine
       - PTAMachine
   CleanDRPassword:
@@ -329,7 +324,7 @@ Resources:
             Resource:
               - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
       Roles:
-        - !Ref ComponentInstanceRole
+        - !Ref ComponentInstancesRole
     DeletionPolicy: Retain
   LambdaDeployRole:
     Type: AWS::IAM::Role
@@ -543,7 +538,7 @@ Resources:
                   - iam:PutRolePolicy
                 Resource: '*'
     DeletionPolicy: Retain
-  ComponentInstanceRole:
+  ComponentInstancesRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -576,7 +571,7 @@ Resources:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
-        - !Ref ComponentInstanceRole
+        - !Ref ComponentInstancesRole
     DeletionPolicy: Retain
   StorePasswordLambda:
     Type: AWS::Lambda::Function
@@ -750,7 +745,7 @@ Resources:
               
               while (response['Images'] == []) and (pas_ver_major >= 0):
                 while (response['Images'] == []) and (pas_ver_minor >= 0):
-                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
+                  ami_name = 'CyberArk PAM ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
                   response = boto3.client('ec2').describe_images(
                       Owners= [event['ResourceProperties']['OwnerAccountId']],
                       Filters=[
@@ -797,70 +792,37 @@ Resources:
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultMachine --configsets ascending --region ${AWS::Region}
-          </script>
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "IsPrimaryOrDR"             = "Primary"
+              "VaultFilesBucket"          = "${VaultFilesBucket}"
+              "LicenseFileKey"            = "${LicenseFile}"
+              "RecoveryPublicKey"         = "${RecoveryPublicKey}"
+              "Region"                    = "${AWS::Region}"
+              "LogGroup"                  = "${LogGroup}"
+              "UserDataLogStream"         = "${VaultUserDataLogStream}"
+              "VaultInitLogStream"        = "${VaultInitLogStream}"
+              "VaultPostInstallLogStream" = "${VaultPostInstallLogStream}"
+              "SSMMasterPassParameterID"  = "${StoreMasterPassword.SsmId}"
+              "SSMAdminPassParameterID"   = "${StoreAdminPassword.SsmId}"
+              "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
+              "SSMSecretParameterID"      = "${SecretSsmId}"
+              "VaultInstancesRole"        = "${VaultInstancesRole}"
+              "VaultHostname"             = "${VaultHostname}"
+              "StackName"                 = "${AWS::StackName}"
+            }
+
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - SecretSsmId: !If
+              - SecretProvided
+              - !GetAtt StoreSecret.SsmId
+              - ''
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          ascending:
-            - configSSMAndServerAndTagKMS
-            - configServices
-            - configSignal
-        configSSMAndServerAndTagKMS:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-configcw:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultCfnInitLogStream} -VaultInitLogStream ${VaultInitLogStream} -VaultPostInstallLogStream ${VaultPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-download:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultInit.ps1 -VaultFilesBucket ${VaultFilesBucket} -LicenseFileKey ${LicenseFile} -RecoveryPublicKey ${RecoveryPublicKey} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            2-postInstallWithDR:
-              command: !Sub
-              - >-
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -IsPrimaryOrDR "Primary" -SSMMasterPassParameterID
-                ${StoreMasterPassword.SsmId} -SSMAdminPassParameterID ${StoreAdminPassword.SsmId} -SSMDRPassParameterID ${StoreDRPassword.SsmId}
-                -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -RecoveryPublicKeyPath "C:\CyberArk\Deployment\recoveryPublic.key"
-                -Region ${AWS::Region} ${Secret}
-              - Secret: !If
-                  - SecretEmpty
-                  - ''
-                  - !Sub '-SSMSecretParameterID ${StoreSecret.SsmId}'
-              waitAfterCompletion: 0
-            3-changeKMSTag:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultInstancesRole} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            4-ChangeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostname} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
@@ -888,58 +850,32 @@ Resources:
           - !Ref VaultAmi
           - !Ref VaultCustomAmi
       InstanceType: !Ref 'VaultInstanceType'
-      UserData: !Base64
-        Fn::Sub: |-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r VaultDRMachine --configsets ascending --region ${AWS::Region}
-          </script>
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "IsPrimaryOrDR"             = "DR"
+              "Region"                    = "${AWS::Region}"
+              "LogGroup"                  = "${LogGroup}"
+              "UserDataLogStream"         = "${VaultDRUserDataLogStream}"
+              "VaultInitLogStream"        = "${VaultDRInitLogStream}"
+              "VaultPostInstallLogStream" = "${VaultDRPostInstallLogStream}"
+              "SSMDRPassParameterID"      = "${StoreDRPassword.SsmId}"
+              "SSMSecretParameterID"      = "${SecretSsmId}"
+              "VaultPrivateIP"            = "${VaultMachine.PrivateIp}"
+              "VaultInstancesRole"        = "${VaultDRInstancesProfile}"
+              "VaultHostname"             = "${VaultHostname}"
+              "StackName"                 = "${AWS::StackName}"
+            }
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - SecretSsmId: !If
+              - SecretProvided
+              - !GetAtt StoreSecret.SsmId
+              - ''
       KeyName: !Ref 'KeyName'
       IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
-    Metadata:
-      AWS::CloudFormation::Init:
-        configSets:
-          ascending:
-            - configSSMAndHostnameAndTagKMS
-            - configServices
-            - configSignal
-        configSSMAndHostnameAndTagKMS:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-configCloudWatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1 -LogGroup ${LogGroup} -CfnInitLogStream ${VaultDRCfnInitLogStream} -VaultInitLogStream ${VaultDRInitLogStream} -VaultPostInstallLogStream ${VaultDRPostInstallLogStream} -Region ${AWS::Region}
-              waitAfterCompletion: 10
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 0
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-postInstall:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultPostInstall.ps1 -SSMDRPassParameterID ${StoreDRPassword.SsmId} -IsPrimaryOrDR "DR" -PrimaryVaultIP ${VaultMachine.PrivateIp} -LicensePath "C:\CyberArk\Deployment\vaultLicense.xml" -Region ${AWS::Region} -SSMSecretParameterID ${StoreSecret.SsmId}
-              waitAfterCompletion: 0
-            2-changeKMSTag:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\VaultTagKMS.ps1 -Role ${VaultDRInstancesRole} -Region ${AWS::Region}
-              waitAfterCompletion: 0
-            3-ChangeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${VaultHostname}-dr -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource VaultDRMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
         Timeout: PT20M
@@ -960,85 +896,30 @@ Resources:
           - !Ref PVWAAmi
           - !Ref PVWACustomAmi
       InstanceType: !Ref PVWAInstanceType
-      UserData: !Base64
-        'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PVWAMachine --configsets ascending --region ${AWS::Region}
-          </script>
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "Region"                        = "${AWS::Region}"
+              "LogGroup"                      = "${LogGroup}"
+              "UserDataLogStream"             = "${PVWAUserDataLogStream}"
+              "PVWAConfigurationLogStream"    = "${PVWAConfigurationLogStream}"
+              "PVWARegistrationLogStream"     = "${PVWARegistrationLogStream}"
+              "VaultAdminUser"                = "Administrator"
+              "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
+              "VaultPrivateIP"                = "${VaultIpAddress}"
+              "ComponentHostname"             = "${PVWAHostname}"
+              "StackName"                     = "${AWS::StackName}"
+            }
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          ascending:
-            - configSSMAndHostname
-            - configServices
-            - configSignal
-        configSSMAndHostname:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-cloudwatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -PVWACfnInitLogStream
-                ${PVWACfnInitLogStream} -PVWAConfiguration
-                ${PVWAConfigurationsLog} -PVWARegistration
-                ${PVWARegistrationLog} -PVWASetLocalService
-                ${PVWASetLocalServiceLog} -Region ${AWS::Region}
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-              ignoreErrors: true
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-configurePVWAService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: 0
-            2-configuration:
-              command: !Sub
-                - >-
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\PVWAConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${PVWAHostname}
-                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: 0
-            3-registration:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: 0
-            4-startAppPool:
-              command: >-
-                powershell -Command "& {&'Import-Module' WebAdministration}"; "&
-                {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "&
-                {&'Set-ItemProperty' -Path
-                IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
-                'true'}"
-              waitAfterCompletion: 0
-            5-CSTserviceConfig:
-              command: sc config "CyberArk Scheduled Tasks" start=auto
-              waitAfterCompletion: 0
-            6-ChangeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${PVWAHostname} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PVWAMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT25M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - VaultDRMachine
@@ -1056,82 +937,31 @@ Resources:
           - !Ref CPMAmi
           - !Ref CPMCustomAmi
       InstanceType: !Ref CPMInstanceType
-      UserData: !Base64
-        'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r CPMMachine --configsets ascending --region ${AWS::Region}
-          </script>
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "Region"                        = "${AWS::Region}"
+              "LogGroup"                      = "${LogGroup}"
+              "UserDataLogStream"             = "${CPMUserDataLogStream}"
+              "CPMConfigurationLogStream"     = "${CPMConfigurationLogStream}"
+              "CPMRegistrationLogStream"      = "${CPMRegistrationLogStream}"
+              "CPMSetLocalServiceLogStream"   = "${CPMSetLocalServiceLogStream}"
+              "VaultAdminUser"                = "Administrator"
+              "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
+              "VaultPrivateIP"                = "${VaultIpAddress}"
+              "ComponentHostname"             = "${CPMHostname}"
+              "StackName"                     = "${AWS::StackName}"
+            }
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          ascending:
-            - configSSMAndHostname
-            - configServices
-            - configSignal
-        configSSMAndHostname:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-cloudwatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -CPMCfnInitLogStream
-                ${CPMCfnInitLogStream} -CPMConfiguration ${CPMConfigurationsLog}
-                -CPMRegistration ${CPMRegistrationLog} -CPMSetLocalService
-                ${CPMSetLocalServiceLog} -Region ${AWS::Region}
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-              ignoreErrors: true
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-configuration:
-              command: !Sub
-                - >-
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\CPMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
-                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: 0
-            2-registration:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CPMRegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: 0
-            3-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Central Policy Manager Scanner"
-              waitAfterCompletion: 0
-            4-configureCPMService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PasswordManagerUser" -Services "CyberArk Password Manager"
-              waitAfterCompletion: 0
-            5-CPMserviceConfig:
-              command: sc config "CyberArk Password Manager" start=auto
-              waitAfterCompletion: 0
-            6-CPMSserviceConfig:
-              command: sc config "CyberArk Central Policy Manager Scanner" start=auto
-              waitAfterCompletion: 0
-            7-ChangeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${CPMHostname} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource CPMMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT25M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
@@ -1149,75 +979,33 @@ Resources:
           - !Ref PSMAmi
           - !Ref PSMCustomAmi
       InstanceType: !Ref PSMInstanceType
-      UserData: !Base64
-        'Fn::Sub': >-
-          <script>
-          cfn-init.exe -v -s ${AWS::StackId} -r PSMMachine --configsets ascending --region ${AWS::Region}
-          </script>
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            <powershell>
+            $UserDataParams = @{
+              "Region"                        = "${AWS::Region}"
+              "LogGroup"                      = "${LogGroup}"
+              "UserDataLogStream"             = "${PSMUserDataLogStream}"
+              "PSMConfigurationLogStream"     = "${PSMConfigurationLogStream}"
+              "PSMRegistrationLogStream"      = "${PSMRegistrationLogStream}"
+              "VaultAdminUser"                = "Administrator"
+              "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
+              "VaultPrivateIP"                = "${VaultIpAddress}"
+              "ComponentHostname"             = "${PSMHostname}"
+              "StackName"                     = "${AWS::StackName}"
+            }
+            C:\CyberArk\Deployment\UserDataScript.ps1 @UserDataParams
+            </powershell>
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          ascending:
-            - configSSMAndHostname
-            - configServices
-            - configSignal
-        configSSMAndHostname:
-          services:
-            windows:
-              AmazonSSMAgent:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - C:\Program Files\Amazon\SSM\Plugins\awsCloudWatch\AWS.EC2.Windows.CloudWatch.json
-          commands:
-            1-cloudwatch:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\CloudWatch.ps1
-                -LogGroup ${LogGroup} -PSMCfnInitLogStream
-                ${PSMCfnInitLogStream} -PSMConfiguration ${PSMConfigurationsLog}
-                -PSMRegistration ${PSMRegistrationLog} -Region ${AWS::Region}
-            2-restartSSM:
-              command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
-              waitAfterCompletion: 60
-              ignoreErrors: true
-            3-addDNSSuffix:
-              command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
-        configServices:
-          commands:
-            1-configuration:
-              command: !Sub
-                - >-
-                  powershell.exe -File
-                  C:\CyberArk\Deployment\PSMConfiguration.ps1 -VaultIpAddress
-                  ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858
-                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-              waitAfterCompletion: 0
-            2-registration:
-              command: !Sub >
-                powershell.exe -File C:\CyberArk\Deployment\PSMRegistration.ps1
-                -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
-              waitAfterCompletion: 0
-            3-PSMserviceConfig:
-              command: sc config "CyberArk Privileged Session Manager" start=auto
-              waitAfterCompletion: 0
-            4-ChangeHostname:
-              command: !Sub >
-                powershell.exe -Command Rename-Computer -NewName ${PSMHostname} -Force -Restart
-              waitAfterCompletion: forever
-        configSignal:
-          commands:
-            0-signalCompletion:
-              command: !Sub >
-                "C:\Program Files\Amazon\cfn-bootstrap\cfn-signal.exe" -e %ERRORLEVEL% --stack ${AWS::StackId} --resource PSMMachine --region ${AWS::Region}
-              waitAfterCompletion: 0
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT25M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
-      - PVWAMachine
+      - CPMMachine
   PSMPMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -1232,107 +1020,37 @@ Resources:
           - !Ref PSMPAmi
           - !Ref PSMPCustomAmi
       InstanceType: !Ref PSMPInstanceType
-      UserData: !Base64
-        'Fn::Sub': |
-          #!/bin/bash -e
-          cfn-init -v --stack ${AWS::StackId} --resource PSMPMachine --configsets install_all --region ${AWS::Region}
-          cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
-          sudo hostnamectl set-hostname ${PSMPHostname}.localdomain
-          sudo sed -i '0,/localhost localhost/ s//${PSMPHostname} ${PSMPHostname}/' /etc/hosts
-          sudo reboot
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            sudo /opt/CD-Image/register.sh \
+              "aws" \
+              "${VaultIpAddress}" \
+              "${UniqueId}" \
+              "ec2-user" \
+              "Administrator" \
+              "${StoreAdminPassword.SsmId}" \
+              "${PSMPHostname}" \
+              "${AWS::Region}" \
+              "${LogGroup}" \
+              ${AWS::StackName}
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
+            UniqueId: !Select
+                - 4
+                - !Split
+                    - '-'
+                    - !Select
+                        - 2
+                        - !Split ["/", !Ref "AWS::StackId"]
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          install_all:
-            - install_logs
-            - install_psmp
-        install_logs:
-          files:
-            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
-              content: !Sub |
-                {
-                  "agent": {
-                    "metrics_collection_interval": 10,
-                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
-                    "run_as_user": "root"
-                  },
-                  "logs": {
-                    "logs_collected": {
-                      "files": {
-                        "collect_list": [
-                          {
-                            "file_path": "/var/log/cloud-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cloud-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cloud-init-output.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cloud-init-output",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cfn-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/cfn-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/tmp/temp/EnvManager.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/EnvManager",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/opt/CARKpsmp/temp/PSMPHardening_log.txt",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PSMPMachine/PSMPHardening_log",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              mode: '000444'
-              owner: root
-              group: root
-          commands:
-            01_install_cwlogs:
-              command: !Sub >-
-                sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
-            02_start_awslogs:
-              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
-        install_psmp:
-          commands:
-            01-PSMPdeploy:
-              command: !Sub 
-                - >-
-                  TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token"
-                  -H "X-aws-ec2-metadata-token-ttl-seconds:3600") &&
-                  /opt/CD-Image/register.sh aws "${VaultIpAddress}"
-                  $(curl -H "X-aws-ec2-metadata-token:$TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
-                  ec2-user Administrator ${AWS::Region} "${StoreAdminPassword.SsmId}"
-                - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
-            02-PostInstall:
-              command: sudo rm -rf /opt/CD-Image/
-            99-SignalCompletion:
-              command: !Sub >-
-                cfn-signal -e $? --stack ${AWS::StackId} --resource PSMPMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PSMMachine
+      - CPMMachine
   PTAMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -1347,93 +1065,26 @@ Resources:
           - !Ref PTAAmi
           - !Ref PTACustomAmi
       InstanceType: !Ref PTAInstanceType
-      UserData: !Base64
-        'Fn::Sub': |
-          #!/bin/bash -e
-          cfn-init -v --stack ${AWS::StackId} --resource PTAMachine --configsets install_all --region ${AWS::Region}
-          cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            sudo /tmp/register.sh \
+              "aws" \
+              "${VaultIpAddress}" \
+              "${PVWAMachine.PrivateDnsName}" \
+              "Administrator" \
+              "${StoreAdminPassword.SsmId}" \
+              "${PTAHostname}" \
+              "${AWS::Region}" \
+              "${LogGroup}" \
+              "${AWS::StackName}"
+          - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
       KeyName: !Ref KeyName
       IamInstanceProfile: !Ref ComponentInstanceProfile
-    Metadata:
-      'AWS::CloudFormation::Init':
-        configSets:
-          install_all:
-            - install_logs
-            - install_pta
-        install_logs:
-          files:
-            /opt/aws/amazon-cloudwatch-agent/bin/config.json:
-              content: !Sub |
-                {
-                  "agent": {
-                    "metrics_collection_interval": 10,
-                    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log",
-                    "run_as_user": "root"
-                  },
-                  "logs": {
-                    "logs_collected": {
-                      "files": {
-                        "collect_list": [
-                          {
-                            "file_path": "/var/log/cloud-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PTAMachine/cloud-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cloud-init-output.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PTAMachine/cloud-init-output",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/var/log/cfn-init.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PTAMachine/cfn-init",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                          {
-                            "file_path": "/opt/tomcat/logs/ptaAutomaticConfiguration.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PTAMachine/ptaAutomaticConfiguration",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          },
-                                                    {
-                            "file_path": "/opt/tomcat/logs/diamond.log",
-                            "log_group_name": "${LogGroup}",
-                            "log_stream_name": "PTAMachine/diamond",
-                            "timezone": "Local",
-                            "timestamp_format": "%Y-%m-%dT%H:%M:%S"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              mode: '000444'
-              owner: root
-              group: root
-          commands:
-            01_install_cloudwatch_agent:
-              command: !Sub >-
-                sudo rpm -U https://amazoncloudwatch-agent-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
-            02_start_cloudwatch_agent:
-              command: sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
-        install_pta:
-          commands:
-            01-executeptaconfigurationscript: 
-              command: !Sub >-
-                sudo /tmp/register.sh aws "${VaultMachine.PrivateIp}" "${PVWAMachine.PrivateDnsName}" Administrator "${StoreAdminPassword.SsmId}" ${AWS::Region} "${VaultDRMachine.PrivateIp}"
-            99-SignalCompletion:
-              command: !Sub >-
-                cfn-signal -e $? --stack ${AWS::StackId} --resource PTAMachine --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT10M
+        Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
@@ -1449,9 +1100,9 @@ Parameters:
     Type: String
     Description: Select a Windows Server version for all Windows-based components.
     AllowedValues:
-      - Win2016
       - Win2019
-    Default: Win2016
+      - Win2022
+    Default: Win2019
   CyberarkAccountId:
     Type: String
     Description: Enter the CyberArk Account ID (AMI Owner account ID).
@@ -1947,9 +1598,10 @@ Metadata:
       PTAInstanceSubnetId:
         default: PTA Instance Subnet Id
 Conditions:
-  SecretEmpty: !Equals
-    - ''
-    - !Ref Secret
+  SecretProvided: !Not
+    - !Equals
+      - ''
+      - !Ref Secret
   VaultCustomImageEmpty: !Equals
     - ''
     - !Ref VaultCustomAmi
