@@ -77,13 +77,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
     DeletionPolicy: Retain
-  PVWASetLocalServiceLog:
-    Type: AWS::Logs::LogStream
-    Condition: CreatePVWACondition
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
-    DeletionPolicy: Retain
   PVWAAmi:
     Type: Custom::FindAMI
     Condition: PVWACustomImageEmpty
@@ -454,12 +447,7 @@ Resources:
               waitAfterCompletion: forever
         configServices:
           commands:
-            1-configurePVWAService:
-              command: >-
-                powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1
-                -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: 0
-            2-configuration:
+            1-configuration:
               command: !Sub
                 - >-
                   powershell.exe -File
@@ -471,13 +459,13 @@ Resources:
                     - !Sub '${VaultPrivateIP}'
                     - !Sub '${VaultPrivateIP},${DRPrivateIP}'
               waitAfterCompletion: 0
-            3-registration:
+            2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
                 -VaultAdminUser ${VaultAdminUser} -SSMAdminPassParameterID
                 ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
-            4-startAppPool:
+            3-startAppPool:
               command: >-
                 powershell -Command "& {&'Import-Module' WebAdministration}"; "&
                 {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "&
@@ -485,10 +473,10 @@ Resources:
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
                 'true'}"
               waitAfterCompletion: 0
-            5-CSTserviceConfig:
+            4-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: 0
-            6-restart:
+            5-restart:
               command: powershell.exe -Command "Restart-Computer -Force"
               waitAfterCompletion: forever
         configSignal:

@@ -67,12 +67,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PVWAMachine/PVWARegistrationLog
     DeletionPolicy: Retain
-  PVWASetLocalServiceLog:
-    Type: AWS::Logs::LogStream
-    Properties:
-      LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWASetLocalServiceLog
-    DeletionPolicy: Retain
   VaultCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
@@ -999,10 +993,7 @@ Resources:
               command: powershell.exe -Command "Set-DnsClientGlobalSetting -SuffixSearchList ((Get-DnsClientGlobalSetting).SuffixSearchList += 'pas.local')"
         configServices:
           commands:
-            1-configurePVWAService:
-              command: powershell.exe -File C:\CyberArk\Deployment\Set-LocalService.ps1 -Username "PVWAReportsUser" -Services "CyberArk Scheduled Tasks"
-              waitAfterCompletion: 0
-            2-configuration:
+            1-configuration:
               command: !Sub
                 - >-
                   powershell.exe -File
@@ -1010,12 +1001,12 @@ Resources:
                   ${VaultIpAddress} -VaultAdminUser Administrator -VaultPort 1858 -HostName ${PVWAHostname}
                 - VaultIpAddress: !Sub '${VaultMachine.PrivateIp},${VaultDRMachine.PrivateIp}'
               waitAfterCompletion: 0
-            3-registration:
+            2-registration:
               command: !Sub >
                 powershell.exe -File C:\CyberArk\Deployment\PVWARegistration.ps1
                 -VaultAdminUser Administrator -SSMAdminPassParameterID ${StoreAdminPassword.SsmId}
               waitAfterCompletion: 0
-            4-startAppPool:
+            3-startAppPool:
               command: >-
                 powershell -Command "& {&'Import-Module' WebAdministration}"; "&
                 {&'Start-WebAppPool' -Name PasswordVaultWebAccessPool}"; "&
@@ -1023,10 +1014,10 @@ Resources:
                 IIS:\AppPools\PasswordVaultWebAccessPool -Name autoStart -Value
                 'true'}"
               waitAfterCompletion: 0
-            5-CSTserviceConfig:
+            4-CSTserviceConfig:
               command: sc config "CyberArk Scheduled Tasks" start=auto
               waitAfterCompletion: 0
-            6-ChangeHostname:
+            5-ChangeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName ${PVWAHostname} -Force -Restart
               waitAfterCompletion: forever
