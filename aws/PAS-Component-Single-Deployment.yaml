@@ -409,8 +409,7 @@ Resources:
                 -LogGroup ${LogGroup} -PVWACfnInitLogStream
                 ${PVWACfnInitLogStreamLog} -PVWAConfiguration
                 ${PVWAConfigurationsLog} -PVWARegistration
-                ${PVWARegistrationLog} -PVWASetLocalService
-                ${PVWASetLocalServiceLog} -Region ${AWS::Region}
+                ${PVWARegistrationLog} -Region ${AWS::Region}
             2-downloadLatestSSM:
               command: >
                 powershell.exe -Command

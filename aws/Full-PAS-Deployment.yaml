@@ -983,8 +983,7 @@ Resources:
                 -LogGroup ${LogGroup} -PVWACfnInitLogStream
                 ${PVWACfnInitLogStream} -PVWAConfiguration
                 ${PVWAConfigurationsLog} -PVWARegistration
-                ${PVWARegistrationLog} -PVWASetLocalService
-                ${PVWASetLocalServiceLog} -Region ${AWS::Region}
+                ${PVWARegistrationLog} -Region ${AWS::Region}
             2-restartSSM:
               command: powershell.exe -Command "Restart-Service AmazonSSMAgent"
               waitAfterCompletion: 60
