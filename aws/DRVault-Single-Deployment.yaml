@@ -29,7 +29,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId

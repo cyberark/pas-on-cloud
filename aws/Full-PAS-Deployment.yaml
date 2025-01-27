@@ -113,7 +113,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "Vault"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -124,7 +124,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "PVWA"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -135,7 +135,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "CPM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -146,7 +146,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "PSM"
       OS: !Ref WinVersion
       OwnerAccountId: !Ref CyberarkAccountId
@@ -157,7 +157,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "PSMP"
       OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
@@ -168,7 +168,7 @@ Resources:
     Type: Custom::FindAMI
     Properties:
       ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
+      Version: "14.4"
       Component: "PTA"
       OS: "RHEL-9"
       OwnerAccountId: !Ref CyberarkAccountId
