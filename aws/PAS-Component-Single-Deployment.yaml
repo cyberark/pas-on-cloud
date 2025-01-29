@@ -736,7 +736,19 @@ Resources:
             3-PSMserviceConfig:
               command: sc config "CyberArk Privileged Session Manager" start=auto
               waitAfterCompletion: 0
-            4-ChangeHostname:
+            4-PSMHardening:
+              command: !Sub >
+                Set-Location "C:\Cyberark\PSM\InstallationAutomation"
+                $Action = .\Execute-Stage.ps1 "Hardening\HardeningConfig.xml"
+                $Action | Out-File -FilePath "psm_hardening_log.log"
+                $Result = Get-Content "psm_hardening_log.log" -Raw | ConvertFrom-Json
+                if ($Result.isSucceeded -eq 0) {
+                    exit 0
+                } else {
+                    exit 1
+                }
+              waitAfterCompletion: 0
+            5-ChangeHostname:
               command: !Sub >
                 powershell.exe -Command Rename-Computer -NewName
                 ${ComponentHostname} -Force -Restart
