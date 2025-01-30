@@ -730,7 +730,7 @@ Resources:
                     $Action = .\Execute-Stage.ps1 'Hardening\HardeningConfig.xml';
                     $Action | Out-File -FilePath 'C:\Cyberark\PSM\InstallationAutomation\psm_hardening_log.log';
                     $Result = Get-Content 'C:\Cyberark\PSM\InstallationAutomation\psm_hardening_log.log' -Raw | ConvertFrom-Json;
-                    if ($Result.isSucceeded -eq 0) { exit 0 } else { exit 1 }
+                    if ($Result.isSucceeded -eq 0) { exit 0 } else { exit 1 };
                 }"
               waitAfterCompletion: 0
             5-ChangeHostname:
