@@ -49,6 +49,12 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSMMachine/PSMRegistrationLog
     DeletionPolicy: Retain
+  PSMHardeningLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSMMachine/PSMHardeningLog
+    DeletionPolicy: Retain
   PVWAUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
@@ -989,6 +995,7 @@ Resources:
               "UserDataLogStream"             = "${PSMUserDataLogStream}"
               "PSMConfigurationLogStream"     = "${PSMConfigurationLogStream}"
               "PSMRegistrationLogStream"      = "${PSMRegistrationLogStream}"
+              "PSMHardeningLogStream"         = "${PSMHardeningLogStream}"
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
