@@ -11,102 +11,102 @@ Resources:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMCfnInitLogStream
+      LogStreamName: CPM/CPMCfnInitLogStream
     DeletionPolicy: Retain
   CPMConfigurationsLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfigurationsLog
+      LogStreamName: CPM/CPMConfigurationsLog
     DeletionPolicy: Retain
   CPMRegistrationLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMRegistrationLog
+      LogStreamName: CPM/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+      LogStreamName: CPM/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMCfnInitLogStream
+      LogStreamName: PSM/PSMCfnInitLogStream
     DeletionPolicy: Retain
   PSMConfigurationsLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMConfigurationsLog
+      LogStreamName: PSM/PSMConfigurationsLog
     DeletionPolicy: Retain
   PSMRegistrationLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMRegistrationLog
+      LogStreamName: PSM/PSMRegistrationLog
     DeletionPolicy: Retain
   PVWACfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWACfnInitLogStream
+      LogStreamName: PVWA/PVWACfnInitLogStream
     DeletionPolicy: Retain
   PVWAConfigurationsLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWAConfigurationsLog
+      LogStreamName: PVWA/PVWAConfigurationsLog
     DeletionPolicy: Retain
   PVWARegistrationLog:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWARegistrationLog
+      LogStreamName: PVWA/PVWARegistrationLog
     DeletionPolicy: Retain
   VaultCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultMachine/CfnInitLog
+      LogStreamName: Vault/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultMachine/VaultInitLog
+      LogStreamName: Vault/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultMachine/VaultPostInstallLog
+      LogStreamName: Vault/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRCfnInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/CfnInitLog
+      LogStreamName: VaultDR/CfnInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/VaultInitLog
+      LogStreamName: VaultDR/VaultInitLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultDRPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/VaultPostInstallLog
+      LogStreamName: VaultDR/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
   VaultAmi:
