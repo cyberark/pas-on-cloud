@@ -12,77 +12,77 @@ Resources:
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/UserDataLog
+      LogStreamName: CPM/UserDataLog
     DeletionPolicy: Retain
   CPMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMConfiguration
+      LogStreamName: CPM/CPMConfiguration
     DeletionPolicy: Retain
   CPMRegistrationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMRegistrationLog
+      LogStreamName: CPM/CPMRegistrationLog
     DeletionPolicy: Retain
   CPMSetLocalServiceLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreateCPMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: CPMMachine/CPMSetLocalServiceLog
+      LogStreamName: CPM/CPMSetLocalServiceLog
     DeletionPolicy: Retain
   PSMUserDataLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/UserDataLog
+      LogStreamName: PSM/UserDataLog
     DeletionPolicy: Retain
   PSMConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMConfigurationLog
+      LogStreamName: PSM/PSMConfigurationLog
     DeletionPolicy: Retain
   PSMRegistrationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMRegistrationLog
+      LogStreamName: PSM/PSMRegistrationLog
     DeletionPolicy: Retain
   PSMHardeningLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePSMCondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PSMMachine/PSMHardeningLog
+      LogStreamName: PSM/PSMHardeningLog
     DeletionPolicy: Retain
   PVWAUserDataLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/UserDataLog
+      LogStreamName: PVWA/UserDataLog
     DeletionPolicy: Retain
   PVWAConfigurationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWAConfigurationLog
+      LogStreamName: PVWA/PVWAConfigurationLog
     DeletionPolicy: Retain
   PVWARegistrationLogStream:
     Type: AWS::Logs::LogStream
     Condition: CreatePVWACondition
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: PVWAMachine/PVWARegistrationLog
+      LogStreamName: PVWA/PVWARegistrationLog
     DeletionPolicy: Retain
   PVWAAmi:
     Type: Custom::FindAMI
