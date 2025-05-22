@@ -11,19 +11,19 @@ Resources:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/UserDataLog
+      LogStreamName: VaultDR/UserDataLog
     DeletionPolicy: Retain
   VaultDRInitLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/VaultInitLog
+      LogStreamName: VaultDR/VaultInitLog
     DeletionPolicy: Retain
   VaultDRPostInstallLogStream:
     Type: AWS::Logs::LogStream
     Properties:
       LogGroupName: !Sub '${LogGroup}'
-      LogStreamName: VaultDRMachine/VaultPostInstallLog
+      LogStreamName: VaultDR/VaultPostInstallLog
     DeletionPolicy: Retain
   VaultAmi:
     Type: Custom::FindAMI
