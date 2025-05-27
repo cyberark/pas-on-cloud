@@ -884,7 +884,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT1M
+        Timeout: PT20M
     DeletionPolicy: Retain
     DependsOn:
       - VaultMachine
@@ -967,7 +967,7 @@ Resources:
       IamInstanceProfile: !Ref ComponentInstanceProfile
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT5S
     DeletionPolicy: Retain
     DependsOn:
       - PVWAMachine
