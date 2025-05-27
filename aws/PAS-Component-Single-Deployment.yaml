@@ -453,7 +453,7 @@ Resources:
     Condition: CreateCPMCondition
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT5S
     DeletionPolicy: Retain
   PSMMachine:
     Type: AWS::EC2::Instance
