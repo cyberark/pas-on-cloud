@@ -884,7 +884,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultDRInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT1M
     DeletionPolicy: Retain
     DependsOn:
       - VaultMachine
