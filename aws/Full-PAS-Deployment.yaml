@@ -831,7 +831,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT5S
     DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
