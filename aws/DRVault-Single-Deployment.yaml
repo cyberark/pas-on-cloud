@@ -408,7 +408,7 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  VaultCustomAmi:
+  VaultAmi:
     Type: String
     Description: Enter the Vault Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$

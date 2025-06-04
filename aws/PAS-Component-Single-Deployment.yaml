@@ -607,9 +607,6 @@ Conditions:
   CreatePTACondition: !Equals
     - PTA
     - !Ref ComponentToInstall
-  CustomImageEmpty: !Equals
-    - ''
-    - !Ref ComponentCustomAmi
   DRValueEmpty: !Equals
     - ''
     - !Ref DRPrivateIP
