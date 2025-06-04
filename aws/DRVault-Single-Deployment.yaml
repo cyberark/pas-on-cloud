@@ -25,17 +25,6 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: VaultDR/VaultPostInstallLog
     DeletionPolicy: Retain
-  VaultAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.4"
-      Component: "Vault"
-      OS: !Ref WinVersion
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: CustomImageEmpty
   StoreDRPassword:
     Type: AWS::CloudFormation::CustomResource
     Properties:
@@ -133,13 +122,6 @@ Resources:
                   - ssm:DeleteParameter
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-        - PolicyName: DescribeImages
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: 'ec2:DescribeImages'
-                Resource: "*"
   LambdaRemovePermissionsRole:
     Type: AWS::IAM::Role
     Properties:
@@ -369,57 +351,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
-  GetLatestAMILambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Code:
-        ZipFile: |
-          import boto3
-          import cfnresponse
-          import json
-          import traceback
-
-
-          def handler(event, context):
-            try:
-              component = event['ResourceProperties']['Component']
-              pas_ver= event['ResourceProperties']['Version']
-              pas_ver_major= int(pas_ver.split(".")[0])
-              pas_ver_minor= int(pas_ver.split(".")[1])
-              response = {
-                  "Images": []
-              }
-
-              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
-              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
-              event['ResourceProperties']['OS']
-              
-              while (response['Images'] == []) and (pas_ver_major >= 0):
-                while (response['Images'] == []) and (pas_ver_minor >= 0):
-                  ami_name = 'CyberArk PAM ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
-                  response = boto3.client('ec2').describe_images(
-                      Owners= [event['ResourceProperties']['OwnerAccountId']],
-                      Filters=[
-                        {'Name': 'name', 'Values':  [ami_name]},
-                      ],
-                  )
-                  pas_ver_minor -= 1
-                pas_ver_major -= 1
-                pas_ver_minor = 9
-              amis = sorted(response['Images'],
-                            key=lambda x: x['CreationDate'],
-                            reverse=True)
-              id = amis[0]['ImageId']
-              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
-            except IndexError:
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
-            except:
-              traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
-      Runtime: python3.11
-      Handler: index.handler
-      Timeout: 60
-      Role: !GetAtt LambdaDeployRole.Arn
   VaultDRMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -437,11 +368,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId: 
-        Fn::If:
-          - CustomImageEmpty
-          - !Ref VaultAmi
-          - !Ref VaultCustomAmi
+      ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData:
         Fn::Base64: !Sub
@@ -481,23 +408,11 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  WinVersion:
+  VaultAmi:
     Type: String
-    Description: Select a Windows Server version for all Windows-based components.
-    AllowedValues:
-      - Win2019
-      - Win2022
-    Default: Win2019
-  VaultCustomAmi:
-    Type: String
-    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the Vault Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
-  CyberarkAccountId:
-    Type: String
-    Description: Enter the CyberArk Account ID (AMI Owner account ID).
-    AllowedPattern: ^[\d]{12}$
-    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
@@ -569,9 +484,7 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - WinVersion
-          - VaultCustomAmi
-          - CyberarkAccountId
+          - VaultAmi
           - KeyName
       - Label:
           default: Primary Vault and DR information
@@ -590,12 +503,8 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      WinVersion:
-        defualt: Windows Server Version
-      VaultCustomAmi:
-        default: Custom Vault Image ID (Optional)
-      CyberarkAccountId:
-        default: CyberArk Account ID
+      VaultAmi:
+        default: Vault Image ID
       KeyName:
         default: Key Pair
       VaultPrivateIP:
@@ -619,9 +528,6 @@ Conditions:
     - !Equals
       - ''
       - !Ref Secret
-  CustomImageEmpty: !Equals
-    - ''
-    - !Ref VaultCustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
