@@ -109,72 +109,6 @@ Resources:
       LogStreamName: VaultDR/VaultPostInstallLog
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
-  VaultAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "Vault"
-      OS: !Ref WinVersion
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: VaultCustomImageEmpty
-  PVWAAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "PVWA"
-      OS: !Ref WinVersion
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: PVWACustomImageEmpty
-  CPMAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "CPM"
-      OS: !Ref WinVersion
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: CPMCustomImageEmpty
-  PSMAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "PSM"
-      OS: !Ref WinVersion
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: PSMCustomImageEmpty
-  PSMPAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "PSMP"
-      OS: "RHEL-9"
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: PSMPCustomImageEmpty
-  PTAAmi:
-    Type: Custom::FindAMI
-    Properties:
-      ServiceToken: !GetAtt GetLatestAMILambda.Arn
-      Version: "14.2"
-      Component: "PTA"
-      OS: "RHEL-9"
-      OwnerAccountId: !Ref CyberarkAccountId
-    DependsOn:
-      - LambdaDeployRole
-    Condition: PTACustomImageEmpty
   StoreMasterPassword:
     Type: AWS::CloudFormation::CustomResource
     Version: '1.0'
@@ -361,13 +295,6 @@ Resources:
                   - 'ssm:DeleteParameter'
                 Resource:
                   - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*'
-        - PolicyName: DescribeImages
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: 'ec2:DescribeImages'
-                Resource: "*"
   LambdaLogDenyRole:
     Type: AWS::IAM::Role
     Properties:
@@ -717,57 +644,6 @@ Resources:
       Handler: index.lambda_handler
       Timeout: 60
       Role: !GetAtt 'LambdaRemovePermissionsRole.Arn'
-  GetLatestAMILambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Code:
-        ZipFile: |
-          import boto3
-          import cfnresponse
-          import json
-          import traceback
-
-
-          def handler(event, context):
-            try:
-              component = event['ResourceProperties']['Component']
-              pas_ver= event['ResourceProperties']['Version']
-              pas_ver_major= int(pas_ver.split(".")[0])
-              pas_ver_minor= int(pas_ver.split(".")[1])
-              response = {
-                  "Images": []
-              }
-
-              pas_ver_without_os_filter = ['11.5','11.6','11.7','12.0','12.1','12.2']
-              os_filter = '' if pas_ver in pas_ver_without_os_filter else \
-              event['ResourceProperties']['OS']
-              
-              while (response['Images'] == []) and (pas_ver_major >= 0):
-                while (response['Images'] == []) and (pas_ver_minor >= 0):
-                  ami_name = 'CyberArk PAS ' + component + ' v'+str(pas_ver_major) + '.' + str(pas_ver_minor) +'*'+ os_filter
-                  response = boto3.client('ec2').describe_images(
-                      Owners= [event['ResourceProperties']['OwnerAccountId']],
-                      Filters=[
-                        {'Name': 'name', 'Values':  [ami_name]},
-                      ],
-                  )
-                  pas_ver_minor -= 1
-                pas_ver_major -= 1
-                pas_ver_minor = 9
-              amis = sorted(response['Images'],
-                            key=lambda x: x['CreationDate'],
-                            reverse=True)
-              id = amis[0]['ImageId']
-              cfnresponse.send(event, context, cfnresponse.SUCCESS, {}, id)
-            except IndexError:
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "Requested AMI not found")
-            except:
-              traceback.print_last()
-              cfnresponse.send(event, context, cfnresponse.FAIL, {}, "An error occured, please refer to the last exception")
-      Runtime: python3.11
-      Handler: index.handler
-      Timeout: 60
-      Role: !GetAtt LambdaDeployRole.Arn
   VaultMachine:
     Type: AWS::EC2::Instance
     Properties:
@@ -785,11 +661,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'VaultInstanceSubnetId'
-      ImageId:
-        Fn::If:
-          - VaultCustomImageEmpty
-          - !Ref VaultAmi
-          - !Ref VaultCustomAmi
+      ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -876,11 +748,7 @@ Resources:
             VolumeSize: 30
             Encrypted: true
       SubnetId: !Ref 'DRInstanceSubnetId'
-      ImageId:
-        Fn::If:
-          - VaultCustomImageEmpty
-          - !Ref VaultAmi
-          - !Ref VaultCustomAmi
+      ImageId: !Ref VaultAmi
       InstanceType: !Ref 'VaultInstanceType'
       UserData: !Base64
         Fn::Sub: |-
@@ -948,11 +816,7 @@ Resources:
           Value: !Ref PVWAInstanceName
       SecurityGroupIds: !Ref PVWAInstanceSecurityGroups
       SubnetId: !Ref PVWAInstanceSubnetId
-      ImageId:
-        Fn::If:
-          - PVWACustomImageEmpty
-          - !Ref PVWAAmi
-          - !Ref PVWACustomAmi
+      ImageId: !Ref PVWAAmi
       InstanceType: !Ref PVWAInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1040,11 +904,7 @@ Resources:
           Value: !Ref CPMInstanceName
       SecurityGroupIds: !Ref CPMInstanceSecurityGroups
       SubnetId: !Ref CPMInstanceSubnetId
-      ImageId:
-        Fn::If:
-          - CPMCustomImageEmpty
-          - !Ref CPMAmi
-          - !Ref CPMCustomAmi
+      ImageId: !Ref CPMAmi
       InstanceType: !Ref CPMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1133,11 +993,7 @@ Resources:
           Value: !Ref PSMInstanceName
       SecurityGroupIds: !Ref PSMInstanceSecurityGroups
       SubnetId: !Ref PSMInstanceSubnetId
-      ImageId:
-        Fn::If:
-          - PSMCustomImageEmpty
-          - !Ref PSMAmi
-          - !Ref PSMCustomAmi
+      ImageId: !Ref PSMAmi
       InstanceType: !Ref PSMInstanceType
       UserData: !Base64
         'Fn::Sub': >-
@@ -1225,11 +1081,7 @@ Resources:
           Value: !Ref PSMPInstanceName
       SecurityGroupIds: !Ref PSMPInstanceSecurityGroups
       SubnetId: !Ref PSMPInstanceSubnetId
-      ImageId:
-        Fn::If:
-          - PSMPCustomImageEmpty
-          - !Ref PSMPAmi
-          - !Ref PSMPCustomAmi
+      ImageId: !Ref PSMPAmi
       InstanceType: !Ref PSMPInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -1340,11 +1192,7 @@ Resources:
           Value: !Ref PTAInstanceName
       SecurityGroupIds: !Ref PTAInstanceSecurityGroups
       SubnetId: !Ref PTAInstanceSubnetId
-      ImageId:
-        Fn::If:
-          - PTACustomImageEmpty
-          - !Ref PTAAmi
-          - !Ref PTACustomAmi
+      ImageId: !Ref PTAAmi
       InstanceType: !Ref PTAInstanceType
       UserData: !Base64
         'Fn::Sub': |
@@ -1444,18 +1292,6 @@ Parameters:
       - Accept
       - Decline
     Default: Decline
-  WinVersion:
-    Type: String
-    Description: Select a Windows Server version for all Windows-based components.
-    AllowedValues:
-      - Win2016
-      - Win2019
-    Default: Win2016
-  CyberarkAccountId:
-    Type: String
-    Description: Enter the CyberArk Account ID (AMI Owner account ID).
-    AllowedPattern: ^[\d]{12}$
-    ConstraintDescription: Account ID must contain 12 digits
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: Select an existing Key Pair from your AWS account.
@@ -1471,10 +1307,10 @@ Parameters:
     Type: String
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
-  VaultCustomAmi:
+  VaultAmi:
     Type: String
-    Description: Enter the Vault Image ID, if you wish to use a custom Vault image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the Vault Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   VaultInstanceName:
     Type: String
@@ -1567,10 +1403,10 @@ Parameters:
   DRInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the DR Vault instance will reside.
-  PVWACustomAmi:
+  PVWAAmi:
     Type: String
-    Description: Enter the PVWA Image ID, if you wish to use a custom PVWA image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the PVWA Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PVWAInstanceName:
     Type: String
@@ -1603,10 +1439,10 @@ Parameters:
   PVWAInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PVWA instance will reside.
-  CPMCustomAmi:
+  CPMAmi:
     Type: String
-    Description: Enter the CPM Image ID, if you wish to use a custom CPM image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the CPM Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   CPMInstanceName:
     Type: String
@@ -1639,10 +1475,10 @@ Parameters:
   CPMInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the CPM instance will reside.
-  PSMCustomAmi:
+  PSMAmi:
     Type: String
-    Description: Enter the PSM Image ID, if you wish to use a custom PSM image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the PSM Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMInstanceName:
     Type: String
@@ -1673,10 +1509,10 @@ Parameters:
   PSMInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSM instance will reside.
-  PSMPCustomAmi:
+  PSMPAmi:
     Type: String
-    Description: Enter the PSMP Image ID, if you wish to use a custom PSMP image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the PSMP Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PSMPInstanceName:
     Type: String
@@ -1707,10 +1543,10 @@ Parameters:
   PSMPInstanceSubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSMP instance will reside.
-  PTACustomAmi:
+  PTAAmi:
     Type: String
-    Description: Enter the PTA Image ID, if you wish to use a custom PTA image.
-    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$|.{0,0}
+    Description: Enter the PTA Image ID.
+    AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
   PTAInstanceName:
     Type: String
@@ -1771,8 +1607,6 @@ Metadata:
           default: General parameters
         Parameters:
           - EULA
-          - WinVersion
-          - CyberarkAccountId
           - KeyName
           - VaultFilesBucket
           - LicenseFile
@@ -1780,7 +1614,7 @@ Metadata:
       - Label:
           default: Primary Vault and DR Vault configuration
         Parameters:
-          - VaultCustomAmi
+          - VaultAmi
           - VaultInstanceName
           - VaultHostname
           - VaultAdminPassword
@@ -1798,7 +1632,7 @@ Metadata:
       - Label:
           default: PVWA configuration
         Parameters:
-          - PVWACustomAmi
+          - PVWAAmi
           - PVWAInstanceName
           - PVWAHostname
           - PVWAInstanceType
@@ -1807,7 +1641,7 @@ Metadata:
       - Label:
           default: CPM configuration
         Parameters:
-          - CPMCustomAmi
+          - CPMAmi
           - CPMInstanceName
           - CPMHostname
           - CPMInstanceType
@@ -1816,7 +1650,7 @@ Metadata:
       - Label:
           default: PSM configuration
         Parameters:
-          - PSMCustomAmi
+          - PSMAmi
           - PSMInstanceName
           - PSMHostname
           - PSMInstanceType
@@ -1825,7 +1659,7 @@ Metadata:
       - Label:
           default: PSMP configuration
         Parameters:
-          - PSMPCustomAmi
+          - PSMPAmi
           - PSMPInstanceName
           - PSMPHostname
           - PSMPInstanceType
@@ -1834,7 +1668,7 @@ Metadata:
       - Label:
           default: PTA configuration
         Parameters:
-          - PTACustomAmi
+          - PTAAmi
           - PTAInstanceName
           - PTAHostname
           - PTAInstanceType
@@ -1843,10 +1677,6 @@ Metadata:
     ParameterLabels:
       EULA:
         default: License Agreement
-      WinVersion:
-        default: Windows Server Version
-      CyberarkAccountId:
-        default: CyberArk Account ID
       KeyName:
         default: Key Pair
       VaultFilesBucket:
@@ -1855,8 +1685,8 @@ Metadata:
         default: Vault License File
       RecoveryPublicKey:
         default: Recovery Public Key
-      VaultCustomAmi:
-        default: Custom Vault Image ID (Optional)
+      VaultAmi:
+        default: Vault Image ID
       VaultInstanceName:
         default: Vault Instance Name
       VaultHostname:
@@ -1885,8 +1715,8 @@ Metadata:
         default: Primary Vault Instance Subnet Id
       DRInstanceSubnetId:
         default: Vault DR Instance Subnet Id
-      PVWACustomAmi:
-        default: Custom PVWA Image ID (Optional)
+      PVWAAmi:
+        default: PVWA Image ID
       PVWAInstanceName:
         default: PVWA Instance Name
       PVWAHostname:
@@ -1897,8 +1727,8 @@ Metadata:
         default: PVWA Instance Security Groups
       PVWAInstanceSubnetId:
         default: PVWA Instance Subnet Id
-      CPMCustomAmi:
-        default: Custom CPM Image ID (Optional)
+      CPMAmi:
+        default: CPM Image ID
       CPMInstanceName:
         default: CPM Instance Name
       CPMHostname:
@@ -1909,8 +1739,8 @@ Metadata:
         default: CPM Instance Security Groups
       CPMInstanceSubnetId:
         default: CPM Instance Subnet Id
-      PSMCustomAmi:
-        default: Custom PSM Image ID (Optional)
+      PSMAmi:
+        default: PSM Image ID
       PSMInstanceName:
         default: PSM Instance Name
       PSMHostname:
@@ -1921,8 +1751,8 @@ Metadata:
         default: PSM Instance Security Groups
       PSMInstanceSubnetId:
         default: PSM Instance Subnet Id
-      PSMPCustomAmi:
-        default: Custom PSMP Image ID (Optional)
+      PSMPAmi:
+        default: PSMP Image ID
       PSMPInstanceName:
         default: PSMP Instance Name
       PSMPHostname:
@@ -1933,8 +1763,8 @@ Metadata:
         default: PSMP Instance Security Groups
       PSMPInstanceSubnetId:
         default: PSMP Instance Subnet Id
-      PTACustomAmi:
-        default: Custom PTA Image ID (Optional)
+      PTAAmi:
+        default: PTA Image ID
       PTAInstanceName:
         default: PTA Instance Name
       PTAHostname:
@@ -1949,24 +1779,6 @@ Conditions:
   SecretEmpty: !Equals
     - ''
     - !Ref Secret
-  VaultCustomImageEmpty: !Equals
-    - ''
-    - !Ref VaultCustomAmi
-  PVWACustomImageEmpty: !Equals
-    - ''
-    - !Ref PVWACustomAmi
-  CPMCustomImageEmpty: !Equals
-    - ''
-    - !Ref CPMCustomAmi
-  PSMCustomImageEmpty: !Equals
-    - ''
-    - !Ref PSMCustomAmi
-  PSMPCustomImageEmpty: !Equals
-    - ''
-    - !Ref PSMPCustomAmi
-  PTACustomImageEmpty: !Equals
-    - ''
-    - !Ref PTACustomAmi
 Outputs:
   CloudWatchLogGroupName:
     Description: The name of the CloudWatch log group
