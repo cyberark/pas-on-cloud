@@ -817,6 +817,7 @@ Resources:
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
+              "PVWAPrivateIP"                 = "${PVWAMachine.PrivateIp}"
               "ComponentHostname"             = "${CPMHostname}"
               "StackName"                     = "${AWS::StackName}"
             }
