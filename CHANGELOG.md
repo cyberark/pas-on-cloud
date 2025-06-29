@@ -2,6 +2,19 @@
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
+## [PAMonCloud v14.6] (30.6.2025)
+
+### Changed
+- #### AWS : 
+    - Component Image ID parameters, which were previously optional, are now required.
+    - CPM single deployment now required PVWA's IP address to be inserted as a parameter.
+
+### Removed
+- #### AWS : 
+    - Premade PAM images are no longer distributed. PAM Images can be obtained by using PAMonCloud's image building solution.
+    - Removed usage of GetLatestAMILambda.
+    - The following parameters have been removed from all relevant templates: 'WinVersion', 'CyberarkAccountId'
+
 ## [PAMonCloud v14.4] (11.12.2024)
 
 ### Added
