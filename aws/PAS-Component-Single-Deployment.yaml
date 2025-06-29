@@ -318,6 +318,7 @@ Resources:
               "VaultAdminUser"                = "${VaultAdminUser}"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
+              "PVWAPrivateIP"                 = "${PVWAPrivateEndpoint}"
               "ComponentHostname"             = "${ComponentHostname}"
               "StackName"                     = "${AWS::StackName}"
             }
@@ -434,7 +435,7 @@ Resources:
             sudo /tmp/register.sh \
               "aws" \
               "${VaultIpAddress}" \
-              "${PVWAPrivateDNS}" \
+              "${PVWAPrivateEndpoint}" \
               "${VaultAdminUser}" \
               "${StoreAdminPassword.SsmId}" \
               "${ComponentHostname}" \
@@ -507,9 +508,9 @@ Parameters:
     MaxLength: 15
     MinLength: 3
     Default: pas-component
-  PVWAPrivateDNS:
+  PVWAPrivateEndpoint:
     Type: String
-    Description: Enter the private DNS name of the PVWA instance.
+    Description: Enter the PVWA's private DNS name (for PTA) or private IP address of the PVWA instance (for CPM). Other components do not require this parameter.
   ComponentInstanceType:
     Type: String
     Description: Select the instance type of the Component instance.
@@ -558,7 +559,7 @@ Metadata:
           - ComponentAmi
           - ComponentInstanceName
           - ComponentHostname
-          - PVWAPrivateDNS
+          - PVWAPrivateEndpoint
           - ComponentInstanceType
           - ComponentInstanceSecurityGroups
           - ComponentInstanceSubnetId
@@ -583,8 +584,8 @@ Metadata:
         default: Component Instance Name
       ComponentHostname:
         default: Component Host Name
-      PVWAPrivateDNS:
-        default: PVWA instance private DNS name (required only for PTA)
+      PVWAPrivateEndpoint:
+        default: PVWA instance private DNS name/IP address
       ComponentInstanceType:
         default: Component Instance Type
       ComponentInstanceSecurityGroups:

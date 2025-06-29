@@ -703,7 +703,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
     DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
@@ -817,6 +817,7 @@ Resources:
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
+              "PVWAPrivateIP"                 = "${PVWAMachine.PrivateIp}"
               "ComponentHostname"             = "${CPMHostname}"
               "StackName"                     = "${AWS::StackName}"
             }
@@ -942,7 +943,8 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PVWAMachine
+      - PSMMachine
+      - PSMPMachine
 Parameters:
   EULA:
     Type: String
