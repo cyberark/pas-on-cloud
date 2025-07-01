@@ -49,6 +49,12 @@ Resources:
       LogGroupName: !Sub '${LogGroup}'
       LogStreamName: PSM/PSMRegistrationLog
     DeletionPolicy: Retain
+  PSMHardeningLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Sub '${LogGroup}'
+      LogStreamName: PSM/PSMHardeningLog
+    DeletionPolicy: Retain
   PVWAUserDataLogStream:
     Type: AWS::Logs::LogStream
     Properties:
@@ -697,7 +703,7 @@ Resources:
       IamInstanceProfile: !Ref 'VaultInstancesProfile'
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT20M
+        Timeout: PT25M
     DeletionPolicy: Retain
   VaultDRMachine:
     Type: AWS::EC2::Instance
@@ -811,6 +817,7 @@ Resources:
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
+              "PVWAPrivateIP"                 = "${PVWAMachine.PrivateIp}"
               "ComponentHostname"             = "${CPMHostname}"
               "StackName"                     = "${AWS::StackName}"
             }
@@ -845,6 +852,7 @@ Resources:
               "UserDataLogStream"             = "${PSMUserDataLogStream}"
               "PSMConfigurationLogStream"     = "${PSMConfigurationLogStream}"
               "PSMRegistrationLogStream"      = "${PSMRegistrationLogStream}"
+              "PSMHardeningLogStream"         = "${PSMHardeningLogStream}"
               "VaultAdminUser"                = "Administrator"
               "SSMAdminPassParameterID"       = "${StoreAdminPassword.SsmId}"
               "VaultPrivateIP"                = "${VaultIpAddress}"
@@ -935,7 +943,8 @@ Resources:
         Timeout: PT15M
     DeletionPolicy: Retain
     DependsOn:
-      - PVWAMachine
+      - PSMMachine
+      - PSMPMachine
 Parameters:
   EULA:
     Type: String

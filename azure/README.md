@@ -34,4 +34,4 @@ If chosen to use this toolkit, your results would be in the form of an chosen PA
 ## In order to enable PTA with self sign certificate after successful installation please do the below:
 
 Upload PTA self-sign certificate to PVWA server following this:
-https://docs.cyberark.com/pam-self-hosted/14.4/en/content/pta/validating-self-signed-certificate-browser.htm
+https://docs.cyberark.com/pam-self-hosted/14.6/en/content/pta/validating-self-signed-certificate-browser.htm
