@@ -23,16 +23,9 @@
         "Vault Private IP": {
             "type": "String",
             "metadata": {
-                "description": "Enter the IP of the Vault VM."
+                "description": "Enter the IP of the Vault instance and the DR IP (if exists) seperated by a comma (e.g 1.1.1.1,2.2.2.2)."
             }
         },
-        "Vault DR Private IP":{
-            "defaultValue": "",
-            "type":"string",
-            "metadata": {
-                "Description":"Enter the IPs of the Vault DR VMs, separated by a comma (,). (Optional)."
-            }
-         },
         "Vault Admin User": {
             "defaultValue": "Administrator",
             "type": "String",
@@ -153,7 +146,6 @@
             ]
         },
         {
-            "condition":"[empty(parameters ('Vault DR Private IP'))]",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_no_dr')]",
             "apiVersion": "2022-08-01",
@@ -171,32 +163,6 @@
                 },
                 "protectedSettings": {
                     "commandToExecute": "[concat('. /tmp/register.sh azure ', parameters('Vault Private IP'), ' ', parameters('PVWA Server Name'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'))]",
-                    "fileUris": []
-                }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('PTA VM Host Name'))]"
-            ]
-        },
-        {
-            "condition":"[not(empty(parameters ('Vault DR Private IP')))]",
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('PTA VM Host Name'),'/', 'customscript_with_dr')]",
-            "apiVersion": "2022-08-01",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "register-to-vault"
-            },
-            "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "skipDos2Unix": false
-                },
-                "protectedSettings": {
-                    "commandToExecute": "[concat('. /tmp/register.sh azure ', parameters('Vault Private IP'), ' ', parameters('PVWA Server Name'), ' ', parameters('Vault Admin User'), ' ', parameters('Vault Admin Password'), ' ', parameters('Vault DR Private IP'))]",
                     "fileUris": []
                 }
             },
