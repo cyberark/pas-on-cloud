@@ -2,6 +2,12 @@
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
+## [PAMonCloud v15.0] (15.12.2025)
+
+### Changed
+- #### AWS : 
+    - Fixed DR secret parameter constraint
+
 ## [PAMonCloud v14.6] (30.6.2025)
 
 ### Changed
