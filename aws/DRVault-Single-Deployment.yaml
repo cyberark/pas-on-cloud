@@ -69,10 +69,10 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
-  VaultBootstrapIAMPolicy:
+  LambdaRemovePermissionsPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: VaultBootstrapIAMPolicy
+      PolicyName: LambdaRemovePermissionsPolicy
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -85,6 +85,21 @@ Resources:
               - !GetAtt LambdaRemovePermissionsRole.Arn
       Roles:
         - !Ref 'LambdaRemovePermissionsRole'
+  LambdaDenyAllPermissionsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: LambdaDenyAllPermissionsPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Deny
+            Action:
+              - '*'
+            Resource:
+              - '*'
+      Roles:
+        - !Ref LambdaRemovePermissionsRole
+    DependsOn:
+      - RemovePermissionVault
   LambdaDeployRole:
     Type: AWS::IAM::Role
     Properties:
