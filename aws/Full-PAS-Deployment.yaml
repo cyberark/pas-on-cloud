@@ -205,36 +205,6 @@ Resources:
       lambda_role_name: !Ref 'LambdaRemovePermissionsRole'
       instance: !Ref 'VaultDRMachine'
       region: !Ref 'AWS::Region'
-  DenyLambdaKMSPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: DenyLambdaKMSPolicy
-      PolicyDocument:
-        Statement:
-          - Effect: Deny
-            Action:
-              - '*'
-            Resource:
-              - '*'
-      Roles:
-        - !Ref LambdaRemovePermissionsRole
-    DependsOn:
-      - RemovePermissionVaultDR
-  DenyLambdaRemovePermissionsPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: DenyLambdaRemovePermissionsPolicy
-      PolicyDocument:
-        Statement:
-          - Effect: Deny
-            Action:
-              - '*'
-            Resource:
-              - '*'
-      Roles:
-        - !Ref LambdaRemovePermissionsRole
-    DependsOn:
-      - RemovePermissionVaultDR
   LambdaRemovePermissionsPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -252,6 +222,21 @@ Resources:
               - !GetAtt LambdaRemovePermissionsRole.Arn
       Roles:
         - !Ref 'LambdaRemovePermissionsRole'
+  LambdaDenyAllPermissionsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: LambdaDenyAllPermissionsPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Deny
+            Action:
+              - '*'
+            Resource:
+              - '*'
+      Roles:
+        - !Ref LambdaRemovePermissionsRole
+    DependsOn:
+      - RemovePermissionVaultDR
   InstancesSSMPolicy:
     Type: AWS::IAM::Policy
     Properties:
