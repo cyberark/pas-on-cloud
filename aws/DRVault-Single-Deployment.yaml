@@ -424,7 +424,7 @@ Parameters:
       - Decline
     Default: Decline
   VaultAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the Vault Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -466,18 +466,6 @@ Parameters:
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the DR Vault instance.
-    AllowedValues:
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
-      - c5.9xlarge
-      - m5.8xlarge
-      - c5.12xlarge
-      - m5.12xlarge
-      - c5.18xlarge
-      - m5.16xlarge
-      - c5.24xlarge
-      - m5.24xlarge
     Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>

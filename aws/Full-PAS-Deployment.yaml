@@ -954,7 +954,7 @@ Parameters:
     Description: Enter the path of the recovery public key file within the bucket.
     Default: recpub.key
   VaultAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the Vault Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1027,18 +1027,6 @@ Parameters:
   VaultInstanceType:
     Type: String
     Description: Select the instance type of the Vault instances.
-    AllowedValues:
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
-      - c5.9xlarge
-      - m5.8xlarge
-      - c5.12xlarge
-      - m5.12xlarge
-      - c5.18xlarge
-      - m5.16xlarge
-      - c5.24xlarge
-      - m5.24xlarge
     Default: m5.2xlarge
   VaultInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -1050,7 +1038,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the DR Vault instance will reside.
   PVWAAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the PVWA Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1069,15 +1057,6 @@ Parameters:
   PVWAInstanceType:
     Type: String
     Description: Select the instance type of the PVWA instance.
-    AllowedValues:
-      - c5.xlarge
-      - m5.xlarge
-      - c5.2xlarge
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
-      - c5.9xlarge
-      - m5.8xlarge
     Default: c5.xlarge
   PVWAInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -1086,7 +1065,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PVWA instance will reside.
   CPMAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the CPM Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1105,15 +1084,6 @@ Parameters:
   CPMInstanceType:
     Type: String
     Description: Select the instance type of the CPM instance.
-    AllowedValues:
-      - c5.xlarge
-      - m5.xlarge
-      - c5.2xlarge
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
-      - c5.9xlarge
-      - m5.8xlarge
     Default: c5.xlarge
   CPMInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -1122,7 +1092,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the CPM instance will reside.
   PSMAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the PSM Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1141,13 +1111,6 @@ Parameters:
   PSMInstanceType:
     Type: String
     Description: Select the instance type of the PSM instance.
-    AllowedValues:
-      - c5.2xlarge
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
-      - c5.9xlarge
-      - m5.8xlarge
     Default: c5.2xlarge
   PSMInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -1156,7 +1119,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSM instance will reside.
   PSMPAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the PSMP Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1175,13 +1138,6 @@ Parameters:
   PSMPInstanceType:
     Type: String
     Description: Select the instance type of the PSMP instance.
-    AllowedValues:
-      - c5.xlarge
-      - m5.xlarge
-      - c5.2xlarge
-      - m5.2xlarge
-      - c5.4xlarge
-      - m5.4xlarge
     Default: c5.xlarge
   PSMPInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
@@ -1190,7 +1146,7 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Select the Subnet Id where the PSMP instance will reside.
   PTAAmi:
-    Type: String
+    Type: AWS::EC2::Image::Id
     Description: Enter the PTA Image ID.
     AllowedPattern: ^ami-[a-f\d]{8}(?:[a-f\d]{9})?$
     ConstraintDescription: An Amazon EC2 image ID, such as ami-0ff8a91507f77f867
@@ -1209,11 +1165,6 @@ Parameters:
   PTAInstanceType:
     Type: String
     Description: Select the instance type of the PTA instance.
-    AllowedValues:
-      - m5.xlarge
-      - c5.2xlarge
-      - m5.2xlarge
-      - c5.4xlarge
     Default: m5.xlarge
   PTAInstanceSecurityGroups:
     Type: List<AWS::EC2::SecurityGroup::Id>
