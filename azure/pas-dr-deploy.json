@@ -162,24 +162,6 @@
             ]
          },
         {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('DR Vault VM Name'),'/ManagedIdentityExtensionForWindows')]",
-            "apiVersion": "2022-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "publisher": "Microsoft.ManagedIdentity",
-                "type": "ManagedIdentityExtensionForWindows",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "port": 50342
-                }
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'))]"
-            ]
-        },
-        {
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('DR Vault VM Name')]",
             "apiVersion": "2022-08-01",
@@ -244,7 +226,7 @@
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'), '/extensions/ManagedIdentityExtensionForWindows')]"
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('DR Vault VM Name'))]"
             ]
         },
         {
