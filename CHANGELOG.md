@@ -2,6 +2,12 @@
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
+## [PAMonCloud v15.2] (07.07.2026)
+
+### Changed
+- #### AWS : 
+    - Removed explicit InstanceTypes from deployment templates, allowing to select the appropriate instance type per component.
+
 ## [PAMonCloud v15.0] (15.12.2025)
 
 ### Changed
