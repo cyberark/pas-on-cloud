@@ -1,6 +1,11 @@
 # CyberArk PAMonCloud Offering Release Notes
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
+## [Unreleased]
+
+### Security
+- #### Azure : 
+    - Removed the `PTA_In_TCP_2` (TCP 7514/6514/11514) and `PTA_In_UDP` (UDP 67/68/11514) inbound rules from the PTA NSG in `pas-full-network.json`. These rules allowed any source (0.0.0.0/0) and never matched real traffic. PTA receives syslog from inside the VNet through the default `AllowVnetInBound` rule, which also covers peered VNets and VPN/ExpressRoute sources. Use the PTA host firewall (`authorized_siem_sources`) to control which sources PTA accepts.
 
 ## [PAMonCloud v15.2] (07.07.2026)
 
