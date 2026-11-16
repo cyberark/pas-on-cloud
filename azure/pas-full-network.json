@@ -764,21 +764,6 @@
             }
           },
           {
-            "name": "PTA_In_TCP_2",
-            "properties": {
-              "protocol": "TCP",
-              "sourcePortRange": "",
-              "destinationPortRange": "",
-              "sourceAddressPrefix": "0.0.0.0/0",
-              "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
-              "access": "Allow",
-              "priority": 130,
-              "direction": "Inbound",
-              "sourcePortRanges": ["7514","6514","11514"],
-              "destinationPortRanges": ["7514","6514","11514"]
-            }
-          },
-          {
             "name": "PTA_SSH_in",
             "properties": {
               "protocol": "TCP",
@@ -794,21 +779,6 @@
                 "[parameters('Administrative Access CIDR')]"
               ],
               "destinationAddressPrefixes": ["[parameters('PTA Subnet CIDR')]"]
-            }
-          },
-          {
-            "name": "PTA_In_UDP",
-            "properties": {
-              "protocol": "UDP",
-              "sourcePortRange": "",
-              "destinationPortRange": "",
-              "sourceAddressPrefix": "0.0.0.0/0",
-              "destinationAddressPrefix": "[parameters('PTA Subnet CIDR')]",
-              "access": "Allow",
-              "priority": 150,
-              "direction": "Inbound",
-              "sourcePortRanges": ["67","68","11514"],
-              "destinationPortRanges": ["67","68","11514"]
             }
           },
           {
