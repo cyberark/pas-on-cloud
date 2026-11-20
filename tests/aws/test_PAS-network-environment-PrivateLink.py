@@ -79,7 +79,7 @@ class TestPASNetworkEnvironmentPrivateLinkTemplate():
   def test_PASNetworkEnvironmentPrivateLink_SecurityGroupsIngress(self):
       expected_SecurityGroupsIngress = {'CPMSGIngress1', 'PSMSGIngress1', 'PSMSGIngress2', 'PSMPSGIngress1', 'PSMPSGIngress2',
                       'PVWASGIngress1', 'PVWASGIngress2', 'VaultSGIngress1', 'VaultSGIngress2', 'VaultSGIngress3', 'PTASGIngress1',
-                      'PTASGIngress11', 'PTASGIngress2','PTASGIngress3', 'PTASGIngress4','PTASGIngress5', 'PTASGIngress6',
+                      'PTASGIngress11', 'PTASGIngress2','PTASGIngress3', 'PTASGIngress4', 'PTASGIngress6',
                       'PTASGIngress7', 'PTASGIngress8','PTASGIngress9', 'PTASGIngress12','PTASGIngress11', 'PTASGIngress13',
                       'PTASGIngress14', 'PTASGIngress15','PTASGIngress16', 'PTASGIngress17','PTASGIngress18',
                       'VaultSGIngress9','PVWASGIngress7','VaultSGIngress7','PTASGIngress19','VaultSGIngress4','PVWASGIngress3',

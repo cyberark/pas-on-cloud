@@ -2,6 +2,18 @@
 The PAMonCloud Offering includes CyberArk PAM products, delivered as AWS AMIs and Azure images, along with AWS CloudFormation and Azure ARM templates to automate deployment.
 
 
+## [Unreleased]
+
+### Changed
+- #### AWS :
+    - New `PTASyslogSourceCidr` parameter in `PAS-network-environment-NAT.json` and `PAS-network-environment-PrivateLink.json`: the IPv4 CIDR allowed to send syslog and PTA Windows Agent traffic to PTA. Leave it empty to use the PAS VPC CIDR. `0.0.0.0/0` is rejected by a template rule.
+    - **Upgrade note:** syslog senders outside the PAS VPC (on-prem SIEM over VPN/Direct Connect, other VPCs) must be set in `PTASyslogSourceCidr`, or they will be blocked after upgrading. Only one CIDR is accepted.
+
+### Fixed
+- #### AWS :
+    - POC-1579: PTA syslog and PTA Windows Agent ingress rules (TCP 6514, 7514, 11514; UDP 11514) are no longer open to 0.0.0.0/0. They default to the PAS VPC CIDR.
+    - POC-1579: Removed the PTA DHCP ingress rule (UDP 67-68, open to 0.0.0.0/0). VPC DHCP does not need it.
+
 ## [PAMonCloud v15.2] (07.07.2026)
 
 ### Changed
