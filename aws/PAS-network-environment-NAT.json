@@ -1,5 +1,20 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Conditions": {
+    "UsePASVPCCIDRForPTASyslog": {
+      "Fn::Equals": [{"Ref": "PTASyslogSourceCidr"}, ""]
+    }
+  },
+  "Rules": {
+    "PTASyslogSourceNotWorldOpen": {
+      "Assertions": [
+        {
+          "Assert": {"Fn::Not": [{"Fn::Equals": [{"Ref": "PTASyslogSourceCidr"}, "0.0.0.0/0"]}]},
+          "AssertDescription": "PTASyslogSourceCidr must not be 0.0.0.0/0: PTA syslog ports must not be open to the world."
+        }
+      ]
+    }
+  },
   "Resources": {
     "PASVPC": {
       "Type": "AWS::EC2::VPC",
@@ -1489,19 +1504,6 @@
         "Description": "Access from Administrative CIDR - Allow incoming HTTPS communication for the PTA web and REST APIs using TLS1.2 with strong ciphers"
       }
     },
-    "PTASGIngress5": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupId": {
-          "Ref": "PTASG"
-        },
-        "IpProtocol": "udp",
-        "FromPort": 67,
-        "ToPort": 68,
-        "CidrIp": "0.0.0.0/0",
-        "Description": "Allow incoming data from the DHCP server"
-      }
-    },
     "PTASGIngress6": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1526,7 +1528,9 @@
         "IpProtocol": "tcp",
         "FromPort": 6514,
         "ToPort": 6514,
-        "CidrIp": "0.0.0.0/0",
+        "CidrIp": {
+          "Fn::If": ["UsePASVPCCIDRForPTASyslog", {"Ref": "PASVPCCIDR"}, {"Ref": "PTASyslogSourceCidr"}]
+        },
         "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
       }
     },
@@ -1539,7 +1543,9 @@
         "IpProtocol": "tcp",
         "FromPort": 7514,
         "ToPort": 7514,
-        "CidrIp": "0.0.0.0/0",
+        "CidrIp": {
+          "Fn::If": ["UsePASVPCCIDRForPTASyslog", {"Ref": "PASVPCCIDR"}, {"Ref": "PTASyslogSourceCidr"}]
+        },
         "Description": "Allow incoming secure syslog messages for the PTA Windows Agent connection"
       }
     },
@@ -1612,7 +1618,9 @@
         "IpProtocol": "tcp",
         "FromPort": 11514,
         "ToPort": 11514,
-        "CidrIp": "0.0.0.0/0",
+        "CidrIp": {
+          "Fn::If": ["UsePASVPCCIDRForPTASyslog", {"Ref": "PASVPCCIDR"}, {"Ref": "PTASyslogSourceCidr"}]
+        },
         "Description": "Allow incoming syslog messages"
       }
     },
@@ -1625,7 +1633,9 @@
         "IpProtocol": "udp",
         "FromPort": 11514,
         "ToPort": 11514,
-        "CidrIp": "0.0.0.0/0",
+        "CidrIp": {
+          "Fn::If": ["UsePASVPCCIDRForPTASyslog", {"Ref": "PASVPCCIDR"}, {"Ref": "PTASyslogSourceCidr"}]
+        },
         "Description": "Allow incoming syslog messages"
       }
     },
@@ -1932,7 +1942,8 @@
             "PSMPMainSubnetCIDR",
             "PSMPSecondarySubnetCIDR",
             "PTAMainSubnetCIDR",
-            "PTADRSubnetCIDR"
+            "PTADRSubnetCIDR",
+            "PTASyslogSourceCidr"
           ]
         },
         {
@@ -1987,6 +1998,9 @@
         },
         "PTADRSubnetCIDR": {
           "default": "PTA DR Subnet CIDR"
+        },
+        "PTASyslogSourceCidr": {
+          "default": "PTA Syslog Source CIDR"
         },
         "UsersAccessCIDR": {
           "default": "Users Access CIDR"
@@ -2123,6 +2137,13 @@
       "Default": "10.0.12.0/24",
       "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(1[6-9]|2[0-8]))$",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "PTASyslogSourceCidr": {
+      "Description": "IPv4 address range allowed to send syslog and PTA Windows Agent traffic to PTA (TCP 6514, 7514, 11514; UDP 11514). Leave empty to use the PAS VPC CIDR. 0.0.0.0/0 is not allowed.",
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "^$|^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+      "ConstraintDescription": "Must be empty or a valid IP CIDR range of the form x.x.x.x/x. 0.0.0.0/0 is not allowed."
     },
     "UsersAccessCIDR": {
       "Description": "Allowed IPv4 address range for users access to CyberArk components",
